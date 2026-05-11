@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitMate | 회원가입</title>
+    <style>
+        :root {
+            --bg: #030303;
+            --primary: #ffffff;
+            --accent: #6366f1;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-muted: #8a8a8a;
+            --input-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg); color: #fff; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; letter-spacing: -0.5px; }
+
+        .spotlight {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .signup-container {
+            width: 100%; max-width: 440px; padding: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+
+        .logo { font-size: 24px; font-weight: 850; margin-bottom: 32px; letter-spacing: -1.5px; cursor: pointer; text-decoration: none; color: #fff; display: block; }
+        .logo span { color: var(--accent); }
+
+        .header-msg { margin-bottom: 32px; }
+        .header-msg h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+        .header-msg p { color: var(--text-muted); font-size: 14px; }
+
+        .form-group { text-align: left; margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; margin-left: 4px; }
+
+        input {
+            width: 100%; padding: 16px 20px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: #fff; font-size: 15px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        input:focus {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-signup {
+            width: 100%; padding: 16px; margin-top: 10px;
+            background: var(--accent);
+            color: #fff; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: all 0.4s ease;
+        }
+        .btn-signup:hover {
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .auth-footer { margin-top: 30px; font-size: 14px; color: var(--text-muted); }
+        .auth-footer a { color: var(--primary); text-decoration: none; font-weight: 600; margin-left: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="spotlight"></div>
+
+<div class="signup-container">
+    <a href="/login-form" class="logo">CommitMate<span>.</span></a>
+
+    <div class="header-msg">
+        <h2>새로운 시작</h2>
+        <p>나만의 커밋 동료들을 만나보세요.</p>
+    </div>
+
+    <!-- action은 컨트롤러의 회원가입 처리 주소와 맞춰야 합니다 -->
+    <form action="/signup" method="post">
+        <div class="form-group">
+            <label>이메일 주소</label>
+            <input type="email" name="email" placeholder="name@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label>사용할 닉네임</label>
+            <input type="text" name="nickname" placeholder="멋진 닉네임을 입력하세요" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 30px;">
+            <label>비밀번호</label>
+            <input type="password" name="password" placeholder="8자 이상 입력하세요" required>
+        </div>
+
+        <button type="submit" class="btn-signup">계정 생성하기</button>
+    </form>
+
+    <div class="auth-footer">
+        이미 계정이 있으신가요? <a href="/login-form">로그인</a>
+    </div>
+</div>
+
+</body>
+</html>

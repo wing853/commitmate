@@ -1,4 +1,17 @@
 package com.example.commitmate.user;
 
-public class UserRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Integer> {
+
+    @Query("""
+            select u from User u where email = :email and password = :password
+            """)
+    Optional<User> findByEmailAndPassword(@Param("email") String email,
+                                          @Param("password") String password);
+
 }

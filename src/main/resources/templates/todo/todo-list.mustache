@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitMate | 워크스페이스 선택</title>
+    <style>
+        :root {
+            --bg: #030303;
+            --primary: #ffffff;
+            --accent: #6366f1;
+            --danger: #ff4d4d;
+            --border: rgba(255, 255, 255, 0.08);
+            --text-muted: #8a8a8a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --success: #4ade80;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg); color: #fff; overflow-x: hidden; letter-spacing: -0.5px; min-height: 100vh; }
+
+        /* [Background] */
+        .spotlight {
+            position: fixed; top: -10%; left: 50%; transform: translateX(-50%);
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            z-index: -1; pointer-events: none;
+        }
+
+        /* [Header] */
+        header {
+            height: 70px; display: flex; align-items: center; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; background: rgba(3, 3, 3, 0.8); backdrop-filter: blur(15px); z-index: 100;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; width: 100%; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: -1px; text-decoration: none; color: #fff; }
+
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 32px; height: 32px; background: var(--glass); border: 1px solid var(--border);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--accent); overflow: hidden;
+        }
+
+        /* [Logout Button] */
+        .btn-logout {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        .btn-logout:hover {
+            color: var(--danger);
+            border-color: rgba(255, 77, 77, 0.3);
+            background: rgba(255, 77, 77, 0.05);
+            transform: translateY(-1px);
+        }
+
+        /* [Main] */
+        main { padding: 80px 0; }
+        .welcome-msg { margin-bottom: 50px; text-align: left; }
+        .welcome-msg h1 { font-size: 32px; font-weight: 850; margin-bottom: 12px; letter-spacing: -1.5px; }
+        .welcome-msg h1 span { color: var(--accent); }
+        .welcome-msg p { color: var(--text-muted); font-size: 17px; }
+
+        /* [Grid Layout] */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        /* [Workspace Card] */
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .badge {
+            display: inline-block; padding: 5px 12px; border-radius: 8px; font-size: 11px;
+            font-weight: 800; margin-bottom: 20px; width: fit-content; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge.admin { background: rgba(99, 102, 241, 0.15); color: var(--accent); border: 1px solid rgba(99, 102, 241, 0.2); }
+        .badge.member { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border); }
+
+        .card h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+        .card .desc { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; min-height: 44px; }
+
+        .card-footer {
+            margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .info-label { font-size: 11px; color: #555; font-weight: 700; display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .info-value { font-size: 16px; font-weight: 700; color: #fff; }
+        .info-value.danger { color: var(--danger); text-shadow: 0 0 10px rgba(239, 68, 68, 0.3); }
+        .info-value.success { color: var(--success); }
+
+        /* 새 방 만들기 카드 */
+        .card.add-new {
+            border: 1px dashed var(--border);
+            background: transparent; justify-content: center; align-items: center; text-align: center;
+        }
+        .card.add-new:hover { border: 1px solid var(--accent); background: rgba(99, 102, 241, 0.05); }
+        .plus-icon {
+            width: 54px; height: 54px; border-radius: 18px;
+            background: var(--glass); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; margin-bottom: 16px; color: var(--text-muted); transition: 0.3s;
+        }
+        .card.add-new:hover .plus-icon { color: var(--accent); border-color: var(--accent); transform: rotate(90deg); }
+
+    </style>
+</head>
+<body>
+
+<div class="spotlight"></div>
+
+<header>
+    <div class="container header-inner">
+        <a href="/todo-list" class="logo">CommitMate.</a>
+        <div class="user-profile">
+            <!-- 유저 닉네임 -->
+            <span style="font-size: 14px; font-weight: 600; color: var(--text-muted);">{{sessionUser.nickname}} 님</span>
+
+            <!-- 아바타 -->
+            <div class="avatar">{{#sessionUser.nickname}}{{sessionUser.nickname}}{{/sessionUser.nickname}}</div>
+
+            <!-- 로그아웃 버튼 -->
+            <a href="/logout" class="btn-logout">로그아웃</a>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+        <div class="welcome-msg">
+            <h1>반가워요, <span>{{sessionUser.nickname}}님!</span> 👋</h1>
+            <p>오늘도 목표를 향해 달릴 준비가 되셨나요?</p>
+        </div>
+
+        <div class="workspace-grid">
+            <!-- 예시 카드 1 -->
+            <div class="card" onclick="location.href='/todo-list/1'">
+                <span class="badge admin">Admin</span>
+                <h3>알고리즘 1일 1커밋 🌳</h3>
+                <p class="desc">매일 자정까지 백준/프로그래머스 1문제 풀고 인증하기</p>
+                <div class="card-footer">
+                    <div>
+                        <span class="info-label">미확인 벌금</span>
+                        <span class="info-value danger">3건 대기</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="info-label">팀원</span>
+                        <span class="info-value">12명 참여 중</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 예시 카드 2 -->
+            <div class="card" onclick="location.href='/todo-list/2'">
+                <span class="badge member">Member</span>
+                <h3>새벽 기상 챌린지 ⏰</h3>
+                <p class="desc">오전 6시 30분 전까지 기상 후 사진 업로드</p>
+                <div class="card-footer">
+                    <div>
+                        <span class="info-label">나의 누적 벌금</span>
+                        <span class="info-value">₩ 0</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="info-label">나의 성실도</span>
+                        <span class="info-value success">98%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 새 워크스페이스 만들기 -->
+            <div class="card add-new">
+                <div class="plus-icon">+</div>
+                <h3 style="font-size: 18px; margin-bottom: 4px;">새 워크스페이스</h3>
+                <p style="font-size: 14px; color: var(--text-muted);">새로운 목표 설계하기</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

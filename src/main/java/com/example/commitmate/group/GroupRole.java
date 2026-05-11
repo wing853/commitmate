@@ -1,4 +1,5 @@
 package com.example.commitmate.group;
 
-public class GropuService {
+public enum GroupRole {
+    ADMIN,MEMBER
 }
