@@ -1,6 +1,6 @@
 package com.example.commitmate.fine;
 
-import com.example.commitmate.group.GroupMember;
+import com.example.commitmate.groupmember.GroupMember;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

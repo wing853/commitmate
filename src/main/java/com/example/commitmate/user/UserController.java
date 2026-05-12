@@ -27,7 +27,7 @@ public class UserController {
         User user = us.login(loginDTO);
         session.setAttribute("sessionUser", user);
 
-        return "redirect:/todo-list";
+        return "redirect:/group-list";
     }
 
     @GetMapping("/signup-form")

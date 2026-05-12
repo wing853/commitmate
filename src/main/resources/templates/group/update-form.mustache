@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitMate | 그룹 전략 수정</title>
+    <!-- 부트스트랩 CSS (그리드 레이아웃용) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Pretendard 폰트 -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <style>
+        :root {
+            --bg: #030303;
+            --primary: #ffffff;
+            --accent: #6366f1;
+            --danger: #ff4d4d;
+            --border: rgba(255, 255, 255, 0.1);
+            --text-muted: #8a8a8a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --card-bg: #0a0a0a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg); color: #fff; letter-spacing: -0.5px; line-height: 1.6; min-height: 100vh; }
+
+        /* [Background] 상단 광원 효과 */
+        .spotlight {
+            position: fixed; top: -10%; right: -10%;
+            width: 60vw; height: 60vh;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            z-index: -1; pointer-events: none;
+        }
+
+        /* [Header] */
+        header {
+            height: 70px; display: flex; align-items: center; border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; background: rgba(3, 3, 3, 0.8); backdrop-filter: blur(15px); z-index: 100;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; width: 100%; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 20px; font-weight: 800; letter-spacing: -1px; color: #fff; text-decoration: none; }
+
+        /* [Main Layout] */
+        .setup-wrapper { padding: 60px 0; }
+        .page-title { margin-bottom: 40px; }
+        .page-title h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+        .page-title p { color: var(--text-muted); font-size: 16px; }
+
+        /* [Cards] */
+        .main-card {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 24px;
+            padding: 40px; box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+        }
+        .section-label {
+            font-size: 12px; font-weight: 700; color: var(--accent);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; display: block;
+        }
+
+        /* [Forms] - 글자 시인성 및 자동완성 해결 */
+        .form-group { margin-bottom: 32px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #eee; }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: #ffffff !important; /* 입력 텍스트 흰색 강제 */
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            color: #ffffff !important;
+            outline: none;
+        }
+
+        /* 크롬 자동완성 시 배경색/글자색 유지 */
+        .form-control:-webkit-autofill,
+        .form-control:-webkit-autofill:hover,
+        .form-control:-webkit-autofill:focus {
+            -webkit-text-fill-color: #ffffff !important;
+            -webkit-box-shadow: 0 0 0px 1000px #0a0a0a inset;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+        .form-control::placeholder { color: #555; }
+
+        /* [Buttons] */
+        .btn-save {
+            background: var(--accent); color: #fff; border: none; padding: 14px 32px;
+            border-radius: 12px; font-size: 15px; font-weight: 700; transition: 0.3s; width: 100%;
+            cursor: pointer;
+        }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); }
+
+        /* [Danger Zone] */
+        .danger-card {
+            margin-top: 40px; background: rgba(255, 77, 77, 0.03);
+            border: 1px solid rgba(255, 77, 77, 0.15); border-radius: 24px; padding: 32px;
+        }
+        .btn-delete {
+            background: transparent; color: var(--danger); border: 1px solid rgba(255, 77, 77, 0.3);
+            padding: 10px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-delete:hover { background: var(--danger); color: #fff; }
+
+        footer { padding: 60px 0; text-align: center; color: #333; font-size: 12px; }
+
+    </style>
+</head>
+<body>
+
+<div class="spotlight"></div>
+
+<header>
+    <div class="container header-inner">
+        <a href="/group-list" class="logo">CommitMate.</a>
+        <div style="font-size: 13px; color: var(--text-muted);">
+            <span style="color: var(--accent);">●</span> 관리자 모드
+        </div>
+    </div>
+</header>
+
+<main class="container setup-wrapper">
+    <div class="page-title">
+        <span style="color: var(--accent); font-weight: 700; font-size: 13px; letter-spacing: 1px;">SETTINGS</span>
+        <h1>그룹 전략 수정</h1>
+        <p>팀의 목표를 명확히 하고, 벌금 시스템을 견고하게 유지하세요.</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- 왼쪽: 메인 설정 폼 -->
+        <div class="col-lg-8">
+            <div class="main-card">
+                <span class="section-label">General Strategy</span>
+                <form action="/group/{{group.id}}/edit" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="roomName">그룹 이름</label>
+                        <input type="text" class="form-control" id="roomName" name="roomName"
+                               value="{{group.roomName}}" placeholder="예: 매일 아침 7시 기상 챌린지" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">그룹 규칙 및 설명</label>
+                        <textarea class="form-control" id="description" name="description" rows="6"
+                                  placeholder="미션 실패 시 벌금 규정과 인증 방법을 상세히 적어주세요.">{{group.description}}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-save">변경 사항 적용하기</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 사이드 정보 패널 -->
+        <div class="col-lg-4">
+            <div style="padding: 24px; background: var(--glass); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(10px);">
+                <h5 style="font-size: 16px; font-weight: 700; margin-bottom: 20px; color: #fff;">System Information</h5>
+                <div style="display: flex; flex-direction: column; gap: 16px; font-size: 13px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">그룹 ID</span>
+                        <span style="color: var(--accent); font-family: monospace; font-weight: 700;">#CM-{{id}}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                        <span style="color: var(--text-muted);">상태</span>
+                        <span style="color: #4ade80; font-weight: 600;">운영 중</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: var(--text-muted);">보안 등급</span>
+                        <span style="color: #fff;">Standard</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 위험 구역 -->
+            <div class="danger-card">
+                <h5 style="font-size: 15px; font-weight: 700; color: var(--danger); margin-bottom: 8px;">위험 구역</h5>
+                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
+                    그룹을 삭제하면 모든 데이터가 즉시 소멸되며, 이는 **되돌릴 수 없는** 작업입니다.
+                </p>
+                <form action="/group/{{group.id}}/delete" method="post" onsubmit="return confirmDelete()">
+                    <button type="submit" class="btn-delete">그룹 영구 삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>COMMITMATE — SYSTEMATIC ACTION DESIGN. © 2026</p>
+</footer>
+
+<script>
+    function confirmDelete() {
+        return confirm("정말로 '{{group.roomName}}' 그룹을 삭제하시겠습니까?\n이 작업은 즉시 실행되며 복구가 불가능합니다.");
+    }
+</script>
+
+</body>
+</html>
