@@ -12,10 +12,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GroupMemberRepository extends JpaRepository<GroupMember, Integer> {
-    @Query("""
-            select gm from GroupMember gm join fetch gm.group where gm.user.id = :userId
-            """)
-    List<GroupMember> findByUserId(@Param("userId") Integer userId);
+
+    List<GroupMember> findByUserId(Integer userId);
 
     @Modifying
     @Transactional

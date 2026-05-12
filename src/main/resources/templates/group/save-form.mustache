@@ -77,7 +77,7 @@
 
 <header>
     <div class="container">
-        <a href="/group-list" class="logo">CommitMate.</a>
+        <a href="/groups" class="logo">CommitMate.</a>
     </div>
 </header>
 
@@ -89,7 +89,7 @@
                 <p>함께 성장할 팀원들을 위한 공간을 설계하세요.</p>
             </div>
 
-            <form action="/create" method="post">
+            <form action="/groups/{{id}}/update" method="post">
                 <div class="form-group">
                     <label for="roomName">워크스페이스 이름</label>
                     <input type="text" id="roomName" name="roomName" class="form-control"
@@ -105,7 +105,7 @@
                 <!-- DTO 필드에 맞춰 name 속성을 roomName, description으로 설정했습니다. -->
 
                 <div class="btn-group">
-                    <a href="/group-list" class="btn btn-cancel">취소</a>
+                    <a href="/groups" class="btn btn-cancel">취소</a>
                     <button type="submit" class="btn btn-submit">워크스페이스 생성하기</button>
                 </div>
             </form>

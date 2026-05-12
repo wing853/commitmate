@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name="group_tb")
+@Table(name = "group_tb")
 public class Group {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

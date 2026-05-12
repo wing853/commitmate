@@ -1,5 +1,6 @@
 package com.example.commitmate.group;
 
+import com.example.commitmate.todo.Todo;
 import com.example.commitmate.todo.TodoService;
 import com.example.commitmate.user.User;
 import jakarta.servlet.http.HttpSession;
@@ -19,12 +20,9 @@ public class GroupController {
     private final GroupService gs;
     private final TodoService ts;
 
-    @GetMapping("/group-list")
+    @GetMapping("/groups")
     public String groupListPage(Model model, HttpSession session) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
 
         List<GroupResponse.MyGroupDTO> groups = gs.getMyGroups(sessionUser.getId());
         model.addAttribute("groups", groups);
@@ -33,41 +31,25 @@ public class GroupController {
         return "group/group-list";
     }
 
-    @GetMapping("/group-create")
-    public String groupCreateFormPage(HttpSession session) {
+    @GetMapping("/groups/save-form")
+    public String groupCreateFormPage() {
 
-        User sessionUser = (User) session.getAttribute("sessionUser");
-
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
-        return "group/create-form";
+        return "group/save-form";
     }
 
-    @PostMapping("/create")
+    @PostMapping("/groups/save")
     public String groupCreateProc(Model model, HttpSession session, GroupRequest.CreateDTO createDTO) {
 
         User userEntity = (User) session.getAttribute("sessionUser");
-
-        if (userEntity == null) {
-            return "redirect:/login-form";
-        }
-
         createDTO.validate();
         gs.createRoom(userEntity, createDTO);
 
-        return "redirect:/group-list";
+        return "redirect:/groups";
     }
 
-    @GetMapping("/group/{id}/edit-form")
+    @GetMapping("/groups/{id}/update-form")
     public String groupUpdatePageForm(@PathVariable("id") Integer id,
-                                      HttpSession session,
                                       Model model) {
-        User sessionUser = (User) session.getAttribute("sessionUser");
-
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
 
         GroupResponse.detailDTO group = gs.findGroupById(id);
         model.addAttribute("group",group);
@@ -75,42 +57,27 @@ public class GroupController {
         return "group/update-form";
     }
 
-    @PostMapping("/group/{id}/edit")
-    public String groupUpdateProc(@PathVariable("id") Integer id, HttpSession session, GroupRequest.UpdateDTO updateDTO) {
-        User sessionUser = (User) session.getAttribute("sessionUser");
+    @PostMapping("/groups/{id}/update")
+    public String groupUpdateProc(@PathVariable("id") Integer id, GroupRequest.UpdateDTO updateDTO) {
 
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
         updateDTO.validate();
         gs.updateGroup(id,updateDTO);
-        return "redirect:/group-list";
+        return "redirect:/groups";
     }
 
-    @PostMapping("/group/{id}/delete")
+    @PostMapping("/groups/{id}/delete")
     public String groupDeleteProc(@PathVariable("id") Integer id,
                                   HttpSession session) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
-
         gs.deleteGroup(id,sessionUser.getId());
-
-        return "redirect:/group-list";
+        return "redirect:/groups";
     }
 
     @GetMapping("/groups/{id}")
     public String todoList(@PathVariable("id") Integer id,
-                           HttpSession session,
                            Model model) {
-        User sessionUser = (User) session.getAttribute("sessionUser");
-
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
-        ts.showTodo();
+        List<Todo> todoList = ts.showTodo(id);
+        model.addAttribute("todoList",todoList);
 
         return "todo/todo-list";
     }

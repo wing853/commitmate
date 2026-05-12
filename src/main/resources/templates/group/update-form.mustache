@@ -120,7 +120,7 @@
 
 <header>
     <div class="container header-inner">
-        <a href="/group-list" class="logo">CommitMate.</a>
+        <a href="/groups" class="logo">CommitMate.</a>
         <div style="font-size: 13px; color: var(--text-muted);">
             <span style="color: var(--accent);">●</span> 관리자 모드
         </div>
@@ -139,7 +139,7 @@
         <div class="col-lg-8">
             <div class="main-card">
                 <span class="section-label">General Strategy</span>
-                <form action="/group/{{group.id}}/edit" method="post">
+                <form action="/groups/{{group.id}}/update" method="post">
                     <div class="form-group">
                         <label class="form-label" for="roomName">그룹 이름</label>
                         <input type="text" class="form-control" id="roomName" name="roomName"
@@ -183,7 +183,7 @@
                 <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">
                     그룹을 삭제하면 모든 데이터가 즉시 소멸되며, 이는 **되돌릴 수 없는** 작업입니다.
                 </p>
-                <form action="/group/{{group.id}}/delete" method="post" onsubmit="return confirmDelete()">
+                <form action="/groups/{{group.id}}/delete" method="post" onsubmit="return confirmDelete()">
                     <button type="submit" class="btn-delete">그룹 영구 삭제</button>
                 </form>
             </div>

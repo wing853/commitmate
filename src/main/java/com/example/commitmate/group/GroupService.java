@@ -3,6 +3,7 @@ package com.example.commitmate.group;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import com.example.commitmate.groupmember.GroupRole;
+import com.example.commitmate.todo.TodoRepository;
 import com.example.commitmate.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class GroupService {
 
     private final GroupRepository gr;
     private final GroupMemberRepository gmr;
+    private final TodoRepository tr;
 
     @Transactional
     public List<GroupResponse.MyGroupDTO> getMyGroups(Integer userId) {
@@ -88,6 +90,7 @@ public class GroupService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
+        tr.deleteByGroupId(groupId);
         gmr.deleteByGroupId(groupId);
         gr.delete(group);
     }
