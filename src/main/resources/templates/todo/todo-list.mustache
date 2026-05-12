@@ -1,0 +1,168 @@
+<style>
+    /* 기존 스타일과 연결되는 추가 스타일 */
+    .todo-container {
+        max-width: 1000px;
+        margin: 40px auto;
+    }
+
+    .todo-card {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 32px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    }
+
+    .todo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .todo-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px; /* 행 사이 간격 */
+    }
+
+    .todo-row {
+        background: var(--glass);
+        transition: transform 0.2s, background 0.3s;
+    }
+
+    .todo-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(5px);
+    }
+
+    .todo-row td {
+        padding: 20px;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .todo-row td:first-child { border-left: 1px solid var(--border); border-radius: 16px 0 0 16px; }
+    .todo-row td:last-child { border-right: 1px solid var(--border); border-radius: 0 16px 16px 0; }
+
+    /* 완료 상태 스타일 */
+    .todo-row.completed {
+        opacity: 0.4;
+        filter: grayscale(0.8);
+    }
+
+    .todo-row.completed .todo-text {
+        text-decoration: line-through;
+    }
+
+    .user-badge {
+        background: rgba(99, 102, 241, 0.15);
+        color: var(--accent);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .fine-text {
+        color: var(--danger);
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .btn-delete {
+        background: transparent;
+        border: 1px solid #333;
+        color: #555;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .btn-delete:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 0;
+        color: var(--text-muted);
+    }
+</style>
+
+<div class="todo-container">
+    <div class="todo-card">
+        <div class="todo-header">
+            <div>
+                <h3 style="font-size: 24px; letter-spacing: -1px;">📋 Group Mission</h3>
+                <p style="color: var(--text-muted); font-size: 14px;">팀원들과 함께 약속을 지키세요.</p>
+            </div>
+            <a href="/groups/{{group.id}}/todo-form" class="btn-signup-sm">미션 추가</a>
+        </div>
+
+        <table class="todo-table">
+            <tbody>
+            {{#todos}}
+                <tr class="todo-row {{#isDone}}completed{{/isDone}}">
+                    <!-- 체크박스 -->
+                    <td style="width: 60px; text-align: center;">
+                        <div class="check-box" onclick="toggleTodo({{id}})"
+                             style="cursor: pointer; {{#isDone}}background: var(--accent); border-color: var(--accent);{{/isDone}}">
+                            {{#isDone}}<span style="color: #fff; font-size: 12px; display: block; margin-top: -2px;">✓</span>{{/isDone}}
+                        </div>
+                    </td>
+
+                    <!-- 담당자 -->
+                    <td style="width: 120px;">
+                        <span class="user-badge">{{user.nickname}}</span>
+                    </td>
+
+                    <!-- 내용 -->
+                    <td>
+                        <span class="todo-text" style="font-size: 16px; font-weight: 500;">{{work}}</span>
+                    </td>
+
+                    <!-- 벌금 -->
+                    <td style="width: 120px; text-align: right;">
+                        {{#fine}}
+                            <span class="fine-text">₩ {{amount}}</span>
+                        {{/fine}}
+                        {{^fine}}
+                            <span style="color: #333;">-</span>
+                        {{/fine}}
+                    </td>
+
+                    <!-- 관리 -->
+                    <td style="width: 80px; text-align: center;">
+                        <form action="/todo/{{id}}/delete" method="post" onsubmit="return confirm('미션을 삭제할까요?');">
+                            <input type="hidden" name="groupId" value="{{group.id}}">
+                            <button type="submit" class="btn-delete">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+            {{/todos}}
+
+            {{^todos}}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <p style="font-size: 18px;">아직 등록된 미션이 없습니다.</p>
+                            <p style="font-size: 14px; margin-top: 8px;">새로운 목표를 설정하고 팀을 자극해보세요.</p>
+                        </div>
+                    </td>
+                </tr>
+            {{/todos}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    function toggleTodo(id) {
+        // 실제 API 연동 시 fetch 사용
+        console.log("미션 완료 상태 토글: " + id);
+        // location.reload(); // 예시: 상태 변경 후 새로고침
+    }
+</script>

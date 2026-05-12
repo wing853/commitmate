@@ -1,5 +1,6 @@
 package com.example.commitmate.group;
 
+import com.example.commitmate.todo.TodoService;
 import com.example.commitmate.user.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 public class GroupController {
 
     private final GroupService gs;
+    private final TodoService ts;
 
     @GetMapping("/group-list")
     public String groupListPage(Model model, HttpSession session) {
@@ -67,7 +69,7 @@ public class GroupController {
             return "redirect:/login-form";
         }
 
-        GroupResponse.UpdateDTO group = gs.findGroupById(id);
+        GroupResponse.detailDTO group = gs.findGroupById(id);
         model.addAttribute("group",group);
 
         return "group/update-form";
@@ -85,4 +87,31 @@ public class GroupController {
         return "redirect:/group-list";
     }
 
+    @PostMapping("/group/{id}/delete")
+    public String groupDeleteProc(@PathVariable("id") Integer id,
+                                  HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+
+        if (sessionUser == null) {
+            return "redirect:/login-form";
+        }
+
+        gs.deleteGroup(id,sessionUser.getId());
+
+        return "redirect:/group-list";
+    }
+
+    @GetMapping("/groups/{id}")
+    public String todoList(@PathVariable("id") Integer id,
+                           HttpSession session,
+                           Model model) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+
+        if (sessionUser == null) {
+            return "redirect:/login-form";
+        }
+        ts.showTodo();
+
+        return "todo/todo-list";
+    }
 }

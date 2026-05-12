@@ -29,17 +29,15 @@ public class GroupResponse {
     }
 
     @Data
-    public static class UpdateDTO {
+    public static class detailDTO {
         private Integer id;
         private String roomName;
         private String description;
 
-        public UpdateDTO(Group group) {
+        public detailDTO(Group group) {
             this.id = group.getId();
             this.roomName = group.getRoomName();
             this.description = group.getDescription();
         }
-
-
     }
 }

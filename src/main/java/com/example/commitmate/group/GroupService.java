@@ -4,7 +4,6 @@ import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import com.example.commitmate.groupmember.GroupRole;
 import com.example.commitmate.user.User;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,12 +56,12 @@ public class GroupService {
         return groupEntity;
     }
 
-    public GroupResponse.UpdateDTO findGroupById(Integer id) {
+    public GroupResponse.detailDTO findGroupById(Integer id) {
         Group group = gr.findById(id).orElseThrow(
                 () -> new RuntimeException("해당 그룹을 찾을 수 없습니다")
         );
 
-        return new GroupResponse.UpdateDTO(group);
+        return new GroupResponse.detailDTO(group);
     }
 
     @Transactional
@@ -72,5 +71,24 @@ public class GroupService {
         );
 
         group.update(updateDTO.getRoomName(),updateDTO.getDescription());
+    }
+
+    @Transactional
+    public void deleteGroup(Integer groupId, Integer userId) {
+
+        Group group = gr.findById(groupId).orElseThrow(
+                () -> new RuntimeException("해당 그룹을 찾을 수 없습니다.")
+        );
+
+        GroupMember member = gmr.findByGroupIdAndUserId(groupId,userId).orElseThrow(
+                () -> new RuntimeException("해당 그룹의 멤버가 아닙니다")
+        );
+
+        if(member.getRole() != GroupRole.ADMIN) {
+            throw new RuntimeException("삭제 권한이 없습니다.");
+        }
+
+        gmr.deleteByGroupId(groupId);
+        gr.delete(group);
     }
 }
