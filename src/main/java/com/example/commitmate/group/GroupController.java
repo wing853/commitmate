@@ -52,13 +52,14 @@ public class GroupController {
                                       Model model) {
 
         GroupResponse.detailDTO group = gs.findGroupById(id);
-        model.addAttribute("group",group);
+        model.addAttribute("groups",group);
 
         return "group/update-form";
     }
 
     @PostMapping("/groups/{id}/update")
-    public String groupUpdateProc(@PathVariable("id") Integer id, GroupRequest.UpdateDTO updateDTO) {
+    public String groupUpdateProc(@PathVariable("id") Integer id,
+                                  GroupRequest.UpdateDTO updateDTO) {
 
         updateDTO.validate();
         gs.updateGroup(id,updateDTO);

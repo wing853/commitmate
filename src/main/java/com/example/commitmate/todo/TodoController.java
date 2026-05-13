@@ -57,4 +57,16 @@ public class TodoController {
 
         return "redirect:/groups/" + groupId;
     }
+
+    @GetMapping("/todo/{id}/toggle")
+    public String todoToggle(@PathVariable("id")Integer id,
+                             Integer groupId,
+                             HttpSession session) {
+
+        User sissionUser = (User) session.getAttribute("sessionUser");
+
+        ts.toggleDone(id,sissionUser.getId());
+
+        return "redirect:/groups/" + groupId;
+    }
 }

@@ -50,7 +50,6 @@ public class GroupService {
                 .user(sessionUser)
                 .group(groupEntity)
                 .role(GroupRole.ADMIN)
-                .achievementRate(0.0)
                 .build();
                 new GroupMember();
         gmr.save(manager); // GroupMemberRepository를 통해 저장
@@ -90,7 +89,7 @@ public class GroupService {
             throw new RuntimeException("삭제 권한이 없습니다.");
         }
 
-        tr.deleteByGroupId(groupId);
+        tr.deleteByGroupMember_Group_Id(groupId);
         gmr.deleteByGroupId(groupId);
         gr.delete(group);
     }

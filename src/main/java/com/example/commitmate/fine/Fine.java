@@ -21,11 +21,9 @@ public class Fine {
     private Integer amount;
 
     // 벌금 상태 (SQL의 status - 예: UNPAID, PAID)
-    @Column(nullable = false)
     private String status;
 
     // 생성 시간 (SQL의 created_at)
-    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -35,7 +33,13 @@ public class Fine {
     @Builder
     public Fine(Integer amount, String status, LocalDateTime createdAt, GroupMember groupMember) {
         this.amount = amount;
+        if(status == null) {
+            status = "NotPaid";
+        }
         this.status = status;
+        if(createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
         this.createdAt = createdAt;
         this.groupMember = groupMember;
     }

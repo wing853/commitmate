@@ -2,11 +2,10 @@ package com.example.commitmate.todo;
 
 import com.example.commitmate.fine.Fine;
 import com.example.commitmate.group.Group;
+import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.user.User;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -24,16 +23,14 @@ public class Todo {
     private boolean isDone;
     @CreationTimestamp
     private Timestamp createdAt;
+    @CreationTimestamp
+    private Timestamp deadline;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id")
-    private Group group;
+    @JoinColumn(name = "group_member_id")
+    private GroupMember groupMember;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name="fine_id")
     private Fine fine;
 
@@ -42,14 +39,20 @@ public class Todo {
         return new SimpleDateFormat("yyyy.MM.dd HH:mm").format(createdAt);
     }
 
+    public String getFormatDeadline() {
+        if (createdAt == null) return "";
+        return new SimpleDateFormat("yyyy.MM.dd HH:mm").format(deadline);
+    }
+
     @Builder
-    public Todo(Integer id, String work, boolean isDone, Timestamp createdAt, Group group, User user, Fine fine) {
+    public Todo(Integer id, String work, boolean isDone, Timestamp createdAt,
+                Timestamp deadline, GroupMember groupMember, Fine fine) {
         this.id = id;
         this.work = work;
         this.isDone = isDone;
         this.createdAt = createdAt;
-        this.group = group;
-        this.user = user;
+        this.deadline = deadline;
+        this.groupMember = groupMember;
         this.fine = fine;
     }
 }

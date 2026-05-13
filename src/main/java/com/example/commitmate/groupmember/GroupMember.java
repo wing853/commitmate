@@ -21,14 +21,14 @@ public class GroupMember {
     private Group group;
     @Enumerated(EnumType.STRING)
     private GroupRole role;
-    private Double achievementRate;
+
 
     @Builder
-    public GroupMember(Integer id, User user, Group group, GroupRole role, Double achievementRate) {
+    public GroupMember(Integer id, User user, Group group, GroupRole role) {
         this.id = id;
         this.user = user;
         this.group = group;
         this.role = role;
-        this.achievementRate = achievementRate;
+
     }
 }
