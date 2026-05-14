@@ -1,7 +1,6 @@
 {{> layout/header}}
 
 <style>
-    /* [Layout] 페이지 전체 배경 및 레이아웃 */
     .todo-page-container {
         width: 100%;
         min-height: calc(100vh - 70px);
@@ -11,7 +10,6 @@
         overflow: hidden;
     }
 
-    /* [Header Area] 상단 타이틀 및 추가 버튼 섹션 */
     .mission-status-board {
         display: flex;
         justify-content: space-between;
@@ -30,8 +28,12 @@
         color: var(--accent);
     }
 
-    /* 새 미션 추가 버튼 (Card Style) */
-    .btn-add-mission-card {
+    .header-btn-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-action-card {
         display: flex;
         align-items: center;
         gap: 15px;
@@ -43,16 +45,14 @@
         transition: 0.3s;
     }
 
-    .btn-add-mission-card:hover {
+    .btn-action-card:hover {
         background: rgba(255, 255, 255, 0.08);
-        border-color: var(--accent);
         transform: translateY(-3px);
     }
 
-    .plus-box {
+    .icon-box {
         width: 32px;
         height: 32px;
-        background: var(--accent);
         border-radius: 8px;
         display: flex;
         align-items: center;
@@ -61,11 +61,14 @@
         color: white;
     }
 
-    .add-text-group { display: flex; flex-direction: column; }
-    .add-text-main { color: #fff; font-weight: 700; font-size: 15px; }
-    .add-text-sub { color: var(--text-muted); font-size: 12px; }
+    .bg-accent {
+        background: var(--accent);
+    }
 
-    /* [Main Card] 미션 리스트 카드 */
+    .bg-danger {
+        background: var(--danger);
+    }
+
     .todo-main-card {
         background: #0a0a0a;
         border: 1px solid var(--border);
@@ -86,8 +89,7 @@
     }
 
     .todo-row:hover {
-        background: rgba(255, 255, 255, 0.05);
-        transform: scale(1.01);
+        transform: translateY(-2px);
     }
 
     .todo-row td {
@@ -97,10 +99,19 @@
         vertical-align: middle;
     }
 
-    .todo-row td:first-child { border-left: 1px solid var(--border); border-radius: 20px 0 0 20px; padding-left: 25px; }
-    .todo-row td:last-child { border-right: 1px solid var(--border); border-radius: 0 20px 20px 0; padding-right: 25px; }
+    .todo-row td:first-child {
+        border-left: 1px solid var(--border);
+        border-radius: 20px 0 0 20px;
+        padding-left: 25px;
+    }
 
-    /* [Elements] 내부 요소 디테일 */
+    .todo-row td:last-child {
+        border-right: 1px solid var(--border);
+        border-radius: 0 20px 20px 0;
+        padding-right: 25px;
+    }
+
+    /* 체크박스 */
     .check-wrapper {
         width: 28px;
         height: 28px;
@@ -113,16 +124,25 @@
         transition: 0.2s;
     }
 
+    /* 완료 */
     .completed .check-wrapper {
         background: var(--accent);
         border-color: var(--accent);
+    }
+
+    /* X 아이콘 */
+    .expired-x {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .user-badge {
         font-weight: 700;
         color: var(--accent);
         font-size: 15px;
-        letter-spacing: -0.5px;
     }
 
     .todo-text {
@@ -136,35 +156,90 @@
         text-decoration: line-through;
     }
 
-    /* 날짜 디자인 */
-    .date-label { font-size: 10px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; }
-    .todo-date-text { color: #888; font-size: 14px; font-weight: 500; }
+    .date-label {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-weight: 800;
+        text-transform: uppercase;
+    }
 
-    /* 벌금 뱃지 디자인 */
+    .todo-date-text {
+        color: #888;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .overdue-text {
+        color: var(--danger) !important;
+        font-weight: 700;
+    }
+
+    /* 상태 배지 */
     .penalty-badge {
         display: inline-flex;
         flex-direction: column;
         align-items: flex-end;
     }
 
-    .fine-label { font-size: 9px; font-weight: 900; margin-bottom: 4px; }
-    .penalty-badge:not(.free) .fine-label { color: var(--danger); }
-    .penalty-badge.free .fine-label { color: #444; }
+    .fine-label {
+        font-size: 9px;
+        font-weight: 900;
+        margin-bottom: 4px;
+    }
 
-    .fine-val { color: var(--danger); font-size: 18px; font-weight: 800; }
-    .free-val { color: #333; font-size: 18px; font-weight: 800; }
+    .penalty-badge:not(.free):not(.complete-badge) .fine-label {
+        color: var(--danger);
+    }
 
-    /* 삭제 버튼 */
-    .btn-todo-delete {
+    .fine-val {
+        color: var(--danger);
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    /* FREE 상태 */
+    .penalty-badge.free .free-label {
+        color: #00d68f;
+    }
+
+    .penalty-badge.free .free-text {
+        color: #00d68f;
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    /* COMPLETE 상태 */
+    .complete-badge .fine-label {
+        color: #4da3ff;
+    }
+
+    .complete-text {
+        color: #4da3ff;
+        font-size: 15px;
+        font-weight: 900;
+    }
+
+    /* 버튼 */
+    .btn-todo-action {
         background: transparent;
         border: 1px solid #222;
-        color: #444;
-        padding: 8px 16px;
+        color: #666;
+        padding: 8px 14px;
         border-radius: 10px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-todo-edit:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(99, 102, 241, 0.08);
     }
 
     .btn-todo-delete:hover {
@@ -179,109 +254,295 @@
 <main class="todo-page-container">
     <div class="container">
 
-        <!-- 상단 헤더 -->
+        <!-- 헤더 -->
         <div class="mission-status-board">
+
             <div class="mission-title-area">
                 <h1>📋 Group <span>Mission</span></h1>
                 <p>팀의 목표를 관리하고 달성률을 높이세요.</p>
             </div>
 
-            {{#todoList.0.groupMember.group.id}}
-                <a href="/groups/{{todoList.0.groupMember.group.id}}/todo-form" class="btn-add-mission-card">
-                    <div class="plus-box">+</div>
-                    <div class="add-text-group">
-                        <span class="add-text-main">새 미션 추가</span>
-                        <span class="add-text-sub">목표 설계하기</span>
-                    </div>
-                </a>
-            {{/todoList.0.groupMember.group.id}}
+            <div class="header-btn-group">
+
+                <!-- todo 존재 -->
+                {{#todoList.0}}
+
+                    <a href="/groups/{{groupMember.group.id}}/fines"
+                       class="btn-action-card">
+
+                        <div class="icon-box bg-danger">₩</div>
+
+                        <div class="add-text-group">
+                            <span style="color: #fff; font-weight: 700; font-size: 15px;">
+                                벌금 현황
+                            </span>
+                        </div>
+
+                    </a>
+
+                    <a href="/groups/{{groupMember.group.id}}/todo-form"
+                       class="btn-action-card">
+
+                        <div class="icon-box bg-accent">+</div>
+
+                        <div class="add-text-group">
+                            <span style="color: #fff; font-weight: 700; font-size: 15px;">
+                                새 미션 추가
+                            </span>
+                        </div>
+
+                    </a>
+
+                {{/todoList.0}}
+
+                <!-- 새 방 -->
+                {{^todoList.0}}
+
+                    <a href="/groups/{{id}}/fines"
+                       class="btn-action-card">
+
+                        <div class="icon-box bg-danger">₩</div>
+
+                        <div class="add-text-group">
+                            <span style="color: #fff; font-weight: 700; font-size: 15px;">
+                                벌금 현황
+                            </span>
+                        </div>
+
+                    </a>
+
+                    <a href="/groups/{{id}}/todo-form"
+                       class="btn-action-card">
+
+                        <div class="icon-box bg-accent">+</div>
+
+                        <div class="add-text-group">
+                            <span style="color: #fff; font-weight: 700; font-size: 15px;">
+                                새 미션 추가
+                            </span>
+                        </div>
+
+                    </a>
+
+                {{/todoList.0}}
+
+            </div>
         </div>
 
-        <!-- 메인 리스트 카드 -->
+        <!-- 메인 -->
         <div class="todo-main-card">
+
             <table class="todo-table">
                 <tbody>
+
                 {{#todoList}}
-                    <tr class="todo-row {{#isDone}}completed{{/isDone}}">
-                        <!-- 체크박스 -->
+
+                    <tr class="todo-row {{#isDone}}completed{{/isDone}} {{#isExpired}}overdue{{/isExpired}}">
+
+                        <!-- 체크 -->
                         <td style="width: 70px;">
-                            <div class="check-wrapper" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
-                                {{#isDone}}
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+
+                            <!-- 완료 -->
+                            {{#isDone}}
+
+                                <div class="check-wrapper"
+                                     onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
+
+                                    <svg width="14"
+                                         height="14"
+                                         viewBox="0 0 24 24"
+                                         fill="none"
+                                         stroke="white"
+                                         stroke-width="4"
+                                         stroke-linecap="round"
+                                         stroke-linejoin="round">
+
                                         <polyline points="20 6 9 17 4 12"></polyline>
+
                                     </svg>
-                                {{/isDone}}
-                            </div>
+
+                                </div>
+
+                            {{/isDone}}
+
+                            <!-- 미완료 -->
+                            {{^isDone}}
+
+                                <!-- 기한 초과 -->
+                                {{#isExpired}}
+
+                                    <div class="expired-x">
+
+                                        <svg width="22"
+                                             height="22"
+                                             viewBox="0 0 24 24"
+                                             fill="none"
+                                             stroke="#ff4d4d"
+                                             stroke-width="3"
+                                             stroke-linecap="round"
+                                             stroke-linejoin="round">
+
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+
+                                        </svg>
+
+                                    </div>
+
+                                {{/isExpired}}
+
+                                <!-- 일반 -->
+                                {{^isExpired}}
+
+                                    <div class="check-wrapper"
+                                         onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
+                                    </div>
+
+                                {{/isExpired}}
+
+                            {{/isDone}}
+
                         </td>
 
-                        <!-- 담당자 -->
+                        <!-- 유저 -->
                         <td style="width: 140px;">
-                            <span class="user-badge">@ {{groupMember.user.nickname}}</span>
+                            <span class="user-badge">
+                                @ {{groupMember.user.nickname}}
+                            </span>
                         </td>
 
-                        <!-- 미션 내용 -->
+                        <!-- 할 일 -->
                         <td>
-                            <span class="todo-text">{{work}}</span>
+                            <span class="todo-text">
+                                {{work}}
+                            </span>
                         </td>
 
-                        <!-- 할당 날짜 -->
-                        <td style="width: 180px;">
-                            <div class="todo-date-wrapper">
-                                <p class="date-label">Assigned Date</p>
-                                <span class="todo-date-text">{{formatCreatedAt}}</span>
-                            </div>
-                        </td>
+                        <!-- 날짜 -->
+                        <td style="width: 160px;">
 
-                        <td style="width: 180px;">
                             <div class="todo-date-wrapper">
+
                                 <p class="date-label">Deadline</p>
-                                <span class="todo-date-text">{{formatDeadline}}</span>
+
+                                <span class="todo-date-text {{#isExpired}}overdue-text{{/isExpired}}">
+                                    {{formatDeadline}}
+                                </span>
+
                             </div>
+
                         </td>
 
-                        <!-- 벌금 상태 -->
-                        <td style="width: 180px; text-align: right;">
-                            {{#fine}}
-                                <div class="penalty-badge">
-                                    <span class="fine-label">PAYMENT DUE</span>
-                                    <span class="fine-val">₩{{amount}}</span>
+                        <!-- 상태 -->
+                        <td style="width: 220px; text-align: right;">
+
+                            {{#isDone}}
+
+                                <div class="penalty-badge complete-badge">
+
+                                    <span class="fine-label">
+                                        STATUS
+                                    </span>
+
+                                    <span class="fine-val complete-text">
+                                        COMPLETE
+                                    </span>
+
                                 </div>
-                            {{/fine}}
-                            {{^fine}}
-                                <div class="penalty-badge free">
-                                    <span class="fine-label">NO PENALTY</span>
-                                    <span class="free-val">FREE</span>
-                                </div>
-                            {{/fine}}
+
+                            {{/isDone}}
+
+                            {{^isDone}}
+
+                                {{#fine.hasAmount}}
+
+                                    <div class="penalty-badge">
+
+                                        <span class="fine-label">
+                                            PAYMENT DUE
+                                        </span>
+
+                                        <span class="fine-val">
+                                            ₩{{fine.amount}}
+                                        </span>
+
+                                    </div>
+
+                                {{/fine.hasAmount}}
+
+                                {{^fine.hasAmount}}
+
+                                    {{^isExpired}}
+
+                                        <div class="penalty-badge free">
+
+                                            <span class="fine-label free-label">
+                                                STATUS
+                                            </span>
+
+                                            <span class="fine-val free-text">
+                                                NOT PENALTY FREE
+                                            </span>
+
+                                        </div>
+
+                                    {{/isExpired}}
+
+                                {{/fine.hasAmount}}
+
+                            {{/isDone}}
+
                         </td>
 
-                        <!-- 삭제 관리 -->
-                        <td style="width: 100px; text-align: right;">
-                            <form action="/todo/{{id}}/delete" method="post" onsubmit="return confirm('미션을 삭제할까요?');">
-                                <input type="hidden" name="groupId" value="{{groupMember.group.id}}">
-                                <button type="submit" class="btn-todo-delete">삭제</button>
-                            </form>
+                        <!-- 버튼 -->
+                        <td style="width: 220px; text-align: right;">
+
+                            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+
+                                <!-- 수정 -->
+                                <a href="/todo/{{id}}/edit?groupId={{groupMember.group.id}}"
+                                class="btn-todo-action btn-todo-edit">
+
+                                수정
+
+                                </a>
+
+                                <!-- 삭제 -->
+                                <form action="/todo/{{id}}/delete"
+                                      method="post"
+                                      onsubmit="return confirm('미션을 삭제할까요?');">
+
+                                    <input type="hidden"
+                                           name="groupId"
+                                           value="{{groupMember.group.id}}">
+
+                                    <button type="submit"
+                                            class="btn-todo-action btn-todo-delete">
+
+                                        삭제
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
                         </td>
+
                     </tr>
+
                 {{/todoList}}
 
-                {{^todoList}}
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 100px 0; color: #444;">
-                            <p style="font-size: 20px; font-weight: 600;">등록된 미션이 없습니다.</p>
-                        </td>
-                    </tr>
-                {{/todoList}}
                 </tbody>
             </table>
+
         </div>
+
     </div>
 </main>
 
 <script>
     function toggleTodo(todoId, groupId) {
-        // 부드러운 사용자 경험을 위해 즉시 반영되는 것처럼 보이게 할 수도 있지만,
-        // 현재는 서버로 이동하여 상태를 변경합니다.
         location.href = `/todo/${todoId}/toggle?groupId=${groupId}`;
     }
 </script>

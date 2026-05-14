@@ -1,14 +1,16 @@
 package com.example.commitmate.fine;
 
 import com.example.commitmate.groupmember.GroupMember;
+import com.example.commitmate.todo.Todo;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="fine_tb")
+@Table(name = "fine_tb")
 @Data
 @NoArgsConstructor
 public class Fine {
@@ -30,17 +32,33 @@ public class Fine {
     @JoinColumn(name = "group_member_id") // 외래키 컬럼명 명시
     private GroupMember groupMember;
 
+    @OneToOne(mappedBy = "fine")
+    private Todo todo;
+
     @Builder
     public Fine(Integer amount, String status, LocalDateTime createdAt, GroupMember groupMember) {
+        if(amount == null) {
+            amount = 0;
+        }
         this.amount = amount;
-        if(status == null) {
-            status = "NotPaid";
+        if (status == null) {
+            status = "UNPAID";
         }
         this.status = status;
-        if(createdAt == null) {
+        if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
         this.createdAt = createdAt;
         this.groupMember = groupMember;
+    }
+
+    public boolean isHasAmount() {
+        return this.amount != null && this.amount > 0;
+    }
+
+    public boolean isExpired() {
+        return (this.todo != null &&
+                this.todo.getDeadline() != null &&
+                LocalDateTime.now().isAfter(this.todo.getDeadline().toLocalDateTime()));
     }
 }

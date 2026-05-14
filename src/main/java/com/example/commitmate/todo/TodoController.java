@@ -6,10 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -26,19 +23,23 @@ public class TodoController {
         User sessionUser = (User) session.getAttribute("sessionUser");
         model.addAttribute("groupId", groupId);
         model.addAttribute("sessionUser", sessionUser);
-        ;
+
+
         return "todo/save-form";
     }
 
 
     @PostMapping("/groups/{groupId}/todo/save")
     public String saveTodoProc(@PathVariable("groupId") Integer groupId,
-                               HttpSession session,
-                               TodoRequest.AddDTO addDTO) {
+                               @ModelAttribute TodoRequest.AddDTO addDTO,
+                               HttpSession session
+
+                              ) {
         User sessionUser = (User) session.getAttribute("sessionUser");
 
         addDTO.setGroupId(groupId);
         addDTO.setUserId(sessionUser.getId());
+
 
         ts.addTodo(addDTO);
 

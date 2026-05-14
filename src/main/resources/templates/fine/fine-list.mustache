@@ -1,0 +1,179 @@
+{{> layout/header}}
+
+<style>
+    .fine-page-container {
+        width: 100%;
+        min-height: calc(100vh - 70px);
+        background-color: var(--bg);
+        padding: 60px 0;
+    }
+
+    /* 상단 대시보드 카드 */
+    .fine-summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .summary-card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+    }
+
+    .summary-label { color: var(--text-muted); font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; display: block; }
+    .summary-value { font-size: 32px; font-weight: 850; letter-spacing: -1px; }
+    .summary-value span { font-size: 16px; color: var(--text-muted); margin-left: 5px; }
+
+    /* 리스트 영역 */
+    .fine-main-card {
+        background: #0a0a0a;
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 30px;
+        box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+    }
+
+    .fine-list-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .fine-list-header h2 { font-size: 22px; font-weight: 700; }
+
+    .fine-table { width: 100%; border-collapse: collapse; }
+    .fine-table th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 800; }
+    .fine-table td { padding: 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
+
+    /* 상태별 뱃지 스타일 */
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 800;
+        display: inline-block;
+        text-transform: uppercase;
+    }
+    /* 서버에서 내려오는 status 문자열에 맞춰 매핑 */
+    .status-UNPAID { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid rgba(255, 77, 77, 0.2); }
+    .status-PENDING { background: rgba(99, 102, 241, 0.1); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.2); }
+    .status-PAID { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+
+    .user-badge { font-weight: 700; color: var(--accent); font-size: 14px; }
+
+    .btn-approve {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-approve:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+    .receipt-link {
+        color: var(--text-muted);
+        text-decoration: underline;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .receipt-link:hover { color: #fff; }
+</style>
+
+<div class="spotlight"></div>
+
+<main class="fine-page-container">
+    <div class="container">
+
+        <div class="mission-title-area" style="margin-bottom: 40px;">
+            <p style="color: var(--accent); font-weight: 800; margin-bottom: 5px;">FINANCIAL REPORT</p>
+            <h1>💰 벌금 <span>현황 관리</span></h1>
+        </div>
+
+        <!-- 요약 정보 대시보드 -->
+        <div class="fine-summary-grid">
+            <div class="summary-card">
+                <span class="summary-label">미납/대기 건수</span>
+                <!-- 서버에서 필터링된 expiredFines를 보낸다면 size가 정확해집니다 -->
+                <div class="summary-value" style="color: var(--accent);">{{fines.size}}<span>건</span></div>
+            </div>
+
+            <div class="summary-card">
+                <span class="summary-label">총 벌금 액수</span>
+                <div class="summary-value" style="color: var(--danger);">
+                    ₩ {{#totalFineAmount}}{{totalFineAmount}}{{/totalFineAmount}}{{^totalFineAmount}}0{{/totalFineAmount}}
+                </div>
+            </div>
+        </div>
+
+        <div class="fine-main-card">
+            <div class="fine-list-header">
+                <h2>전체 내역</h2>
+                <div style="font-size: 14px; color: var(--text-muted);">
+                    청구된 내역 총 {{fines.size}}건
+                </div>
+            </div>
+
+            <table class="fine-table">
+                <thead>
+                <tr>
+                    <th>수행자</th>
+                    <th>미션 내용</th>
+                    <th>벌금 액수</th>
+                    <th>상태</th>
+                    <th style="text-align: right;">관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#fines}}
+                    <tr>
+                        <td><span class="user-badge">@ {{todo.groupMember.user.nickname}}</span></td>
+                        <td><span style="color: #eee;">{{todo.work}}</span></td>
+                        <td><span style="font-weight: 700;">₩ {{amount}}</span></td>
+                        <td>
+                            <!-- 클래스명을 status-{{status}}로 동적 할당 (ex: status-PAID) -->
+                            <span class="status-badge status-{{status}}">{{status}}</span>
+                        </td>
+
+                        <td style="text-align: right;">
+                            {{#isPending}}
+                                <form action="/fines/{{id}}/approve" method="post" style="display: inline;">
+                                    <button type="submit" class="btn-approve">입금 승인</button>
+                                </form>
+                            {{/isPending}}
+
+                            {{#isPaid}}
+                                <span class="receipt-link">영수증 보기</span>
+                            {{/isPaid}}
+
+                            {{#isUnpaid}}
+                                <span class="receipt-link" style="opacity: 0.5;">내역 없음</span>
+                            {{/isUnpaid}}
+                        </td>
+                    </tr>
+                {{/fines}}
+
+                {{^fines}}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 100px 0; color: #444;">
+                            정산할 벌금 내역이 없습니다.
+                        </td>
+                    </tr>
+                {{/fines}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+{{> layout/footer}}

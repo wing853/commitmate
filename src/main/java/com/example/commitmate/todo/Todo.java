@@ -1,15 +1,17 @@
 package com.example.commitmate.todo;
 
 import com.example.commitmate.fine.Fine;
-import com.example.commitmate.group.Group;
 import com.example.commitmate.groupmember.GroupMember;
-import com.example.commitmate.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -23,7 +25,8 @@ public class Todo {
     private boolean isDone;
     @CreationTimestamp
     private Timestamp createdAt;
-    @CreationTimestamp
+    @Column(name = "deadline")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private Timestamp deadline;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -39,8 +42,18 @@ public class Todo {
         return new SimpleDateFormat("yyyy.MM.dd HH:mm").format(createdAt);
     }
 
+    public String getDeadlineForInput() {
+        if (deadline == null) return "";
+
+        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm")
+                .format(deadline);
+    }
+
+
     public String getFormatDeadline() {
-        if (createdAt == null) return "";
+        if (deadline == null){
+            return "";
+        }
         return new SimpleDateFormat("yyyy.MM.dd HH:mm").format(deadline);
     }
 
@@ -54,5 +67,13 @@ public class Todo {
         this.deadline = deadline;
         this.groupMember = groupMember;
         this.fine = fine;
+    }
+
+    public boolean isExpired() {
+        if (this.deadline == null || this.isDone) {
+            return false;
+        }
+
+        return LocalDateTime.now().isAfter(this.deadline.toLocalDateTime());
     }
 }

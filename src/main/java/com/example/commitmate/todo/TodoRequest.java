@@ -21,8 +21,7 @@ public class TodoRequest {
         private Integer userId;  // 담당자 ID
         private Integer groupId; // 속한 그룹 ID
         private Integer amount;
-        @CreationTimestamp
-        private Timestamp deadLine;
+        private String deadline;
 
         // 빌더 패턴을 사용할 엔티티 변환 메서드
         // fine은 아직 없으므로 파라미터에서 제외하거나 null로 설정
@@ -30,12 +29,24 @@ public class TodoRequest {
             Fine newFine = Fine.builder()
                     .amount(this.amount)
                     .build();
+
+            Timestamp tsDeadline = null;
+            if(deadline!=null && !deadline.isBlank()) {
+                try {
+                    String formatted = this.deadline.replace("T", " ");
+                    if (formatted.length() == 16) formatted += ":00";
+                    tsDeadline = java.sql.Timestamp.valueOf(formatted);
+                } catch (Exception e) {
+                    System.out.println("날짜 변환 에러: " + e.getMessage());
+                }
+            }
+
             return Todo.builder()
                     .work(this.work)
                     .groupMember(groupMember)
                     .fine(newFine)
                     .isDone(false) // 생성 시 기본값
-                    .deadline(this.deadLine)
+                    .deadline(tsDeadline)
                     .build();
         }
     }
