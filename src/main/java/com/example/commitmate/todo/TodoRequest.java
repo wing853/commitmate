@@ -45,7 +45,7 @@ public class TodoRequest {
                     .work(this.work)
                     .groupMember(groupMember)
                     .fine(newFine)
-                    .isDone(false) // 생성 시 기본값
+                    .status(TodoStatus.READY) // 생성 시 기본값
                     .deadline(tsDeadline)
                     .build();
         }

@@ -22,7 +22,8 @@ public class Todo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String work;
-    private boolean isDone;
+    @Enumerated(EnumType.STRING)
+    private TodoStatus status;
     @CreationTimestamp
     private Timestamp createdAt;
     @Column(name = "deadline")
@@ -58,22 +59,38 @@ public class Todo {
     }
 
     @Builder
-    public Todo(Integer id, String work, boolean isDone, Timestamp createdAt,
+    public Todo(Integer id, String work, TodoStatus status, Timestamp createdAt,
                 Timestamp deadline, GroupMember groupMember, Fine fine) {
         this.id = id;
         this.work = work;
-        this.isDone = isDone;
+        this.status = status;
         this.createdAt = createdAt;
         this.deadline = deadline;
         this.groupMember = groupMember;
         this.fine = fine;
     }
 
-    public boolean isExpired() {
-        if (this.deadline == null || this.isDone) {
-            return false;
+    public void updateStatus() {
+        if (this.status == TodoStatus.FINISH) {
+            return;
         }
 
-        return LocalDateTime.now().isAfter(this.deadline.toLocalDateTime());
+        if (this.deadline != null &&
+                LocalDateTime.now().isAfter(this.deadline.toLocalDateTime())) {
+
+            this.status = TodoStatus.EXPIRED;
+        }
+    }
+
+    public boolean isComplete() {
+        return this.status == TodoStatus.FINISH;
+    }
+
+    public boolean isReady() {
+        return this.status == TodoStatus.READY;
+    }
+
+    public boolean isExpired() {
+        return this.status == TodoStatus.EXPIRED;
     }
 }

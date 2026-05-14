@@ -24,4 +24,6 @@ public interface TodoRepository extends JpaRepository<Todo,Integer> {
     @Modifying
     @Transactional
     void deleteByGroupMember_Group_Id(Integer groupId);
+
+    List<Todo> findByGroupMember_Group_IdAndGroupMember_User_Id(Integer groupId, Integer userId);
 }

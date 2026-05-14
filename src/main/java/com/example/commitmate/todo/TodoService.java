@@ -47,6 +47,7 @@ public class TodoService {
 
     @Transactional
     public void toggleDone(Integer id, Integer userId) {
+
         Todo todo = tr.findById(id).orElseThrow(
                 () -> new RuntimeException("미션을 찾을 수 없습니다")
         );
@@ -55,6 +56,22 @@ public class TodoService {
             throw new RuntimeException("자신의 일정이 아닙니다");
         }
 
-        todo.setDone(!todo.isDone());
+        // 기한 초과 상태면 클릭 막기
+        if (todo.getStatus() == TodoStatus.EXPIRED) {
+            throw new RuntimeException("기한이 지난 미션입니다");
+        }
+
+        // COMPLETE <-> PENDING 토글
+        if (todo.getStatus() == TodoStatus.FINISH) {
+            todo.setStatus(TodoStatus.READY);
+        } else {
+            todo.setStatus(TodoStatus.FINISH);
+        }
+    }
+
+    public List<Todo> findMyTodos(Integer groupId, Integer userId) {
+        List<Todo> todoList = tr.findByGroupMember_Group_IdAndGroupMember_User_Id(groupId,userId);
+
+        return todoList;
     }
 }
