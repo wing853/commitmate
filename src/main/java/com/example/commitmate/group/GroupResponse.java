@@ -11,8 +11,6 @@ public class GroupResponse {
         private String roomName;
         private String description;
         private String createdAt;
-        // 추후 추가 예정인 필드들 (현재는 기본값)
-        private Double achievementRate = 0.0;
         private boolean isManager;
 
         public MyGroupDTO(Group group, boolean isManager) {

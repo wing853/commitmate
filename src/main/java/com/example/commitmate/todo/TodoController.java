@@ -1,5 +1,6 @@
 package com.example.commitmate.todo;
 
+import com.example.commitmate.core.errors.Exception403;
 import com.example.commitmate.group.GroupService;
 import com.example.commitmate.user.User;
 import com.example.commitmate.user.UserService;
@@ -74,16 +75,31 @@ public class TodoController {
     @GetMapping("/groups/{groupId}/todos/{todoId}/update-form")
     public String updateTodoFormPage(@PathVariable("groupId") Integer groupId,
                                      @PathVariable("todoId") Integer todoId,
-                                     Model model) {
+                                     Model model,
+                                     HttpSession session) {
 
+        User sessionUser = (User) session.getAttribute("sessionUser");
         Todo todo = ts.findTodo(todoId);
 
+        if(!todo.getGroupMember().getUser().getId().equals(sessionUser.getId())) {
+            throw new Exception403("수정 권한이 없습니다.");
+        }
         model.addAttribute("groupId",groupId);
         model.addAttribute("todo", todo);
 
         return "todo/update-form";
     }
 
+    @PostMapping("/groups/{groupId}/todos/{todoId}/update")
+    public String updateTodoProc(@PathVariable("groupId") Integer groupId,
+                                 @PathVariable("todoId") Integer todoId,
+                                 @ModelAttribute TodoRequest.UpdateTodoDTO updateTodoDTO,
+                                 HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        ts.updateTodo(todoId,sessionUser.getId(),updateTodoDTO);
+
+        return "redirect:/groups/" + groupId + "/todos";
+    }
 
     @PostMapping("/todo/{id}/delete")
     public String deleteTodoProc(@PathVariable("id") Integer id,

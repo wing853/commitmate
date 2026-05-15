@@ -18,6 +18,7 @@ public class TodoService {
 
     public List<Todo> showTodo(Integer groupId) {
         List<Todo> todoList = tr.findByGroupIdWithMember(groupId);
+        todoList.forEach(Todo::updateStatus);
         return todoList;
     }
 
@@ -77,7 +78,19 @@ public class TodoService {
 
     @Transactional
     public void updateTodo(Integer todoId, Integer userId, TodoRequest.UpdateTodoDTO updateTodoDTO) {
-        Todo todo = findTodo(todoId);
+        Todo todo = tr.findById(todoId).orElseThrow(
+                () -> new Exception400("미션을 찾을 수 없습니다")
+        );
+
+        if (!todo.getGroupMember().getUser().getId().equals(userId)) {
+            throw new Exception403("수정권한이 없습니다.");
+        }
+
+        if(todo.isExpired()) {
+            throw new Exception400("선택한 일정은 만료되어 수정할 수 없습니다.");
+        }
+
+        updateTodoDTO.applyTo(todo);
 
     }
 

@@ -1,341 +1,433 @@
 {{> layout/header}}
 
 <style>
-    /* 기존 스타일 유지 */
     .todo-page-container {
         width: 100%;
         min-height: calc(100vh - 70px);
         background-color: var(--bg);
-        padding: 60px 0;
+        padding: 48px 0 80px;
         position: relative;
-        overflow: hidden;
     }
 
-    .mission-status-board {
+    .mission-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 40px;
+        align-items: flex-start;
+        margin-bottom: 32px;
     }
 
-    .mission-title-area h1 {
-        font-size: 42px;
-        font-weight: 850;
-        letter-spacing: -2px;
-        margin-bottom: 10px;
+    .mission-header-left .sub-label {
+        font-size: 10px;
+        letter-spacing: 3px;
+        color: #444;
+        margin-bottom: 6px;
     }
 
-    .mission-title-area h1 span { color: var(--accent); }
+    .mission-header-left h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
 
-    .header-btn-group { display: flex; gap: 12px; }
-
-    .btn-action-card {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        background: var(--glass);
-        border: 1px solid var(--border);
-        padding: 12px 24px;
-        border-radius: 16px;
+    .unpaid-box {
+        background: transparent;
+        border: 0.5px solid #252830;
+        border-radius: 10px;
+        padding: 10px 18px;
+        text-align: right;
         text-decoration: none;
-        transition: 0.3s;
+        display: block;
+        transition: 0.2s;
+    }
+    .unpaid-box:hover { border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.04); }
+    .unpaid-box .unpaid-label {
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: #444;
+        margin-bottom: 3px;
+    }
+    .unpaid-box .unpaid-amount {
+        font-size: 14px;
+        font-weight: 600;
+        color: #888;
+        line-height: 1;
     }
 
-    .btn-action-card:hover {
-        background: rgba(255, 255, 255, 0.08);
-        transform: translateY(-3px);
+    .status-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 20px;
     }
 
-    .icon-box {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+    .status-card {
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 0.5px solid #2a2d33;
+        background: #1c1f23;
+    }
+    .status-card.complete { background: #161e18; border-color: #1e3d2a; }
+    .status-card.expired  { background: #1a1010; border-color: rgba(248,113,113,0.25); }
+    .status-card .s-label {
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: #555;
+        margin-bottom: 4px;
+    }
+    .status-card.complete .s-label { color: rgba(52,211,153,0.5); }
+    .status-card.expired  .s-label { color: rgba(248,113,113,0.5); }
+    .status-card .s-count { font-size: 20px; font-weight: 700; color: #fff; }
+    .status-card.complete .s-count { color: #34d399; }
+    .status-card.expired  .s-count { color: #f87171; }
+
+    .action-bar {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        color: white;
-    }
-
-    .bg-accent { background: var(--accent); }
-    .bg-danger { background: var(--danger); }
-
-    .todo-main-card {
-        background: #0a0a0a;
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        padding: 24px;
-        box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-    }
-
-    .todo-card-filter-area {
-        display: flex;
-        justify-content: flex-start;
-        margin-bottom: 15px;
-        padding-left: 5px;
+        gap: 8px;
+        margin-bottom: 20px;
     }
 
     .btn-filter-pill {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--border);
-        padding: 8px 18px;
+        background: #1c1f23;
+        border: 0.5px solid #2a2d33;
+        padding: 9px 18px;
         border-radius: 50px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         text-decoration: none;
     }
-
     .btn-filter-pill .dot {
         width: 6px;
         height: 6px;
-        background: #555;
+        background: #444;
         border-radius: 50%;
-        transition: 0.3s;
+        transition: 0.2s;
     }
+    .btn-filter-pill span { color: #777; font-size: 13px; font-weight: 600; }
+    .btn-filter-pill:hover { background: #22262d; border-color: #3a3d45; }
+    .btn-filter-pill.filter-active { background: rgba(77,163,255,0.08); border-color: rgba(77,163,255,0.4); }
+    .btn-filter-pill.filter-active .dot { background: #4da3ff; }
+    .btn-filter-pill.filter-active span { color: #4da3ff; }
 
-    .btn-filter-pill span {
-        color: #999;
-        font-size: 14px;
-        font-weight: 700;
+    .btn-action-link {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        border: 0.5px solid #2a2d33;
+        background: #1c1f23;
+        color: #777;
+        transition: 0.2s;
     }
+    .btn-action-link:hover { background: #22262d; color: #aaa; }
+    .btn-action-link.primary { background: #f87171; border-color: #f87171; color: #fff; }
+    .btn-action-link.primary:hover { background: #f95e5e; }
 
-    .btn-filter-pill:hover {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: #666;
+    .mission-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .mission-row {
+        border-radius: 14px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: #151618;
+        border: 0.5px solid #252830;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
     }
+    .mission-row:hover { transform: translateY(-2px); border-color: #35383f; }
+    .mission-row.complete { background: #131a15; border-color: #1a3020; opacity: 0.75; }
+    .mission-row.expired  { background: #150d0d; border-color: rgba(248,113,113,0.25); }
+    .mission-row.warning  { border-color: rgba(245,158,11,0.35); }
 
-    .btn-filter-pill.filter-active {
-        background: rgba(77, 163, 255, 0.1);
-        border-color: #4da3ff;
+    .mission-row::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        border-radius: 3px 0 0 3px;
+        background: transparent;
     }
+    .mission-row.complete::before { background: #34d399; }
+    .mission-row.expired::before  { background: #f87171; }
+    .mission-row.warning::before  { background: #f59e0b; }
 
-    .btn-filter-pill.filter-active .dot {
-        background: #4da3ff;
-        box-shadow: 0 0 8px #4da3ff;
-    }
-
-    .btn-filter-pill.filter-active span {
-        color: #4da3ff;
-    }
-
-    .todo-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 12px;
-    }
-
-    .todo-row {
-        background: rgba(255, 255, 255, 0.02);
-        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .todo-row:hover { transform: translateY(-2px); }
-
-    .todo-row td {
-        padding: 24px 15px;
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
-        vertical-align: middle;
-    }
-
-    .todo-row td:first-child {
-        border-left: 1px solid var(--border);
-        border-radius: 20px 0 0 20px;
-        padding-left: 25px;
-    }
-
-    .todo-row td:last-child {
-        border-right: 1px solid var(--border);
-        border-radius: 0 20px 20px 0;
-        padding-right: 25px;
-    }
-
-    .check-wrapper {
+    .check-box {
         width: 28px;
         height: 28px;
-        border: 2px solid #333;
-        border-radius: 10px;
+        border-radius: 8px;
+        border: 1.5px solid #2a2d33;
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
         cursor: pointer;
         transition: 0.2s;
+        margin-left: 6px;
+    }
+    .check-box:hover { border-color: #4da3ff; }
+    .check-box.done { background: #34d399; border-color: #34d399; }
+    .check-box.fail { background: #2a1010; border-color: #f87171; }
+
+    .user-badge { font-size: 12px; color: #555; width: 72px; flex-shrink: 0; }
+
+    .mission-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        min-width: 0;
     }
 
-    .completed .check-wrapper { background: var(--accent); border-color: var(--accent); }
-    .expired-x { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
-    .user-badge { font-weight: 700; color: var(--accent); font-size: 15px; }
-    .todo-text { color: #efefef; font-size: 18px; font-weight: 500; }
-    .todo-row.completed .todo-text { color: #444; text-decoration: line-through; }
-    .date-label { font-size: 10px; color: #888; font-weight: 800; text-transform: uppercase; }
-    .todo-date-text { color: #888; font-size: 14px; font-weight: 500; }
-    .overdue-text { color: var(--danger) !important; font-weight: 700; }
-    .penalty-badge { display: inline-flex; flex-direction: column; align-items: flex-end; }
-    .fine-label { font-size: 9px; font-weight: 900; margin-bottom: 4px; }
-    .fine-val { color: var(--danger); font-size: 18px; font-weight: 800; }
-    .penalty-badge.free .free-text { color: #00d68f; font-size: 15px; font-weight: 800; }
-    .complete-badge .complete-text { color: #4da3ff; font-size: 15px; font-weight: 900; }
-    .btn-todo-action { background: transparent; border: 1px solid #222; color: #666; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
-    .btn-todo-edit:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-todo-delete:hover { border-color: var(--danger); color: var(--danger); }
+    .mission-text {
+        font-size: 14px;
+        color: #e0e0e0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .mission-row.complete .mission-text { color: #3a5a42; text-decoration: line-through; }
+    .mission-row.expired  .mission-text { color: #c09090; }
+
+    .progress-wrap { display: flex; align-items: center; gap: 8px; }
+    .progress-bar-bg {
+        flex: 1;
+        height: 3px;
+        background: #222529;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .progress-bar-fill { height: 100%; border-radius: 10px; }
+    .progress-pct { font-size: 10px; color: #444; white-space: nowrap; min-width: 28px; text-align: right; }
+
+    .deadline-col { flex-shrink: 0; text-align: right; min-width: 90px; }
+    .deadline-label { font-size: 9px; letter-spacing: 1px; color: #444; margin-bottom: 3px; }
+    .deadline-val { font-size: 12px; color: #666; }
+    .deadline-val.expired { color: #f87171; font-weight: 700; }
+
+    .status-col { flex-shrink: 0; text-align: right; min-width: 90px; }
+    .status-label { font-size: 9px; letter-spacing: 1px; color: #444; margin-bottom: 3px; }
+    .status-val { font-size: 13px; font-weight: 700; }
+    .status-val.complete { color: #34d399; }
+    .status-val.expired  { color: #f87171; font-size: 18px; }
+    .status-val.fine     { color: #f87171; font-size: 16px; }
+    .status-val.free     { color: #444; }
+
+    .action-col { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-todo-action {
+        background: transparent;
+        border: 0.5px solid #252830;
+        color: #555;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-todo-edit:hover   { border-color: #4da3ff; color: #4da3ff; }
+    .btn-todo-delete:hover { border-color: #f87171; color: #f87171; }
+
+    .empty-state { text-align: center; padding: 80px 0; color: #333; font-size: 14px; }
 </style>
 
 <main class="todo-page-container">
     <div class="container">
 
-        <div class="mission-status-board">
-            <div class="mission-title-area">
-                <h1>📋 Group <span>Mission</span></h1>
-                <p>팀의 목표를 관리하고 달성률을 높이세요.</p>
+        <!-- 헤더 -->
+        <div class="mission-header">
+            <div class="mission-header-left">
+                <div class="sub-label">COMMITMATE</div>
+                <h1>{{group.roomName}}</h1>
             </div>
+            {{#todoList.0}}
+                <a href="/groups/{{groupMember.group.id}}/fines" class="unpaid-box">
+                    <div class="unpaid-label">TOTAL UNPAID →</div>
+                    <div class="unpaid-amount">벌금 현황</div>
+                </a>
+            {{/todoList.0}}
+        </div>
 
-            <div class="header-btn-group">
-                {{#todoList.0}}
-                    <a href="/groups/{{groupMember.group.id}}/fines" class="btn-action-card">
-                        <div class="icon-box bg-danger">₩</div>
-                        <div><span style="color: #fff; font-weight: 700;">벌금 현황</span></div>
-                    </a>
-                    <a href="/groups/{{groupMember.group.id}}/todo-form" class="btn-action-card">
-                        <div class="icon-box bg-accent">+</div>
-                        <div><span style="color: #fff; font-weight: 700;">새 미션 추가</span></div>
-                    </a>
-                {{/todoList.0}}
-                {{^todoList.0}}
-                    <a href="/groups/{{id}}/fines" class="btn-action-card">
-                        <div class="icon-box bg-danger">₩</div>
-                        <div><span style="color: #fff; font-weight: 700;">벌금 현황</span></div>
-                    </a>
-                    <a href="/groups/{{id}}/todo-form" class="btn-action-card">
-                        <div class="icon-box bg-accent">+</div>
-                        <div><span style="color: #fff; font-weight: 700;">새 미션 추가</span></div>
-                    </a>
-                {{/todoList.0}}
+        <!-- 상태 요약 -->
+        <div class="status-summary">
+            <div class="status-card">
+                <div class="s-label">READY</div>
+                <div class="s-count" id="cnt-ready">-</div>
+            </div>
+            <div class="status-card complete">
+                <div class="s-label">COMPLETE</div>
+                <div class="s-count" id="cnt-complete">-</div>
+            </div>
+            <div class="status-card expired">
+                <div class="s-label">EXPIRED</div>
+                <div class="s-count" id="cnt-expired">-</div>
             </div>
         </div>
 
-        <div class="todo-main-card">
-            <div class="todo-card-filter-area">
-                {{#isFiltered}}
-                    <a href="?" class="btn-filter-pill filter-active">
-                        <div class="dot"></div>
-                        <span>전체 미션 보기</span>
-                    </a>
-                {{/isFiltered}}
-                {{^isFiltered}}
-                    <a href="?filter=my" class="btn-filter-pill">
-                        <div class="dot"></div>
-                        <span>내 미션 보기</span>
-                    </a>
-                {{/isFiltered}}
-            </div>
+        <!-- 액션 바 -->
+        <div class="action-bar">
+            {{#isFiltered}}
+                <a href="?" class="btn-filter-pill filter-active">
+                    <div class="dot"></div>
+                    <span>전체 미션 보기</span>
+                </a>
+            {{/isFiltered}}
+            {{^isFiltered}}
+                <a href="?filter=my" class="btn-filter-pill">
+                    <div class="dot"></div>
+                    <span>내 미션 보기</span>
+                </a>
+            {{/isFiltered}}
 
-            <table class="todo-table">
-                <tbody id="todoTableBody">
-                {{#todoList}}
-                    <tr class="todo-row {{#isComplete}}completed{{/isComplete}} {{#isExpired}}overdue{{/isExpired}}">
-                        <td style="width: 70px;">
-                            {{#isComplete}}
-                                <div class="check-wrapper active" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white"
-                                         stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </div>
-                            {{/isComplete}}
-
-                            {{^isComplete}}
-                                {{#isExpired}}
-                                    <div class="expired-x">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d"
-                                             stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                        </svg>
-                                    </div>
-                                {{/isExpired}}
-
-                                {{#isReady}}
-                                    <div class="check-wrapper"
-                                         onclick="toggleTodo({{id}}, {{groupMember.group.id}})"></div>
-                                {{/isReady}}
-                            {{/isComplete}}
-                        </td>
-
-                        <td style="width: 140px;">
-                            <span class="user-badge">@ {{groupMember.user.nickname}}</span>
-                        </td>
-
-                        <td>
-                            <span class="todo-text">{{work}}</span>
-                        </td>
-
-                        <td style="width: 160px;">
-                            <div class="todo-date-wrapper">
-                                <p class="date-label">Deadline</p>
-                                <span class="todo-date-text {{#isExpired}}overdue-text{{/isExpired}}">
-                                    {{formatDeadline}}
-                                </span>
-                            </div>
-                        </td>
-
-                        <td style="width: 220px; text-align: right;">
-                            {{#isComplete}}
-                                <div class="penalty-badge complete-badge">
-                                    <span class="fine-label" style="color: #4da3ff;">STATUS</span>
-                                    <span class="complete-text">COMPLETE</span>
-                                </div>
-                            {{/isComplete}}
-
-                            {{^isComplete}}
-                                {{#isExpired}}
-                                    <div class="penalty-badge">
-                                        <span class="fine-label" style="color: var(--danger);">STATUS</span>
-                                        <span class="fine-val">EXPIRED</span>
-                                    </div>
-                                {{/isExpired}}
-
-                                {{#isReady}}
-                                    {{#fine}}
-                                        {{#isHasAmount}}
-                                            <div class="penalty-badge">
-                                                <span class="fine-label" style="color: var(--danger);">PAYMENT DUE</span>
-                                                <span class="fine-val">₩{{amount}}</span>
-                                            </div>
-                                        {{/isHasAmount}}
-                                        {{^isHasAmount}}
-                                            <div class="penalty-badge free">
-                                                <span class="fine-label" style="color: #777;">PAYMENT DUE</span>
-                                                <span class="free-text">NO PENALTY</span>
-                                            </div>
-                                        {{/isHasAmount}}
-                                    {{/fine}}
-                                    {{^fine}}
-                                        <div class="penalty-badge free">
-                                            <span class="fine-label" style="color: #777;">PAYMENT DUE</span>
-                                            <span class="free-text">NO PENALTY</span>
-                                        </div>
-                                    {{/fine}}
-                                {{/isReady}}
-                            {{/isComplete}}
-                        </td>
-
-                        <td style="width: 220px; text-align: right;">
-                            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                                <a href="/groups/{{groupId}}/todos/{{id}}/update-form" class="btn-todo-action btn-todo-edit">수정</a>
-                                <form action="/todo/{{id}}/delete" method="post" onsubmit="return confirm('미션을 삭제할까요?');">
-                                    <input type="hidden" name="groupId" value="{{groupMember.group.id}}">
-                                    <button type="submit" class="btn-todo-action btn-todo-delete">삭제</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {{/todoList}}
-                </tbody>
-            </table>
+            {{#todoList.0}}
+                <a href="/groups/{{groupMember.group.id}}/todo-form" class="btn-action-link primary">+ 새 미션</a>
+            {{/todoList.0}}
+            {{^todoList.0}}
+                <a href="/groups/{{group.id}}/todo-form" class="btn-action-link primary">+ 새 미션</a>
+            {{/todoList.0}}
         </div>
+
+        <!-- 미션 리스트 -->
+        <div class="mission-list" id="missionList">
+            {{#todoList}}
+                <div class="mission-row {{#isComplete}}complete{{/isComplete}}{{#isExpired}}expired{{/isExpired}}"
+                     data-status="{{#isComplete}}complete{{/isComplete}}{{#isExpired}}expired{{/isExpired}}{{#isReady}}ready{{/isReady}}">
+
+                    <!-- 체크박스 -->
+                    {{#isComplete}}
+                        <div class="check-box done" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d1f16"
+                                 stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                    {{/isComplete}}
+                    {{^isComplete}}
+                        {{#isExpired}}
+                            <div class="check-box fail">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171"
+                                     stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+                        {{/isExpired}}
+                        {{#isReady}}
+                            <div class="check-box" onclick="toggleTodo({{id}}, {{groupMember.group.id}})"></div>
+                        {{/isReady}}
+                    {{/isComplete}}
+
+                    <!-- 유저 -->
+                    <span class="user-badge">@ {{groupMember.user.nickname}}</span>
+
+                    <!-- 미션 내용 + 프로그레스 바 -->
+                    <div class="mission-content">
+                        <span class="mission-text">{{work}}</span>
+                        {{#isReady}}
+                            <div class="progress-wrap">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill"
+                                         style="width:{{deadlineProgress}}%; background:{{progressColor}};"></div>
+                                </div>
+                                <span class="progress-pct" style="color:{{progressColor}};">{{deadlineProgress}}%</span>
+                            </div>
+                        {{/isReady}}
+                        {{#isComplete}}
+                            <div class="progress-wrap">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width:100%; background:#34d399;"></div>
+                                </div>
+                                <span class="progress-pct" style="color:#34d399;">100%</span>
+                            </div>
+                        {{/isComplete}}
+                        {{#isExpired}}
+                            <div class="progress-wrap">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width:100%; background:#f87171;"></div>
+                                </div>
+                                <span class="progress-pct" style="color:#f87171;">만료</span>
+                            </div>
+                        {{/isExpired}}
+                    </div>
+
+                    <!-- 마감일 -->
+                    <div class="deadline-col">
+                        <div class="deadline-label">DEADLINE</div>
+                        <div class="deadline-val {{#isExpired}}expired{{/isExpired}}">{{getFormatDeadline}}</div>
+                    </div>
+
+                    <!-- 상태/벌금 -->
+                    <div class="status-col">
+                        {{#isComplete}}
+                            <div class="status-label">STATUS</div>
+                            <div class="status-val complete">DONE</div>
+                        {{/isComplete}}
+                        {{^isComplete}}
+                            {{#isExpired}}
+                                <div class="status-label">PENALTY</div>
+                                {{#fine}}
+                                    {{#isHasAmount}}
+                                        <div class="status-val expired">₩{{amount}}</div>
+                                    {{/isHasAmount}}
+                                    {{^isHasAmount}}
+                                        <div class="status-val expired">EXPIRED</div>
+                                    {{/isHasAmount}}
+                                {{/fine}}
+                                {{^fine}}
+                                    <div class="status-val expired">EXPIRED</div>
+                                {{/fine}}
+                            {{/isExpired}}
+                            {{#isReady}}
+                                {{#fine}}
+                                    {{#isHasAmount}}
+                                        <div class="status-label">PAYMENT DUE</div>
+                                        <div class="status-val fine">₩{{amount}}</div>
+                                    {{/isHasAmount}}
+                                    {{^isHasAmount}}
+                                        <div class="status-label">PAYMENT DUE</div>
+                                        <div class="status-val free">NO PENALTY</div>
+                                    {{/isHasAmount}}
+                                {{/fine}}
+                                {{^fine}}
+                                    <div class="status-label">PAYMENT DUE</div>
+                                    <div class="status-val free">NO PENALTY</div>
+                                {{/fine}}
+                            {{/isReady}}
+                        {{/isComplete}}
+                    </div>
+
+                    <!-- 수정/삭제 -->
+                    <div class="action-col">
+                        <a href="/groups/{{groupMember.group.id}}/todos/{{id}}/update-form"
+                           class="btn-todo-action btn-todo-edit">수정</a>
+                        <form action="/todo/{{id}}/delete" method="post" onsubmit="return confirm('미션을 삭제할까요?');"
+                              style="display:inline;">
+                            <input type="hidden" name="groupId" value="{{groupMember.group.id}}">
+                            <button type="submit" class="btn-todo-action btn-todo-delete">삭제</button>
+                        </form>
+                    </div>
+                </div>
+            {{/todoList}}
+
+            {{^todoList}}
+                <div class="empty-state">아직 미션이 없어요. 새 미션을 추가해보세요!</div>
+            {{/todoList}}
+        </div>
+
     </div>
 </main>
 
@@ -343,6 +435,28 @@
     function toggleTodo(todoId, groupId) {
         location.href = `/todo/${todoId}/toggle?groupId=${groupId}`;
     }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('.mission-row');
+        let ready = 0, complete = 0, expired = 0;
+        rows.forEach(r => {
+            const s = r.dataset.status;
+            if (s === 'complete') complete++;
+            else if (s === 'expired') expired++;
+            else ready++;
+        });
+        document.getElementById('cnt-ready').textContent = ready;
+        document.getElementById('cnt-complete').textContent = complete;
+        document.getElementById('cnt-expired').textContent = expired;
+
+        // 80% 이상 임박 행에 warning 클래스
+        rows.forEach(r => {
+            if (r.dataset.status === 'ready') {
+                const pct = parseInt(r.querySelector('.progress-pct')?.textContent) || 0;
+                if (pct >= 80) r.classList.add('warning');
+            }
+        });
+    });
 </script>
 
 {{> layout/footer}}

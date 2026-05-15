@@ -1,10 +1,13 @@
 {{> layout/header}}
 
-<main style="padding: 80px 0;">
+<main style="padding: 56px 0 80px;">
     <div class="container">
-        <div class="welcome-msg" style="margin-bottom: 50px;">
-            <h1 style="font-size: 32px; font-weight: 850; margin-bottom: 12px; letter-spacing: -1.5px;">반가워요, <span>{{sessionUser.nickname}}님!</span> 👋</h1>
-            <p style="color: var(--text-muted); font-size: 17px;">오늘도 목표를 향해 달릴 준비가 되셨나요?</p>
+        <div style="margin-bottom: 40px;">
+            <div style="font-size: 10px; letter-spacing: 3px; color: var(--danger); margin-bottom: 6px;">MY GROUPS</div>
+            <h1 style="font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px;">
+                반가워요, {{sessionUser.nickname}}님
+            </h1>
+            <p style="color: var(--text-muted); font-size: 14px;">오늘도 목표를 향해 달릴 준비가 되셨나요?</p>
         </div>
 
         <div class="workspace-grid">
@@ -17,29 +20,28 @@
                         <span class="badge member">멤버</span>
                     {{/isManager}}
 
-                    <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">{{roomName}}</h3>
-                    <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; min-height: 44px;">{{description}}</p>
+                    <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #e0e0e0;">{{roomName}}</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; min-height: 40px;">{{description}}</p>
 
-                    <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="margin-top: auto; padding-top: 20px; border-top: 0.5px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <!-- [수정] 달성률을 제거하고 권한 및 상태 중심으로 변경 -->
-                            <span style="font-size: 11px; color: #555; font-weight: 700; display: block; text-transform: uppercase;">나의 역할</span>
-                            <span style="font-size: 16px; font-weight: 700;">
-                                {{#isManager}}관리자(Manager){{/isManager}}
-                                {{^isManager}}참여 멤버(Member){{/isManager}}
+                            <span style="font-size: 10px; color: #333; font-weight: 700; display: block; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px;">역할</span>
+                            <span style="font-size: 13px; font-weight: 600; color: #aaa;">
+                                {{#isManager}}관리자{{/isManager}}
+                                {{^isManager}}멤버{{/isManager}}
                             </span>
                         </div>
                         <div style="text-align: right;">
-                            <span style="font-size: 11px; color: #555; font-weight: 700; display: block; text-transform: uppercase;">개설일</span>
-                            <span style="font-size: 13px; font-weight: 700;">{{createdAt}}</span>
+                            <span style="font-size: 10px; color: #333; font-weight: 700; display: block; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px;">개설일</span>
+                            <span style="font-size: 13px; font-weight: 600; color: #aaa;">{{createdAt}}</span>
                         </div>
                     </div>
 
                     {{#isManager}}
                         <div onclick="event.stopPropagation();">
                             <a href="/groups/{{id}}/update-form" class="btn-admin-edit">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                워크스페이스 설정
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                그룹 설정
                             </a>
                         </div>
                     {{/isManager}}
@@ -47,15 +49,16 @@
             {{/groups}}
 
             {{^groups}}
-                <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; border: 1px dashed var(--border); border-radius: 24px; background: var(--glass);">
-                    <p style="color: var(--text-muted); font-size: 15px;">참여 중인 워크스페이스가 없습니다.<br>새로운 목표를 만들어 친구들을 초대해보세요!</p>
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px 0; border: 0.5px dashed rgba(255,255,255,0.08); border-radius: 16px;">
+                    <p style="color: #333; font-size: 14px;">참여 중인 그룹이 없습니다.<br>새로운 목표를 만들어 친구들을 초대해보세요!</p>
                 </div>
             {{/groups}}
 
-            <div class="card" style="border: 1px dashed var(--border); background: transparent; justify-content: center; align-items: center; text-align: center;" onclick="location.href='/groups/save-form'">
-                <div style="width: 54px; height: 54px; border-radius: 18px; background: var(--glass); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px; color: var(--text-muted);">+</div>
-                <h3 style="font-size: 18px; margin-bottom: 4px;">새 워크스페이스</h3>
-                <p style="font-size: 14px; color: var(--text-muted);">새로운 목표 설계하기</p>
+            <div class="card" style="border: 0.5px dashed rgba(255,255,255,0.08); background: transparent; justify-content: center; align-items: center; text-align: center; min-height: 180px;"
+                 onclick="location.href='/groups/save-form'">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 0.5px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 12px; color: #333;">+</div>
+                <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 4px; color: #555;">새 그룹</h3>
+                <p style="font-size: 13px; color: #333;">새로운 목표 설계하기</p>
             </div>
         </div>
     </div>

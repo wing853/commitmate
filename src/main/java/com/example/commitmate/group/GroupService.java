@@ -53,7 +53,6 @@ public class GroupService {
                 .group(groupEntity)
                 .role(GroupRole.ADMIN)
                 .build();
-                new GroupMember();
         gmr.save(manager); // GroupMemberRepository를 통해 저장
 
         return groupEntity;

@@ -5,23 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>500 - 서버 오류</title>
     <style>
-        /* 위 404 CSS와 동일, 아래 강조색만 변경 */
-        :root {
-            --bg: #0f1114;
-            --card: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
-            --danger: #ff4d4d;
-            --text-main: #ffffff;
-            --text-sub: #888888;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body {
+            background-color: #0e0f11; color: #fff;
+            display: flex; align-items: center; justify-content: center; height: 100vh;
         }
-        /* ... 404와 동일한 스타일 적용 (생략) ... */
-        body { background-color: var(--bg); color: var(--text-main); font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .error-wrapper { text-align: center; padding: 40px; background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 32px; width: 90%; max-width: 500px; }
-        .error-code { font-size: 120px; font-weight: 900; margin: 0; background: linear-gradient(135deg, var(--danger), #800000); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -4px; }
-        .error-title { font-size: 24px; font-weight: 700; margin: 10px 0 20px; }
-        .error-desc { color: var(--text-sub); font-size: 16px; line-height: 1.6; margin-bottom: 40px; }
-        .btn-home { background: var(--danger); color: #fff; padding: 14px 28px; border-radius: 14px; font-weight: 700; text-decoration: none; display: inline-block; transition: 0.2s; }
-        .btn-home:hover { transform: translateY(-2px); opacity: 0.9; }
+        .error-wrapper {
+            text-align: center; padding: 48px;
+            background: #111214;
+            border: 0.5px solid rgba(248,113,113,0.15);
+            border-radius: 20px; width: 90%; max-width: 460px;
+        }
+        .error-code {
+            font-size: 96px; font-weight: 800; margin: 0;
+            color: #f87171; letter-spacing: -4px; line-height: 1;
+            opacity: 0.15;
+        }
+        .error-title { font-size: 20px; font-weight: 700; margin: 16px 0 12px; color: #fff; }
+        .error-desc { color: #444; font-size: 14px; line-height: 1.7; margin-bottom: 36px; }
+        .btn-home {
+            background: #f87171; color: #fff;
+            padding: 12px 28px; border-radius: 10px;
+            font-weight: 700; font-size: 14px;
+            text-decoration: none; display: inline-block; transition: 0.2s;
+        }
+        .btn-home:hover { background: #f95e5e; transform: translateY(-2px); }
     </style>
 </head>
 <body>

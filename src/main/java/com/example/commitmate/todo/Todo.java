@@ -102,6 +102,21 @@ public class Todo {
         return this.status == TodoStatus.EXPIRED || isTimeOver;
     }
 
+    // 프로그레스 바용 진행률 계산 (0~100)
+    public int getDeadlineProgress() {
+        if (createdAt == null || deadline == null) return 0;
+        long total = deadline.getTime() - createdAt.getTime();
+        long elapsed = System.currentTimeMillis() - createdAt.getTime();
+        if (total <= 0) return 100;
+        int progress = (int) ((elapsed * 100) / total);
+        return Math.min(progress, 100);
+    }
 
+    public String getProgressColor() {
+        int p = getDeadlineProgress();
+        if (p >= 80) return "#f87171";
+        if (p >= 50) return "#f59e0b";
+        return "#34d399";
+    }
 
 }

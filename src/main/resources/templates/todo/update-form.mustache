@@ -8,109 +8,149 @@
     }
 
     .update-card {
-        background: #0a0a0a;
-        border: 1px solid var(--border);
-        border-radius: 28px;
+        background: #111214;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
         padding: 40px;
-        box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-        max-width: 600px;
+        max-width: 560px;
         margin: 0 auto;
     }
 
-    .form-group { margin-bottom: 25px; }
+    .card-eyebrow {
+        font-size: 10px;
+        letter-spacing: 3px;
+        color: var(--danger);
+        margin-bottom: 6px;
+    }
+
+    .card-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.5px;
+        margin-bottom: 32px;
+    }
+
+    .form-group { margin-bottom: 22px; }
+
     .form-label {
         display: block;
-        color: var(--text-muted);
-        font-size: 13px;
-        font-weight: 700;
-        margin-bottom: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
         text-transform: uppercase;
     }
 
     .form-control {
         width: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 15px;
+        background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 14px 16px;
         color: #fff;
-        font-size: 16px;
-        transition: 0.3s;
+        font-size: 14px;
+        transition: 0.2s;
+        outline: none;
+    }
+    .form-control::placeholder { color: #333; }
+    .form-control:focus {
+        border-color: rgba(248,113,113,0.4);
+        background: rgba(248,113,113,0.04);
+    }
+    .form-control::-webkit-calendar-picker-indicator { filter: invert(0.3); cursor: pointer; }
+
+    .penalty-wrap { position: relative; }
+    .penalty-symbol {
+        position: absolute; left: 14px; top: 50%;
+        transform: translateY(-50%);
+        color: #444; font-size: 14px; pointer-events: none;
+    }
+    .penalty-wrap .form-control { padding-left: 30px; }
+
+    .info-text {
+        font-size: 11px;
+        color: #333;
+        margin-top: 6px;
     }
 
-    .form-control:focus {
-        outline: none;
-        border-color: var(--accent);
-        background: rgba(255, 255, 255, 0.08);
+    .divider {
+        border: none;
+        border-top: 0.5px solid rgba(255,255,255,0.06);
+        margin: 32px 0 24px;
     }
 
     .btn-group {
         display: grid;
         grid-template-columns: 1fr 2fr;
-        gap: 15px;
-        margin-top: 40px;
+        gap: 10px;
     }
 
     .btn-cancel {
         background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text-muted);
-        padding: 15px;
-        border-radius: 12px;
-        font-weight: 700;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        color: #555;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
         text-align: center;
         text-decoration: none;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
+    .btn-cancel:hover { background: rgba(255,255,255,0.04); color: #aaa; }
 
     .btn-submit {
-        background: var(--accent);
+        background: var(--danger);
         color: #fff;
         border: none;
-        padding: 15px;
-        border-radius: 12px;
-        font-weight: 800;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
         transition: 0.2s;
     }
-
-    .btn-submit:hover { filter: brightness(1.2); transform: translateY(-2px); }
-
-    .info-text {
-        font-size: 12px;
-        color: var(--text-muted);
-        margin-top: 8px;
-    }
+    .btn-submit:hover { background: #f95e5e; transform: translateY(-2px); }
 </style>
 
 <div class="update-container">
     <div class="container">
         <div class="update-card">
-            <div style="margin-bottom: 30px;">
-                <p style="color: var(--accent); font-weight: 800; margin-bottom: 5px;">EDIT MISSION</p>
-                <h1 style="font-size: 28px;">미션 수정하기</h1>
-            </div>
+            <p class="card-eyebrow">EDIT MISSION</p>
+            <h1 class="card-title">미션 수정하기</h1>
 
-            <form action="/todos/{{todoId}}/update-form" method="post">
+            <form action="/groups/{{groupId}}/todos/{{todo.id}}/update" method="post">
                 <div class="form-group">
-                    <label class="form-label">일정명 (Work)</label>
-                    <input type="text" name="work" class="form-control" value="{{todo.work}}" required>
+                    <label class="form-label">일정명</label>
+                    <input type="text" name="work" class="form-control"
+                           value="{{todo.work}}" placeholder="미션 내용을 입력하세요" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">마감 기한 (Deadline)</label>
-                    <input type="datetime-local" name="deadline" class="form-control" value="{{todo.getDeadlineForInput}}" required>
-                    <p class="info-text">현재 설정된 시간: {{todo.getFormatDeadline}}</p>
+                    <label class="form-label">마감 기한</label>
+                    <input type="datetime-local" name="deadline" class="form-control"
+                           value="{{todo.getDeadlineForInput}}" required>
+                    <p class="info-text">현재 설정: {{todo.getFormatDeadline}}</p>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">미이행 벌금 (Penalty Amount)</label>
-                    <div style="position: relative;">
-                        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);">₩</span>
-                        <input type="number" name="amount" class="form-control" style="padding-left: 35px;" value="{{#todo.fine}}{{amount}}{{/todo.fine}}{{^todo.fine}}0{{/todo.fine}}" placeholder="0">
+                    <label class="form-label">미이행 벌금</label>
+                    <div class="penalty-wrap">
+                        <span class="penalty-symbol">₩</span>
+                        <input type="number" name="amount" class="form-control"
+                               value="{{#todo.fine}}{{amount}}{{/todo.fine}}{{^todo.fine}}0{{/todo.fine}}"
+                               placeholder="0" min="0">
                     </div>
                     <p class="info-text">미션 실패 시 부과될 벌금을 입력해 주세요.</p>
                 </div>
+
+                <hr class="divider">
 
                 <div class="btn-group">
                     <a href="/groups/{{groupId}}/todos" class="btn-cancel">취소</a>
