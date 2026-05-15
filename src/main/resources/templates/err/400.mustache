@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>400 - 잘못된 요청</title>
+    <style>
+        :root {
+            --bg: #0f1114;
+            --card: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.08);
+            --muted: #666666;
+            --text-main: #ffffff;
+            --text-sub: #888888;
+        }
+        /* ... 공통 스타일 ... */
+        body { background-color: var(--bg); color: var(--text-main); font-family: sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .error-wrapper { text-align: center; padding: 40px; background: var(--card); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 32px; width: 90%; max-width: 500px; }
+        .error-code { font-size: 120px; font-weight: 900; margin: 0; color: var(--muted); letter-spacing: -4px; }
+        .error-title { font-size: 24px; font-weight: 700; margin: 10px 0 20px; }
+        .error-desc { color: var(--text-sub); font-size: 16px; line-height: 1.6; margin-bottom: 40px; }
+        .btn-back { background: var(--text-main); color: #000; padding: 14px 28px; border-radius: 14px; font-weight: 700; text-decoration: none; display: inline-block; transition: 0.2s; }
+        .btn-back:hover { transform: translateY(-2px); opacity: 0.9; }
+    </style>
+</head>
+<body>
+<div class="error-wrapper">
+    <h1 class="error-code">400</h1>
+    <h2 class="error-title">잘못된 접근입니다</h2>
+    <p class="error-desc">
+        요청하신 데이터가 올바르지 않거나 조작되었을 수 있습니다.<br>
+        정상적인 경로를 통해 다시 시도해 주세요.
+    </p>
+    <a href="javascript:history.back();" class="btn-back">이전 페이지로</a>
+</div>
+</body>
+</html>

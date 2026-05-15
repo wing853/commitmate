@@ -105,13 +105,13 @@
             <div class="summary-card">
                 <span class="summary-label">미납/대기 건수</span>
                 <!-- 서버에서 필터링된 expiredFines를 보낸다면 size가 정확해집니다 -->
-                <div class="summary-value" style="color: var(--accent);">{{fines.size}}<span>건</span></div>
+                <div class="summary-value" style="color: var(--accent);">{{fineInfo.expiredFines.size}}<span>건</span></div>
             </div>
 
             <div class="summary-card">
                 <span class="summary-label">총 벌금 액수</span>
                 <div class="summary-value" style="color: var(--danger);">
-                    ₩ {{#totalFineAmount}}{{totalFineAmount}}{{/totalFineAmount}}{{^totalFineAmount}}0{{/totalFineAmount}}
+                    ₩ {{fineInfo.totalFinesAmount}}
                 </div>
             </div>
         </div>
@@ -120,7 +120,7 @@
             <div class="fine-list-header">
                 <h2>전체 내역</h2>
                 <div style="font-size: 14px; color: var(--text-muted);">
-                    청구된 내역 총 {{fines.size}}건
+                    청구된 내역 총 {{fineInfo.expiredFines.size}}건
                 </div>
             </div>
 
@@ -135,7 +135,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {{#fines}}
+                {{#fineInfo.expiredFines}}
                     <tr>
                         <td><span class="user-badge">@ {{todo.groupMember.user.nickname}}</span></td>
                         <td><span style="color: #eee;">{{todo.work}}</span></td>
@@ -161,15 +161,15 @@
                             {{/isUnpaid}}
                         </td>
                     </tr>
-                {{/fines}}
+                {{/fineInfo.expiredFines}}
 
-                {{^fines}}
+                {{^fineInfo.expiredFines}}
                     <tr>
                         <td colspan="5" style="text-align: center; padding: 100px 0; color: #444;">
                             정산할 벌금 내역이 없습니다.
                         </td>
                     </tr>
-                {{/fines}}
+                {{/fineInfo.expiredFines}}
                 </tbody>
             </table>
         </div>

@@ -1,5 +1,7 @@
 package com.example.commitmate.todo;
 
+import com.example.commitmate.core.errors.Exception400;
+import com.example.commitmate.core.errors.Exception403;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import jakarta.transaction.Transactional;
@@ -24,7 +26,7 @@ public class TodoService {
         GroupMember groupMember = gmr.findByGroupIdAndUserId(
                 addDTO.getGroupId(), addDTO.getUserId()
         ).orElseThrow(
-                () -> new RuntimeException("그룹 멤버를 찾을 수 없습니다.")
+                () -> new Exception400("그룹 멤버를 찾을 수 없습니다.")
         );
 
         Todo todo = addDTO.toEntity(groupMember);
@@ -35,11 +37,11 @@ public class TodoService {
     @Transactional
     public void deleteTodo(Integer todoId, Integer userId) {
         Todo todo = tr.findById(todoId).orElseThrow(
-                () -> new RuntimeException("미션을 찾을 수 없습니다.")
+                () -> new Exception400("미션을 찾을 수 없습니다.")
         );
 
         if (!todo.getGroupMember().getUser().getId().equals(userId)) {
-            throw new RuntimeException("권한 없음");
+            throw new Exception403("일정 삭제 권한이 없습니다(자신의 일정인지 확인하세요.)");
         }
 
         tr.deleteById(todoId);
@@ -49,16 +51,16 @@ public class TodoService {
     public void toggleDone(Integer id, Integer userId) {
 
         Todo todo = tr.findById(id).orElseThrow(
-                () -> new RuntimeException("미션을 찾을 수 없습니다")
+                () -> new Exception400("미션을 찾을 수 없습니다")
         );
 
         if (!todo.getGroupMember().getUser().getId().equals(userId)) {
-            throw new RuntimeException("자신의 일정이 아닙니다");
+            throw new Exception403("일정 삭제 권한이 없습니다(자신의 일정인지 확인하세요.)");
         }
 
         // 기한 초과 상태면 클릭 막기
         if (todo.getStatus() == TodoStatus.EXPIRED) {
-            throw new RuntimeException("기한이 지난 미션입니다");
+            throw new Exception400("선택한 일정은 기간이 지나 상태변경을 할 수 없습니다");
         }
 
         // COMPLETE <-> PENDING 토글
@@ -67,6 +69,13 @@ public class TodoService {
         } else {
             todo.setStatus(TodoStatus.FINISH);
         }
+    }
+
+    public Todo findTodo(Integer id) {
+        Todo todo = tr.findById(id).orElseThrow(
+                () -> new Exception400("일정을 찾을 수 없습니다.")
+        );
+        return todo;
     }
 
     public List<Todo> findMyTodos(Integer groupId, Integer userId) {

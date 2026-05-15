@@ -1,5 +1,7 @@
 package com.example.commitmate.group;
 
+import com.example.commitmate.core.errors.Exception400;
+import com.example.commitmate.core.errors.Exception403;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import com.example.commitmate.groupmember.GroupRole;
@@ -59,7 +61,7 @@ public class GroupService {
 
     public GroupResponse.detailDTO findGroupById(Integer id) {
         Group group = gr.findById(id).orElseThrow(
-                () -> new RuntimeException("해당 그룹을 찾을 수 없습니다")
+                () -> new Exception400("해당 그룹을 찾을 수 없습니다")
         );
 
         return new GroupResponse.detailDTO(group);
@@ -68,7 +70,7 @@ public class GroupService {
     @Transactional
     public void updateGroup(Integer id, GroupRequest.UpdateDTO updateDTO) {
         Group group = gr.findById(id).orElseThrow(
-                () -> new RuntimeException("해당 그룹을 찾을 수 없습니다.")
+                () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
         );
 
         group.update(updateDTO.getRoomName(),updateDTO.getDescription());
@@ -78,15 +80,15 @@ public class GroupService {
     public void deleteGroup(Integer groupId, Integer userId) {
 
         Group group = gr.findById(groupId).orElseThrow(
-                () -> new RuntimeException("해당 그룹을 찾을 수 없습니다.")
+                () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
         );
 
         GroupMember member = gmr.findByGroupIdAndUserId(groupId,userId).orElseThrow(
-                () -> new RuntimeException("해당 그룹의 멤버가 아닙니다")
+                () -> new Exception403("해당 그룹의 멤버가 아닙니다.(그룹을 확인하세요.)")
         );
 
         if(member.getRole() != GroupRole.ADMIN) {
-            throw new RuntimeException("삭제 권한이 없습니다.");
+            throw new Exception403("그룹 삭제 권한이 없습니다.");
         }
 
         tr.deleteByGroupMember_Group_Id(groupId);

@@ -80,6 +80,6 @@ public class GroupController {
         List<Todo> todoList = ts.showTodo(id);
         model.addAttribute("todoList",todoList);
 
-        return "todo/todo-list";
+        return "redirect:/groups/" + id + "/todos";
     }
 }

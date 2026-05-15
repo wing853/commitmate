@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,4 +17,20 @@ public class FineService {
         return fines;
     }
 
+
+    public FineResponse.GroupFineInfo getFineInfo(Integer id) {
+        List<Fine> fineList = findAllFine(id);
+        List<Fine> expiredFines = fineList.stream()
+                .filter(Fine::isExpired) // Todo의 마감 기한이 지난 것만 필터링
+                .collect(Collectors.toList());
+        Integer totalAmount = expiredFines.stream()
+                .mapToInt(Fine::getAmount)
+                .sum();
+
+        return FineResponse.GroupFineInfo.builder()
+                .expiredFines(expiredFines)
+                .totalFinesAmount(totalAmount)
+                .build();
+
+    }
 }

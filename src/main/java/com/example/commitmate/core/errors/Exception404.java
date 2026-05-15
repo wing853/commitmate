@@ -1,8 +1,8 @@
 package com.example.commitmate.core.errors;
 
-public class Exception403 extends RuntimeException {
+public class Exception404 extends RuntimeException {
 
-    public Exception403(String msg) {
+    public Exception404(String msg) {
         super(msg);
     }
 }

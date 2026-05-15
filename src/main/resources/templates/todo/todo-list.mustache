@@ -60,7 +60,6 @@
     .bg-accent { background: var(--accent); }
     .bg-danger { background: var(--danger); }
 
-    /* 미션 카드 내부 상단 필터 영역 추가 */
     .todo-main-card {
         background: #0a0a0a;
         border: 1px solid var(--border);
@@ -76,7 +75,6 @@
         padding-left: 5px;
     }
 
-    /* 내 미션 보기 버튼을 알약 형태로 스타일링 */
     .btn-filter-pill {
         display: flex;
         align-items: center;
@@ -87,6 +85,7 @@
         border-radius: 50px;
         cursor: pointer;
         transition: all 0.3s ease;
+        text-decoration: none;
     }
 
     .btn-filter-pill .dot {
@@ -108,7 +107,6 @@
         border-color: #666;
     }
 
-    /* 필터 활성화 상태 */
     .btn-filter-pill.filter-active {
         background: rgba(77, 163, 255, 0.1);
         border-color: #4da3ff;
@@ -123,7 +121,6 @@
         color: #4da3ff;
     }
 
-    /* 테이블 스타일 */
     .todo-table {
         width: 100%;
         border-collapse: separate;
@@ -156,7 +153,6 @@
         padding-right: 25px;
     }
 
-    /* ... 기타 배지 및 체크박스 스타일 유지 ... */
     .check-wrapper {
         width: 28px;
         height: 28px;
@@ -190,7 +186,6 @@
 <main class="todo-page-container">
     <div class="container">
 
-        <!-- 헤더 섹션 (필터 버튼 제거됨) -->
         <div class="mission-status-board">
             <div class="mission-title-area">
                 <h1>📋 Group <span>Mission</span></h1>
@@ -221,9 +216,7 @@
             </div>
         </div>
 
-        <!-- 메인 테이블 카드 -->
         <div class="todo-main-card">
-            <!-- ⚡️ 내부 좌측 상단으로 이동한 필터 버튼 -->
             <div class="todo-card-filter-area">
                 {{#isFiltered}}
                     <a href="?" class="btn-filter-pill filter-active">
@@ -245,8 +238,9 @@
                     <tr class="todo-row {{#isComplete}}completed{{/isComplete}} {{#isExpired}}overdue{{/isExpired}}">
                         <td style="width: 70px;">
                             {{#isComplete}}
-                                <div class="check-wrapper" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                                <div class="check-wrapper active" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white"
+                                         stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                                         <polyline points="20 6 9 17 4 12"></polyline>
                                     </svg>
                                 </div>
@@ -255,7 +249,8 @@
                             {{^isComplete}}
                                 {{#isExpired}}
                                     <div class="expired-x">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff4d4d"
+                                             stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                             <line x1="18" y1="6" x2="6" y2="18"></line>
                                             <line x1="6" y1="6" x2="18" y2="18"></line>
                                         </svg>
@@ -263,7 +258,8 @@
                                 {{/isExpired}}
 
                                 {{#isReady}}
-                                    <div class="check-wrapper" onclick="toggleTodo({{id}}, {{groupMember.group.id}})"></div>
+                                    <div class="check-wrapper"
+                                         onclick="toggleTodo({{id}}, {{groupMember.group.id}})"></div>
                                 {{/isReady}}
                             {{/isComplete}}
                         </td>
@@ -303,15 +299,23 @@
 
                                 {{#isReady}}
                                     {{#fine}}
-                                        <div class="penalty-badge">
-                                            <span class="fine-label" style="color: var(--danger);">PAYMENT DUE</span>
-                                            <span class="fine-val">₩{{amount}}</span>
-                                        </div>
+                                        {{#isHasAmount}}
+                                            <div class="penalty-badge">
+                                                <span class="fine-label" style="color: var(--danger);">PAYMENT DUE</span>
+                                                <span class="fine-val">₩{{amount}}</span>
+                                            </div>
+                                        {{/isHasAmount}}
+                                        {{^isHasAmount}}
+                                            <div class="penalty-badge free">
+                                                <span class="fine-label" style="color: #777;">PAYMENT DUE</span>
+                                                <span class="free-text">NO PENALTY</span>
+                                            </div>
+                                        {{/isHasAmount}}
                                     {{/fine}}
                                     {{^fine}}
                                         <div class="penalty-badge free">
-                                            <span class="fine-label" style="color: #00d68f;">STATUS</span>
-                                            <span class="free-text">PENDING</span>
+                                            <span class="fine-label" style="color: #777;">PAYMENT DUE</span>
+                                            <span class="free-text">NO PENALTY</span>
                                         </div>
                                     {{/fine}}
                                 {{/isReady}}
@@ -320,7 +324,7 @@
 
                         <td style="width: 220px; text-align: right;">
                             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                                <a href="/todo/{{id}}/edit?groupId={{groupMember.group.id}}" class="btn-todo-action btn-todo-edit">수정</a>
+                                <a href="/groups/{{groupId}}/todos/{{id}}/update-form" class="btn-todo-action btn-todo-edit">수정</a>
                                 <form action="/todo/{{id}}/delete" method="post" onsubmit="return confirm('미션을 삭제할까요?');">
                                     <input type="hidden" name="groupId" value="{{groupMember.group.id}}">
                                     <button type="submit" class="btn-todo-action btn-todo-delete">삭제</button>
@@ -336,7 +340,6 @@
 </main>
 
 <script>
-    // 스프링 서버에서 처리하므로 쿼리 파라미터 기반으로 작동함
     function toggleTodo(todoId, groupId) {
         location.href = `/todo/${todoId}/toggle?groupId=${groupId}`;
     }

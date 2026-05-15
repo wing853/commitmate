@@ -1,6 +1,7 @@
 package com.example.commitmate.todo;
 
 
+import com.example.commitmate.core.errors.Exception500;
 import com.example.commitmate.fine.Fine;
 import com.example.commitmate.group.Group;
 import com.example.commitmate.groupmember.GroupMember;
@@ -37,7 +38,7 @@ public class TodoRequest {
                     if (formatted.length() == 16) formatted += ":00";
                     tsDeadline = java.sql.Timestamp.valueOf(formatted);
                 } catch (Exception e) {
-                    System.out.println("날짜 변환 에러: " + e.getMessage());
+                    throw new Exception500("관리자에게 문의하세요");
                 }
             }
 

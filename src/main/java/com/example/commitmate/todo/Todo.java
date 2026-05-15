@@ -87,10 +87,21 @@ public class Todo {
     }
 
     public boolean isReady() {
-        return this.status == TodoStatus.READY;
+        return (this.status != TodoStatus.FINISH) && !this.isExpired();
     }
 
     public boolean isExpired() {
-        return this.status == TodoStatus.EXPIRED;
+        // 1. 이미 완료(FINISH)된 상태라면 절대 만료가 아님
+        if (this.status == TodoStatus.FINISH) return false;
+
+        // 2. 이미 상태가 EXPIRED이거나,
+        //    READY 상태지만 실시간으로 시간이 지났다면 마감으로 판단
+        boolean isTimeOver = this.deadline != null &&
+                LocalDateTime.now().isAfter(this.deadline.toLocalDateTime());
+
+        return this.status == TodoStatus.EXPIRED || isTimeOver;
     }
+
+
+
 }

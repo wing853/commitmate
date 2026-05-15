@@ -1,5 +1,6 @@
 package com.example.commitmate.fine;
 
+import com.example.commitmate.todo.Todo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,14 +20,10 @@ public class FineController {
     public String showFines(@PathVariable("id") Integer id,
                             Model model) {
 
-        List<Fine> fineList = fs.findAllFine(id);
-        List<Fine> expiredFines = fineList.stream()
-                .filter(Fine::isExpired) // Todo의 마감 기한이 지난 것만 필터링
-                .collect(Collectors.toList());
 
-        model.addAttribute("fines", expiredFines); // 이제 {{fines.size}}는 마감된 것만 셉니다.
-        model.addAttribute("expiredCount", expiredFines.size());
+        FineResponse.GroupFineInfo fineInfo = fs.getFineInfo(id);
 
+        model.addAttribute("fineInfo",fineInfo);
         return "fine/fine-list";
     }
 

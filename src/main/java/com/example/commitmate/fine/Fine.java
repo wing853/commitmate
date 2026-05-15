@@ -56,9 +56,11 @@ public class Fine {
         return this.amount != null && this.amount > 0;
     }
 
+
+    // Fine.java
+
     public boolean isExpired() {
-        return (this.todo != null &&
-                this.todo.getDeadline() != null &&
-                LocalDateTime.now().isAfter(this.todo.getDeadline().toLocalDateTime()));
+        if (this.todo == null) return false;
+        return this.todo.isExpired(); // Todo의 판단 로직을 그대로 사용
     }
 }
