@@ -8,6 +8,7 @@ import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.user.User;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -49,6 +50,36 @@ public class TodoRequest {
                     .status(TodoStatus.READY) // 생성 시 기본값
                     .deadline(tsDeadline)
                     .build();
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    public static class UpdateTodoDTO {
+        private String work;
+        private Integer amount;
+        private String deadline;
+
+        public void applyTo(Todo todo) {
+            if (work != null && !work.isBlank()) {
+                todo.setWork(work);
+            }
+
+            if (deadline != null && !deadline.isBlank()) {
+                try {
+                    String formatted = deadline.replace("T", " ");
+                    if (formatted.length() == 16) formatted += ":00";
+                    todo.setDeadline(Timestamp.valueOf(formatted));
+                } catch (Exception e) {
+                    throw new Exception500("날짜 형식이 올바르지 않습니다.");
+                }
+            } else {
+                todo.setDeadline(null);
+            }
+
+            if (todo.getFine() != null && amount != null) {
+                todo.getFine().setAmount(amount);
+            }
         }
     }
 }

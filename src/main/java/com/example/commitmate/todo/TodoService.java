@@ -44,6 +44,10 @@ public class TodoService {
             throw new Exception403("일정 삭제 권한이 없습니다(자신의 일정인지 확인하세요.)");
         }
 
+        if(todo.isExpired()) {
+            throw new Exception400("선택한 일정은 기간이 만료되어 삭제할 수 없습니다");
+        }
+
         tr.deleteById(todoId);
     }
 
@@ -71,6 +75,12 @@ public class TodoService {
         }
     }
 
+    @Transactional
+    public void updateTodo(Integer todoId, Integer userId, TodoRequest.UpdateTodoDTO updateTodoDTO) {
+        Todo todo = findTodo(todoId);
+
+    }
+
     public Todo findTodo(Integer id) {
         Todo todo = tr.findById(id).orElseThrow(
                 () -> new Exception400("일정을 찾을 수 없습니다.")
@@ -83,4 +93,7 @@ public class TodoService {
 
         return todoList;
     }
+
+
+
 }
