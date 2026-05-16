@@ -58,6 +58,50 @@ public class GroupService {
         return groupEntity;
     }
 
+    // 초대링크로 참여
+    @Transactional
+    public void joinByInviteCode(String inviteCode, User sessionUser) {
+        Group group = gr.findByInviteCode(inviteCode).orElseThrow(
+                () -> new Exception400("유효하지 않은 초대링크입니다.")
+        );
+
+        gmr.findByGroupIdAndUserId(group.getId(), sessionUser.getId())
+                .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
+
+        GroupMember member = GroupMember.builder()
+                .user(sessionUser)
+                .group(group)
+                .role(GroupRole.MEMBER)
+                .build();
+        gmr.save(member);
+    }
+
+    // 가입코드로 참여
+    @Transactional
+    public void joinByJoinCode(String joinCode, User sessionUser) {
+        Group group = gr.findByJoinCode(joinCode).orElseThrow(
+                () -> new Exception400("유효하지 않은 가입코드입니다.")
+        );
+
+        gmr.findByGroupIdAndUserId(group.getId(), sessionUser.getId())
+                .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
+
+        GroupMember member = GroupMember.builder()
+                .user(sessionUser)
+                .group(group)
+                .role(GroupRole.MEMBER)
+                .build();
+        gmr.save(member);
+    }
+
+    // todo-list에서 초대 정보 조회
+    public GroupResponse.InviteInfoDTO getInviteInfo(Integer groupId) {
+        Group group = gr.findById(groupId).orElseThrow(
+                () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
+        );
+        return new GroupResponse.InviteInfoDTO(group);
+    }
+
     public GroupResponse.detailDTO findGroupById(Integer id) {
         Group group = gr.findById(id).orElseThrow(
                 () -> new Exception400("해당 그룹을 찾을 수 없습니다")

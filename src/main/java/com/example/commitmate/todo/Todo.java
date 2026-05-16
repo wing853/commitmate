@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -13,6 +14,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Data
 @NoArgsConstructor
 @Entity
@@ -104,12 +106,17 @@ public class Todo {
 
     // 프로그레스 바용 진행률 계산 (0~100)
     public int getDeadlineProgress() {
-        if (createdAt == null || deadline == null) return 0;
-        long total = deadline.getTime() - createdAt.getTime();
-        long elapsed = System.currentTimeMillis() - createdAt.getTime();
-        if (total <= 0) return 100;
-        int progress = (int) ((elapsed * 100) / total);
-        return Math.min(progress, 100);
+        if (deadline == null) return 0;
+
+        // 마감 24시간 전부터 100%로 계산
+        long totalWindow = 24 * 60 * 60 * 1000L; // 24시간
+        long remaining = deadline.getTime() - System.currentTimeMillis();
+
+        if (remaining <= 0) return 100;
+        if (remaining >= totalWindow) return 0;
+
+        int progress = (int) (((totalWindow - remaining) * 100) / totalWindow);
+        return Math.min(Math.max(progress, 0), 100);
     }
 
     public String getProgressColor() {

@@ -7,9 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -81,5 +79,29 @@ public class GroupController {
         model.addAttribute("todoList",todoList);
 
         return "redirect:/groups/" + id + "/todos";
+    }
+
+    // 초대링크로 참여
+    @GetMapping("/invite/{code}")
+    public String joinByInviteCode(@PathVariable("code") String code, HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        gs.joinByInviteCode(code, sessionUser);
+        return "redirect:/groups";
+    }
+
+    // 가입코드로 참여
+    @PostMapping("/groups/join")
+    public String joinByJoinCode(@ModelAttribute GroupRequest.JoinDTO joinDTO,
+                                 HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        gs.joinByJoinCode(joinDTO.getJoinCode(), sessionUser);
+        return "redirect:/groups";
+    }
+
+    // 초대 정보 조회 (todo-list 모달용)
+    @GetMapping("/groups/{id}/invite-info")
+    @ResponseBody
+    public GroupResponse.InviteInfoDTO getInviteInfo(@PathVariable("id") Integer id) {
+        return gs.getInviteInfo(id);
     }
 }

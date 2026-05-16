@@ -23,8 +23,9 @@ public class Fine {
     private Integer amount;
 
     // 벌금 상태 (SQL의 status - 예: UNPAID, PAID)
-    private String status;
-
+    @Enumerated(EnumType.STRING)
+    private FineStatus status;
+    private String memo;
     // 생성 시간 (SQL의 created_at)
     private LocalDateTime createdAt;
 
@@ -36,15 +37,12 @@ public class Fine {
     private Todo todo;
 
     @Builder
-    public Fine(Integer amount, String status, LocalDateTime createdAt, GroupMember groupMember) {
+    public Fine(Integer amount, FineStatus status, LocalDateTime createdAt, GroupMember groupMember) {
         if(amount == null) {
             amount = 0;
         }
         this.amount = amount;
-        if (status == null) {
-            status = "UNPAID";
-        }
-        this.status = status;
+        this.status = (status == null) ? FineStatus.UNPAID:status;
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
@@ -63,4 +61,8 @@ public class Fine {
         if (this.todo == null) return false;
         return this.todo.isExpired(); // Todo의 판단 로직을 그대로 사용
     }
+
+    public boolean isUnpaid()  { return this.status == FineStatus.UNPAID; }
+    public boolean isPending() { return this.status == FineStatus.PENDING; }
+    public boolean isPaid()    { return this.status == FineStatus.PAID; }
 }

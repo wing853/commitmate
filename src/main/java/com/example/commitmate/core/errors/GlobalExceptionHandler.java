@@ -11,7 +11,8 @@ import org.springframework.web.servlet.ModelAndView;
 public class GlobalExceptionHandler {
     @ExceptionHandler(Exception400.class)
     public Object handle400(Exception400 e, HttpServletRequest request) {
-        if (e.getMessage().contains("입력") || e.getMessage().contains("선택") || e.getMessage().contains("만료")) {
+        if (e.getMessage().contains("입력") || e.getMessage().contains("선택") ||
+                e.getMessage().contains("만료") || e.getMessage().contains("초대")) {
             return new ResponseEntity<>("""
            <script>
                alert("%s");
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler {
         }
 
         request.setAttribute("msg", e.getMessage());
-        return new ModelAndView("error/400");
+        return new ModelAndView("err/400");
     }
 
     @ExceptionHandler(Exception401.class)

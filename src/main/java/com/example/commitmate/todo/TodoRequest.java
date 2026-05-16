@@ -30,6 +30,7 @@ public class TodoRequest {
         public Todo toEntity(GroupMember groupMember) {
             Fine newFine = Fine.builder()
                     .amount(this.amount)
+                    .groupMember(groupMember)
                     .build();
 
             Timestamp tsDeadline = null;

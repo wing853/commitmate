@@ -38,4 +38,17 @@ public class GroupResponse {
             this.description = group.getDescription();
         }
     }
+
+    @Data
+    public static class InviteInfoDTO {
+        private Integer id;
+        private String inviteCode;
+        private String joinCode;
+
+        public InviteInfoDTO(Group group) {
+            this.id = group.getId();
+            this.inviteCode = group.getInviteCode();
+            this.joinCode = group.getJoinCode();
+        }
+    }
 }

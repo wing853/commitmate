@@ -20,14 +20,16 @@ public class Group {
     private String roomName;
     private String description;
     private String inviteCode;
+    private String joinCode;
     @CreationTimestamp
     private Timestamp createdAt;
 
     @Builder
-    public Group(String roomName, String description, String inviteCode) {
+    public Group(String roomName, String description, String inviteCode,String joinCode) {
         this.roomName = roomName;
         this.description = description;
         this.inviteCode = inviteCode;
+        this.joinCode = joinCode;
     }
 
     public void update(String roomName, String description) {

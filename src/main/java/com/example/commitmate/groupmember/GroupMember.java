@@ -31,4 +31,8 @@ public class GroupMember {
         this.role = role;
 
     }
+
+    public boolean isAdmin() {
+        return role == GroupRole.ADMIN;
+    }
 }

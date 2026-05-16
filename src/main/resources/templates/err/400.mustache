@@ -36,8 +36,9 @@
     <h1 class="error-code">400</h1>
     <h2 class="error-title">잘못된 접근입니다</h2>
     <p class="error-desc">
-        요청하신 데이터가 올바르지 않거나 조작되었을 수 있습니다.<br>
-        정상적인 경로를 통해 다시 시도해 주세요.
+        {{#msg}}{{msg}}{{/msg}}
+        {{^msg}}요청하신 데이터가 올바르지 않거나 조작되었을 수 있습니다.<br>
+            정상적인 경로를 통해 다시 시도해 주세요.{{/msg}}
     </p>
     <a href="javascript:history.back();" class="btn-back">이전 페이지로</a>
 </div>
