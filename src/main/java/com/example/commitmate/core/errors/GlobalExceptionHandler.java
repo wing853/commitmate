@@ -12,7 +12,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception400.class)
     public Object handle400(Exception400 e, HttpServletRequest request) {
         if (e.getMessage().contains("입력") || e.getMessage().contains("선택") ||
-                e.getMessage().contains("만료") || e.getMessage().contains("초대")) {
+                e.getMessage().contains("만료") || e.getMessage().contains("초대")
+                || e.getMessage().contains("사용")) {
             return new ResponseEntity<>("""
            <script>
                alert("%s");

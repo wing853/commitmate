@@ -1,5 +1,6 @@
 package com.example.commitmate.group;
 
+import com.example.commitmate.groupmember.GroupMember;
 import lombok.Data;
 
 // GroupResponse.java
@@ -49,6 +50,21 @@ public class GroupResponse {
             this.id = group.getId();
             this.inviteCode = group.getInviteCode();
             this.joinCode = group.getJoinCode();
+        }
+    }
+
+    @Data
+    public static class MemberDTO {
+        private Integer id;       // groupMemberId
+        private Integer userId;   // userId
+        private String nickname;
+        private String role;
+
+        public MemberDTO(GroupMember member) {
+            this.id = member.getId();
+            this.userId = member.getUser().getId();
+            this.nickname = member.getUser().getNickname();
+            this.role = member.getRole().name();
         }
     }
 }

@@ -1,9 +1,8 @@
 -- 1. User 데이터
 INSERT INTO user_tb (email, password, nickname, created_at) VALUES
-                                                                ('minsoo@example.com', '1234', '박민수', NOW()),
-                                                                ('ghildong@example.com', '1234', '홍길동', NOW()),
-                                                                ('sunny@example.com', '1234', '김태양', NOW());
-
+                                                                ('minsoo@example.com', '$2a$10$kDILjaMHE4XobrII2B92NOuxzSaJF8eWw1Yycj3UyAM1ExWTr.PL6', '박민수', NOW()),
+                                                                ('ghildong@example.com', '$2a$10$x3OgrGvgwOOkOXZ2X.CsVOHkMp3H0NZc3IyetfHgX39QPU0.u7Vk2', '홍길동', NOW()),
+                                                                ('sunny@example.com', '$2a$10$VzkNM2s0YYQtd/Mcg0h95enWSIIkgtwDAWje.OdYEUqjLHgpSAwq6', '김태양', NOW());
 -- 2. Group 데이터
 INSERT INTO group_tb (room_name, description, invite_code, created_at) VALUES
                                                                            ('알고리즘 1일 1커밋 🌳', '매일 자정까지 백준 1문제 풀기', 'INVITE-AAA', NOW()),

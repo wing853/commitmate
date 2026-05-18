@@ -1,5 +1,6 @@
 package com.example.commitmate.todo;
 
+import com.example.commitmate.groupmember.GroupMember;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -26,4 +27,8 @@ public interface TodoRepository extends JpaRepository<Todo,Integer> {
     void deleteByGroupMember_Group_Id(Integer groupId);
 
     List<Todo> findByGroupMember_Group_IdAndGroupMember_User_Id(Integer groupId, Integer userId);
+
+    @Modifying
+    @Transactional
+    void deleteByGroupMemberId(Integer groupMemberId);
 }

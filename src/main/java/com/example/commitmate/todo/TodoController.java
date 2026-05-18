@@ -2,6 +2,8 @@ package com.example.commitmate.todo;
 
 import com.example.commitmate.core.errors.Exception403;
 import com.example.commitmate.group.GroupService;
+import com.example.commitmate.groupmember.GroupMember;
+import com.example.commitmate.groupmember.GroupRole;
 import com.example.commitmate.user.User;
 import com.example.commitmate.user.UserService;
 import jakarta.servlet.http.HttpSession;
@@ -24,14 +26,21 @@ public class TodoController {
                             @RequestParam(name = "filter", required = false) String filter,
                             HttpSession session, Model model) {
 
+
+        User sessionUser = (User) session.getAttribute("sessionUser");
+
         // 1. 그룹 정보 가져오기 (헤더용)
         model.addAttribute("group", gs.findGroupById(groupId));
+        model.addAttribute("sessionUser",sessionUser);
+
+
+        model.addAttribute("isAdmin", gs.isAdmin(groupId, sessionUser.getId()));
 
         // 2. 투두 목록 필터 로직 (아까 짠 코드 그대로!)
-        User sessionUser = (User) session.getAttribute("sessionUser");
         List<Todo> todoList = "my".equals(filter)
                 ? ts.findMyTodos(groupId, sessionUser.getId())
                 : ts.showTodo(groupId);
+
 
         model.addAttribute("todoList", todoList);
         model.addAttribute("isFiltered", "my".equals(filter));

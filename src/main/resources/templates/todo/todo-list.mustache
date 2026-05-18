@@ -159,80 +159,96 @@
 
     .empty-state { text-align: center; padding: 80px 0; color: #333; font-size: 14px; }
 
-    /* ── 초대 모달 ── */
+    /* ── 모달 공통 ── */
     .modal-overlay {
         display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.75); z-index: 999;
         align-items: center; justify-content: center;
     }
     .modal-overlay.active { display: flex; }
-
     .modal-box {
         background: #111214;
         border: 0.5px solid rgba(255,255,255,0.08);
         border-radius: 20px; padding: 36px;
         width: 90%; max-width: 440px; position: relative;
     }
-
     .modal-close {
         position: absolute; top: 16px; right: 16px;
         background: transparent; border: none; color: #444;
-        font-size: 18px; cursor: pointer; transition: 0.2s;
-        line-height: 1;
+        font-size: 18px; cursor: pointer; transition: 0.2s; line-height: 1;
     }
     .modal-close:hover { color: #aaa; }
-
     .modal-eyebrow { font-size: 10px; letter-spacing: 3px; color: #f87171; margin-bottom: 6px; }
     .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    .modal-section-label { font-size: 10px; letter-spacing: 1px; color: #444; text-transform: uppercase; margin-bottom: 8px; }
+    .modal-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.06); margin: 20px 0; }
+    .modal-hint { font-size: 11px; color: #333; margin-top: 10px; }
 
-    .modal-section-label {
-        font-size: 10px; letter-spacing: 1px; color: #444;
-        text-transform: uppercase; margin-bottom: 8px;
-    }
-
+    /* ── 초대 모달 ── */
     .invite-link-row { display: flex; gap: 8px; margin-bottom: 20px; }
     .invite-link-text {
         flex: 1; background: rgba(255,255,255,0.03);
         border: 0.5px solid rgba(255,255,255,0.08);
         border-radius: 10px; padding: 12px 14px;
-        font-size: 12px; color: #888; word-break: break-all;
-        line-height: 1.5;
+        font-size: 12px; color: #888; word-break: break-all; line-height: 1.5;
     }
-
-    .modal-divider {
-        border: none; border-top: 0.5px solid rgba(255,255,255,0.06);
-        margin: 20px 0;
-    }
-
     .join-code-box {
         background: rgba(255,255,255,0.03);
         border: 0.5px solid rgba(255,255,255,0.08);
         border-radius: 10px; padding: 16px;
         display: flex; align-items: center; justify-content: space-between;
     }
-    .join-code-text {
-        font-size: 22px; font-weight: 800; color: #fff;
-        letter-spacing: 6px;
-    }
-
+    .join-code-text { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 6px; }
     .btn-copy {
-        background: transparent;
-        border: 0.5px solid rgba(255,255,255,0.08);
-        color: #777; padding: 8px 14px;
-        border-radius: 8px; font-size: 12px; font-weight: 600;
-        cursor: pointer; transition: 0.2s; white-space: nowrap;
+        background: transparent; border: 0.5px solid rgba(255,255,255,0.08);
+        color: #777; padding: 8px 14px; border-radius: 8px;
+        font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap;
     }
     .btn-copy:hover { background: rgba(255,255,255,0.05); color: #aaa; }
     .btn-copy-primary {
         background: #f87171; border: none; color: #fff;
         padding: 10px 16px; border-radius: 8px;
-        font-size: 12px; font-weight: 700;
-        cursor: pointer; transition: 0.2s; white-space: nowrap;
+        font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap;
     }
     .btn-copy-primary:hover { background: #f95e5e; }
 
-    .modal-hint { font-size: 11px; color: #333; margin-top: 10px; }
+    /* ── 멤버 모달 ── */
+    .member-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+    .member-item {
+        display: flex; align-items: center; gap: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.06);
+        border-radius: 10px; padding: 12px 14px;
+    }
+    .member-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: #1a1010; border: 0.5px solid rgba(248,113,113,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700; color: #f87171; flex-shrink: 0;
+    }
+    .member-avatar.admin { border-color: rgba(248,113,113,0.4); }
+    .member-info { flex: 1; }
+    .member-name { font-size: 14px; font-weight: 600; color: #e0e0e0; }
+    .member-role {
+        font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 3px;
+    }
+    .member-role.admin { background: rgba(248,113,113,0.1); color: #f87171; }
+    .member-role.member { background: rgba(255,255,255,0.05); color: #555; }
+
+    .btn-kick {
+        background: transparent;
+        border: 0.5px solid rgba(248,113,113,0.25);
+        color: #f87171; padding: 5px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-kick:hover { background: #f87171; color: #fff; }
 </style>
+
+<!-- hidden: 현재 유저 정보 -->
+<input type="hidden" id="currentUserId" value="{{sessionUser.id}}">
+<input type="hidden" id="currentUserIsAdmin" value="{{isAdmin}}">
 
 <main class="todo-page-container">
     <div class="container">
@@ -283,11 +299,13 @@
             {{/isFiltered}}
 
             {{#todoList.0}}
-                <button onclick="openInviteModal({{groupMember.group.id}})" class="btn-action-link">👥 초대하기</button>
+                <button onclick="openMemberModal({{groupMember.group.id}})" class="btn-action-link">👥 멤버 보기</button>
+                <button onclick="openInviteModal({{groupMember.group.id}})" class="btn-action-link">🔗 초대하기</button>
                 <a href="/groups/{{groupMember.group.id}}/todo-form" class="btn-action-link primary">+ 새 미션</a>
             {{/todoList.0}}
             {{^todoList.0}}
-                <button onclick="openInviteModal({{group.id}})" class="btn-action-link">👥 초대하기</button>
+                <button onclick="openMemberModal({{group.id}})" class="btn-action-link">👥 멤버 보기</button>
+                <button onclick="openInviteModal({{group.id}})" class="btn-action-link">🔗 초대하기</button>
                 <a href="/groups/{{group.id}}/todo-form" class="btn-action-link primary">+ 새 미션</a>
             {{/todoList.0}}
         </div>
@@ -414,15 +432,23 @@
     </div>
 </main>
 
+<!-- 멤버 모달 -->
+<div id="memberModal" class="modal-overlay">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeMemberModal()">✕</button>
+        <p class="modal-eyebrow">MEMBERS</p>
+        <h3 class="modal-title">그룹 멤버</h3>
+        <div id="memberList" class="member-list"></div>
+    </div>
+</div>
+
 <!-- 초대 모달 -->
 <div id="inviteModal" class="modal-overlay">
     <div class="modal-box">
         <button class="modal-close" onclick="closeInviteModal()">✕</button>
-
         <p class="modal-eyebrow">INVITE</p>
         <h3 class="modal-title">팀원 초대하기</h3>
 
-        <!-- 초대 링크 -->
         <div class="modal-section-label">초대 링크</div>
         <div class="invite-link-row">
             <div id="inviteLinkText" class="invite-link-text"></div>
@@ -431,7 +457,6 @@
 
         <hr class="modal-divider">
 
-        <!-- 가입 코드 -->
         <div class="modal-section-label">가입 코드</div>
         <div class="join-code-box">
             <span id="joinCodeText" class="join-code-text"></span>
@@ -442,6 +467,9 @@
 </div>
 
 <script>
+    const currentUserId = parseInt(document.getElementById('currentUserId').value);
+    const currentUserIsAdmin = document.getElementById('currentUserIsAdmin').value === 'true';
+
     function toggleTodo(todoId, groupId) {
         location.href = `/todo/${todoId}/toggle?groupId=${groupId}`;
     }
@@ -465,6 +493,59 @@
                 if (pct >= 80) r.classList.add('warning');
             }
         });
+    });
+
+    // 멤버 모달
+    function openMemberModal(groupId) {
+        fetch(`/groups/${groupId}/members`)
+            .then(res => res.json())
+            .then(members => {
+                const list = document.getElementById('memberList');
+                list.innerHTML = members.map(m => {
+                    // 총무이고 본인이 아닌 경우에만 강퇴 버튼 표시
+                    const showKick = currentUserIsAdmin && m.userId !== currentUserId;
+                    return `
+                        <div class="member-item">
+                            <div class="member-avatar ${m.role === 'ADMIN' ? 'admin' : ''}">
+                                ${m.nickname.charAt(0)}
+                            </div>
+                            <div class="member-info">
+                                <div class="member-name">${m.nickname}</div>
+                                <span class="member-role ${m.role === 'ADMIN' ? 'admin' : 'member'}">
+                                    ${m.role === 'ADMIN' ? '총무' : '멤버'}
+                                </span>
+                            </div>
+                            ${showKick ? `
+                                <button class="btn-kick"
+                                    onclick="kickMember(${m.id}, '${m.nickname}', ${groupId})">
+                                    강퇴
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+                document.getElementById('memberModal').classList.add('active');
+            });
+    }
+
+    function kickMember(groupMemberId, nickname, groupId) {
+        if (!confirm(`'${nickname}'님을 강퇴하시겠습니까?`)) return;
+        fetch(`/groups/${groupId}/members/${groupMemberId}/kick`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    openMemberModal(groupId); // 목록 새로고침
+                } else {
+                    alert('강퇴에 실패했습니다.');
+                }
+            });
+    }
+
+    function closeMemberModal() {
+        document.getElementById('memberModal').classList.remove('active');
+    }
+
+    document.getElementById('memberModal').addEventListener('click', function(e) {
+        if (e.target === this) closeMemberModal();
     });
 
     // 초대 모달
@@ -493,7 +574,6 @@
         navigator.clipboard.writeText(text).then(() => alert('가입코드가 복사됐어요!'));
     }
 
-    // 모달 바깥 클릭 시 닫기
     document.getElementById('inviteModal').addEventListener('click', function(e) {
         if (e.target === this) closeInviteModal();
     });

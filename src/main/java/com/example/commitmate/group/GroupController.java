@@ -5,6 +5,7 @@ import com.example.commitmate.todo.TodoService;
 import com.example.commitmate.user.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -103,5 +104,21 @@ public class GroupController {
     @ResponseBody
     public GroupResponse.InviteInfoDTO getInviteInfo(@PathVariable("id") Integer id) {
         return gs.getInviteInfo(id);
+    }
+
+    @GetMapping("/groups/{id}/members")
+    @ResponseBody
+    public List<GroupResponse.MemberDTO> getMembers(@PathVariable("id") Integer id) {
+        return gs.getMembers(id);
+    }
+
+    @PostMapping("/groups/{groupId}/members/{groupMemberId}/kick")
+    @ResponseBody
+    public ResponseEntity<Void> kickMember(@PathVariable Integer groupId,
+                                           @PathVariable Integer groupMemberId,
+                                           HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        gs.kickMember(groupId, groupMemberId, sessionUser.getId());
+        return ResponseEntity.ok().build();
     }
 }

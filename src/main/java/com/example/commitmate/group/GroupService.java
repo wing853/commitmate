@@ -2,6 +2,8 @@ package com.example.commitmate.group;
 
 import com.example.commitmate.core.errors.Exception400;
 import com.example.commitmate.core.errors.Exception403;
+import com.example.commitmate.fine.FineRepository;
+import com.example.commitmate.fine.FineStatus;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import com.example.commitmate.groupmember.GroupRole;
@@ -21,6 +23,7 @@ public class GroupService {
     private final GroupRepository gr;
     private final GroupMemberRepository gmr;
     private final TodoRepository tr;
+    private final FineRepository fr;
 
     @Transactional
     public List<GroupResponse.MyGroupDTO> getMyGroups(Integer userId) {
@@ -137,5 +140,52 @@ public class GroupService {
         tr.deleteByGroupMember_Group_Id(groupId);
         gmr.deleteByGroupId(groupId);
         gr.delete(group);
+    }
+
+    public List<GroupResponse.MemberDTO> getMembers(Integer groupId) {
+        List<GroupMember> members = gmr.findByGroupId(groupId);
+        return members.stream()
+                .map(GroupResponse.MemberDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public boolean isAdmin(Integer groupId, Integer userId) {
+        return gmr.findByGroupIdAndUserId(groupId, userId)
+                .map(m -> m.getRole() == GroupRole.ADMIN)
+                .orElse(false);
+    }
+
+    @Transactional
+    public void kickMember(Integer groupId, Integer groupMemberId, Integer requestUserId) {
+        // 요청자가 관리자인지 확인
+        GroupMember requester = gmr.findByGroupIdAndUserId(groupId, requestUserId)
+                .orElseThrow(() -> new Exception403("권한이 없습니다."));
+
+        if (requester.getRole() != GroupRole.ADMIN) {
+            throw new Exception403("관리자만 강퇴할 수 있습니다.");
+        }
+
+        GroupMember target = gmr.findById(groupMemberId)
+                .orElseThrow(() -> new Exception400("해당 멤버를 찾을 수 없습니다."));
+
+        // 관리자는 강퇴 불가
+        if (target.getRole() == GroupRole.ADMIN) {
+            throw new Exception403("관리자는 강퇴할 수 없습니다.");
+        }
+
+        // 미납 벌금 확인 (UNPAID 또는 PENDING 상태)
+        boolean hasUnpaidFine = target.getUser().getId() != null &&
+                fr.findByGroupId(groupId).stream()
+                        .filter(f -> f.getGroupMember().getId().equals(groupMemberId))
+                        .anyMatch(f -> f.getStatus() == FineStatus.UNPAID
+                                || f.getStatus() == FineStatus.PENDING);
+
+        if (hasUnpaidFine) {
+            throw new Exception400("미납 또는 승인 대기 중인 벌금이 있어 강퇴할 수 없습니다.");
+        }
+
+        tr.deleteByGroupMemberId(groupMemberId);
+
+        gmr.delete(target);
     }
 }
