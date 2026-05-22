@@ -84,9 +84,10 @@ public class GroupController {
 
     // 초대링크로 참여
     @GetMapping("/invite/{code}")
-    public String joinByInviteCode(@PathVariable("code") String code, HttpSession session) {
+    public String joinByInviteCode(@PathVariable("code") String code, HttpSession session,
+                                   GroupRequest.JoinDTO joinDTO) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        gs.joinByInviteCode(code, sessionUser);
+        gs.joinByInviteCode(code, sessionUser,joinDTO);
         return "redirect:/groups";
     }
 
@@ -95,7 +96,7 @@ public class GroupController {
     public String joinByJoinCode(@ModelAttribute GroupRequest.JoinDTO joinDTO,
                                  HttpSession session) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        gs.joinByJoinCode(joinDTO.getJoinCode(), sessionUser);
+        gs.joinByJoinCode(joinDTO.getJoinCode(), sessionUser,joinDTO);
         return "redirect:/groups";
     }
 

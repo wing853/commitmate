@@ -1,6 +1,9 @@
 package com.example.commitmate.group;
 
 import com.example.commitmate.core.errors.Exception400;
+import com.example.commitmate.groupmember.GroupMember;
+import com.example.commitmate.groupmember.GroupRole;
+import com.example.commitmate.user.User;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,6 +23,14 @@ public class GroupRequest {
                     .description(this.description)
                     .inviteCode(UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                     .joinCode(generateJoinCode())
+                    .build();
+        }
+
+        public GroupMember toMemberEntity(User user, Group group) {
+            return GroupMember.builder()
+                    .user(user)
+                    .group(group)
+                    .role(GroupRole.ADMIN)
                     .build();
         }
 
@@ -54,9 +65,19 @@ public class GroupRequest {
         }
     }
 
-
     @Data
     public static class JoinDTO {
         private String joinCode;
+
+        public GroupMember toEntity(User user, Group group) {
+            return GroupMember.builder()
+                    .user(user)
+                    .group(group)
+                    .role(GroupRole.MEMBER)
+                    .build();
+        }
     }
+
+
+
 }

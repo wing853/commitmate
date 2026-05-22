@@ -20,7 +20,6 @@ public class FineService {
 
     public List<Fine> findAllFine(Integer groupId) {
         List<Fine> fines = fr.findByGroupId(groupId);
-        System.out.println("DEBUG: 조회된 벌금 개수 = " + fines.size());
         return fines;
     }
 
@@ -43,7 +42,6 @@ public class FineService {
 
     @Transactional
     public void payFine(Integer fineId, Integer userId, String memo) {
-        System.out.println("받은 fineId: " + fineId);
         Fine fine = fr.findByIdWithMember(fineId).orElseThrow(
                 () -> new Exception400("벌금 내역을 찾을 수 없습니다.")
         );

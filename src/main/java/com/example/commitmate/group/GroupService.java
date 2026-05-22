@@ -45,17 +45,12 @@ public class GroupService {
     @Transactional // 데이터 변경이 일어나므로 트랜잭션 처리가 필수입니다.
     public Group createRoom(User sessionUser, GroupRequest.CreateDTO createDTO) {
 
-
         // 1. 그룹 엔티티 생성 및 저장
         Group groupEntity = createDTO.toEntity();
         gr.save(groupEntity); // 여기서 ID가 생성됨
 
         // 2. 방장을 GroupMember로 등록 (이걸 안 하면 목록에 안 뜹니다!)
-        GroupMember manager = GroupMember.builder()
-                .user(sessionUser)
-                .group(groupEntity)
-                .role(GroupRole.ADMIN)
-                .build();
+        GroupMember manager = createDTO.toMemberEntity(sessionUser,groupEntity);
         gmr.save(manager); // GroupMemberRepository를 통해 저장
 
         return groupEntity;
@@ -63,7 +58,8 @@ public class GroupService {
 
     // 초대링크로 참여
     @Transactional
-    public void joinByInviteCode(String inviteCode, User sessionUser) {
+    public void joinByInviteCode(String inviteCode, User sessionUser,
+                                 GroupRequest.JoinDTO joinDTO) {
         Group group = gr.findByInviteCode(inviteCode).orElseThrow(
                 () -> new Exception400("유효하지 않은 초대링크입니다.")
         );
@@ -71,17 +67,14 @@ public class GroupService {
         gmr.findByGroupIdAndUserId(group.getId(), sessionUser.getId())
                 .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
 
-        GroupMember member = GroupMember.builder()
-                .user(sessionUser)
-                .group(group)
-                .role(GroupRole.MEMBER)
-                .build();
+        GroupMember member = joinDTO.toEntity(sessionUser,group);
         gmr.save(member);
     }
 
     // 가입코드로 참여
     @Transactional
-    public void joinByJoinCode(String joinCode, User sessionUser) {
+    public void joinByJoinCode(String joinCode, User sessionUser,
+                               GroupRequest.JoinDTO joinDTO) {
         Group group = gr.findByJoinCode(joinCode).orElseThrow(
                 () -> new Exception400("유효하지 않은 가입코드입니다.")
         );
@@ -89,11 +82,7 @@ public class GroupService {
         gmr.findByGroupIdAndUserId(group.getId(), sessionUser.getId())
                 .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
 
-        GroupMember member = GroupMember.builder()
-                .user(sessionUser)
-                .group(group)
-                .role(GroupRole.MEMBER)
-                .build();
+        GroupMember member = joinDTO.toEntity(sessionUser,group);
         gmr.save(member);
     }
 
