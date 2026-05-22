@@ -22,6 +22,9 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/security-logout")
                         .disable()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/login/oauth2/google", true)
                 );
         return http.build();
     }

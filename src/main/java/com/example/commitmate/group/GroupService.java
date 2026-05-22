@@ -166,6 +166,7 @@ public class GroupService {
         boolean hasUnpaidFine = target.getUser().getId() != null &&
                 fr.findByGroupId(groupId).stream()
                         .filter(f -> f.getGroupMember().getId().equals(groupMemberId))
+                        .filter(f->f.isExpired())
                         .anyMatch(f -> f.getStatus() == FineStatus.UNPAID
                                 || f.getStatus() == FineStatus.PENDING);
 

@@ -2,6 +2,8 @@ package com.example.commitmate.user;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,20 @@ public class UserController {
 
         loginDTO.validate();
         User user = us.login(loginDTO);
+        session.setAttribute("sessionUser", user);
+
+        return "redirect:/groups";
+    }
+
+    @GetMapping("/login/oauth2/google")
+    public String googleLogin(@AuthenticationPrincipal OAuth2User oAuth2User,
+                              HttpSession session) {
+        String providerId = oAuth2User.getAttribute("sub");
+        String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+
+        User user = us.findOrCreateSocialUser(
+                AuthProvider.GOOGLE, providerId, email, name);
         session.setAttribute("sessionUser", user);
 
         return "redirect:/groups";

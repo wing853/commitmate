@@ -23,13 +23,20 @@ public class User {
     private String nickname;
     @CreationTimestamp
     private Timestamp createdAt;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
+    private String providerId;
 
     @Builder
-    public User(Integer id, String email, String password, String nickname, Timestamp createdAt) {
+    public User(Integer id, String email, String password,
+                String nickname, Timestamp createdAt,
+                AuthProvider provider, String providerId) {
         this.id = id;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.createdAt = createdAt;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 }

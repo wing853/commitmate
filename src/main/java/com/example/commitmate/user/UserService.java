@@ -7,6 +7,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -23,7 +25,21 @@ public class UserService {
             throw new Exception400("이메일 혹은 비밀번호를 잘못 입력했습니다.");
         }
 
+        userEntity.setProvider(AuthProvider.LOCAL);
         return userEntity;
+    }
+
+    public User findOrCreateSocialUser(AuthProvider provider, String providerId,
+                                       String email, String nickname) {
+        String randomPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+        return ur.findByProviderAndProviderId(provider, providerId)
+                .orElseGet(() -> ur.save(User.builder()
+                        .email(email)
+                        .nickname(nickname)
+                        .password(randomPassword)
+                        .provider(provider)
+                        .providerId(providerId)
+                        .build()));
     }
 
     public User signup(UserRequest.SignupDTO signupDTO) {
@@ -37,6 +53,7 @@ public class UserService {
             throw new Exception400("이미 사용 중인 닉네임입니다.");
         }
 
+        userEntity.setProvider(AuthProvider.LOCAL);
         userEntity.setPassword(passwordEncoder.encode(signupDTO.getPassword()));
         return ur.save(userEntity);
     }
