@@ -2,6 +2,7 @@ package com.example.commitmate.group;
 
 import com.example.commitmate.core.errors.Exception400;
 import com.example.commitmate.core.errors.Exception403;
+import com.example.commitmate.core.errors.Exception404;
 import com.example.commitmate.fine.Fine;
 import com.example.commitmate.fine.FineRepository;
 import com.example.commitmate.fine.FineStatus;
@@ -225,5 +226,25 @@ public class GroupService {
 
         // 소프트 삭제
         member.setActive(false);
+    }
+
+    // 총무 권한 위임
+
+    public void delegateAdmin(Integer groupId, Integer groupMemberId, Integer requestUserId){
+        GroupMember requester = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId,requestUserId).orElseThrow(
+                () -> new Exception403("권한이 없습니다.")
+        );
+
+        if(!requester.getRole().equals(GroupRole.ADMIN)) {
+            throw new Exception403("총무만 권한을 위임할 수 있습니다");
+        }
+
+        GroupMember member = gmr.findById(groupMemberId).orElseThrow(
+                () -> new Exception404("멤버를 찾을 수 없습니다.")
+        );
+
+        member.setRole(GroupRole.ADMIN);
+        requester.setRole(GroupRole.MEMBER);
+
     }
 }

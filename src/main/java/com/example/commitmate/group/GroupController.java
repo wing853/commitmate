@@ -132,4 +132,15 @@ public class GroupController {
         gs.leaveGroup(groupId, sessionUser.getId());
         return ResponseEntity.ok().build();
     }
+
+    // 총무 위임
+    @PostMapping
+    @ResponseBody
+    public ResponseEntity<Void> delegateAdmin(@PathVariable Integer groupId,
+                                              @PathVariable Integer groupMemberId,
+                                              HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        gs.delegateAdmin(groupId, groupMemberId, sessionUser.getId());
+        return ResponseEntity.ok().build();
+    }
 }

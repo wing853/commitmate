@@ -253,6 +253,15 @@
         cursor: pointer; transition: 0.2s; white-space: nowrap;
     }
     .btn-leave:hover { background: rgba(255,255,255,0.05); color: #aaa; }
+
+    .btn-delegate {
+        background: transparent;
+        border: 0.5px solid rgba(245,158,11,0.25);
+        color: #f59e0b; padding: 5px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-delegate:hover { background: #f59e0b; color: #fff; }
 </style>
 
 <!-- hidden: 현재 유저 정보 -->
@@ -513,6 +522,7 @@
                 list.innerHTML = members.map(m => {
                     const showKick = currentUserIsAdmin && m.userId !== currentUserId;
                     const showLeave = m.userId === currentUserId && m.role !== 'ADMIN';
+                    const showDelegate = currentUserIsAdmin && m.userId !== currentUserId && m.role !== 'ADMIN';
                     return `
                         <div class="member-item">
                             <div class="member-avatar ${m.role === 'ADMIN' ? 'admin' : ''}">
@@ -524,6 +534,12 @@
                                     ${m.role === 'ADMIN' ? '총무' : '멤버'}
                                 </span>
                             </div>
+                            ${showDelegate ? `
+                                <button class="btn-delegate"
+                                    onclick="delegateAdmin(${m.id}, '${m.nickname}', ${groupId})">
+                                    위임
+                                </button>
+                            ` : ''}
                             ${showKick ? `
                                 <button class="btn-kick"
                                     onclick="kickMember(${m.id}, '${m.nickname}', ${groupId})">
@@ -540,6 +556,19 @@
                     `;
                 }).join('');
                 document.getElementById('memberModal').classList.add('active');
+            });
+    }
+
+    function delegateAdmin(groupMemberId, nickname, groupId) {
+        if (!confirm(`'${nickname}'님에게 총무를 위임하시겠습니까?`)) return;
+        fetch(`/groups/${groupId}/members/${groupMemberId}/delegate`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    alert('총무가 위임되었습니다.');
+                    location.reload();
+                } else {
+                    res.text().then(msg => alert(msg || '위임에 실패했습니다.'));
+                }
             });
     }
 
