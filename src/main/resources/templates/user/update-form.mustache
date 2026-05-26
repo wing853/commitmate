@@ -1,0 +1,149 @@
+{{> layout/header}}
+
+<style>
+    .profile-container {
+        width: 100%;
+        min-height: calc(100vh - 64px);
+        background-color: var(--bg);
+        padding: 60px 0 80px;
+        display: flex;
+        align-items: center;
+    }
+
+    .profile-card {
+        width: 100%;
+        max-width: 520px;
+        margin: 0 auto;
+        background: #111214;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 40px;
+    }
+
+    .card-eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--danger); margin-bottom: 6px; }
+    .card-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .card-sub { font-size: 13px; color: #444; margin-bottom: 36px; }
+
+    .divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.06); margin: 28px 0; }
+
+    .section-title {
+        font-size: 11px; font-weight: 700; color: #444;
+        letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;
+    }
+
+    .form-group { margin-bottom: 20px; }
+
+    .form-label {
+        display: block; font-size: 11px; font-weight: 600;
+        color: #444; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    .form-control {
+        width: 100%;
+        background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px; padding: 13px 16px;
+        color: #fff; font-size: 14px; outline: none; transition: 0.2s;
+    }
+    .form-control::placeholder { color: #333; }
+    .form-control:focus {
+        border-color: rgba(248,113,113,0.4);
+        background: rgba(248,113,113,0.04);
+    }
+
+    .current-info {
+        background: rgba(255,255,255,0.02);
+        border: 0.5px solid rgba(255,255,255,0.06);
+        border-radius: 10px; padding: 13px 16px;
+        font-size: 14px; color: #666; margin-bottom: 12px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .current-info span { color: #444; font-size: 11px; }
+
+    .form-hint { font-size: 11px; color: #333; margin-top: 6px; }
+
+    .btn-submit {
+        width: 100%; background: var(--danger); color: #fff;
+        border: none; padding: 14px; border-radius: 10px;
+        font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .btn-submit:hover { background: #f95e5e; transform: translateY(-2px); }
+
+    .btn-cancel {
+        width: 100%; background: transparent; color: #555;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        padding: 14px; border-radius: 10px; font-size: 14px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; margin-top: 8px;
+        text-decoration: none; display: block; text-align: center;
+    }
+    .btn-cancel:hover { background: rgba(255,255,255,0.04); color: #aaa; }
+</style>
+
+<main class="profile-container">
+    <div class="container">
+        <div class="profile-card">
+            <p class="card-eyebrow">MY PROFILE</p>
+            <h1 class="card-title">프로필 수정</h1>
+            <p class="card-sub">빈칸으로 두면 기존 값이 유지돼요.</p>
+
+            <!-- 현재 정보 -->
+            <div class="current-info">
+                <span>현재 닉네임</span>
+                <strong>{{sessionUser.nickname}}</strong>
+            </div>
+            <div class="current-info">
+                <span>이메일</span>
+                <strong>{{sessionUser.email}}</strong>
+            </div>
+
+            <hr class="divider">
+
+            <!-- 통합 폼 -->
+            <form action="/user/profile/update" method="post" autocomplete="off">
+
+                <!-- 닉네임 변경 -->
+                <p class="section-title">닉네임 변경</p>
+                <div class="form-group">
+                    <label class="form-label">새 닉네임</label>
+                    <input type="text" name="nickname" class="form-control"
+                           placeholder="변경할 닉네임 (빈칸 시 유지)"
+                           autocomplete="off">
+                    <p class="form-hint">현재 닉네임: {{sessionUser.nickname}}</p>
+                </div>
+
+                <hr class="divider">
+
+                <!-- 비밀번호 변경 -->
+                {{#sessionUser.localUser}}
+                    <p class="section-title">비밀번호 변경</p>
+                    <div class="form-group">
+                        <label class="form-label">현재 비밀번호</label>
+                        <input type="password" name="currentPassword" class="form-control"
+                               placeholder="현재 비밀번호 (변경 시 필수)"
+                               autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">새 비밀번호</label>
+                        <input type="password" name="newPassword" class="form-control"
+                               placeholder="새 비밀번호 (빈칸 시 유지)"
+                               autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">새 비밀번호 확인</label>
+                        <input type="password" name="newPasswordConfirm" class="form-control"
+                               placeholder="새 비밀번호 확인"
+                               autocomplete="new-password">
+                        <p class="form-hint">비밀번호를 변경하지 않으려면 모두 빈칸으로 두세요.</p>
+                    </div>
+                    <hr class="divider">
+                {{/sessionUser.localUser}}
+
+                <button type="submit" class="btn-submit">변경사항 저장하기</button>
+            </form>
+
+            <a href="/groups" class="btn-cancel">돌아가기</a>
+        </div>
+    </div>
+</main>
+
+{{> layout/footer}}

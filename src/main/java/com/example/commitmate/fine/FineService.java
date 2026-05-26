@@ -24,20 +24,39 @@ public class FineService {
     }
 
 
-    public FineResponse.GroupFineInfo getFineInfo(Integer id) {
-        List<Fine> fineList = findAllFine(id);
+    public FineResponse.GroupFineInfo getFineInfo(Integer groupId) {
+        List<Fine> fineList = findAllFine(groupId);
         List<Fine> expiredFines = fineList.stream()
-                .filter(Fine::isExpired) // Todo의 마감 기한이 지난 것만 필터링
+                .filter(Fine::isExpired)
                 .collect(Collectors.toList());
-        Integer totalAmount = expiredFines.stream()
-                .mapToInt(Fine::getAmount)
-                .sum();
+
+        List<Fine> withdrawnFines = fr.findByGroupMemberGroupIdAndTodoIsNull(groupId)
+                .stream()
+                .filter(f -> f.getStatus() != FineStatus.UNPAID)
+                .collect(Collectors.toList());
+
+        expiredFines.addAll(withdrawnFines);
+
+        int unpaidCount = (int) expiredFines.stream().filter(Fine::isUnpaid).count();
+        int pendingCount = (int) expiredFines.stream().filter(Fine::isPending).count();
+        int paidCount = (int) expiredFines.stream().filter(Fine::isPaid).count();
+
+        int unpaidAmount = expiredFines.stream().filter(Fine::isUnpaid).mapToInt(Fine::getAmount).sum();
+        int pendingAmount = expiredFines.stream().filter(Fine::isPending).mapToInt(Fine::getAmount).sum();
+        int paidAmount = expiredFines.stream().filter(Fine::isPaid).mapToInt(Fine::getAmount).sum();
+
+        int totalAmount = unpaidAmount + pendingAmount;
 
         return FineResponse.GroupFineInfo.builder()
                 .expiredFines(expiredFines)
                 .totalFinesAmount(totalAmount)
+                .unpaidCount(unpaidCount)
+                .pendingCount(pendingCount)
+                .paidCount(paidCount)
+                .unpaidAmount(unpaidAmount)
+                .pendingAmount(pendingAmount)
+                .paidAmount(paidAmount)
                 .build();
-
     }
 
     @Transactional
@@ -64,16 +83,15 @@ public class FineService {
                 () -> new Exception400("벌금 내역을 찾을 수 없습니다.")
         );
 
-        GroupMember member = gmr.findByGroupIdAndUserId(groupId, userId).orElseThrow(
+        GroupMember member = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId).orElseThrow( // 수정
                 () -> new Exception403("그룹 멤버가 아닙니다.")
         );
 
-        if(!member.isAdmin()) {
-            // todo: 총무 벌금 납부는 추후 개발 예정
+        if (!member.isAdmin()) {
             throw new Exception403("벌금 승인은 총무만 진행 가능합니다.");
         }
 
-        if(fine.isUnpaid()) {
+        if (fine.isUnpaid()) {
             throw new Exception400("선택한 벌금은 아직 인증 되지 않은 상태입니다.");
         }
 
@@ -84,8 +102,9 @@ public class FineService {
         fine.setStatus(FineStatus.PAID);
     }
 
+
     public boolean isAdmin(Integer groupId, Integer userId) {
-        return gmr.findByGroupIdAndUserId(groupId, userId)
+        return gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId) // 수정
                 .map(m -> m.getRole() == GroupRole.ADMIN)
                 .orElse(false);
     }

@@ -39,4 +39,8 @@ public class User {
         this.provider = provider;
         this.providerId = providerId;
     }
+
+    public boolean isLocalUser() {
+        return this.provider == AuthProvider.LOCAL || this.provider == null;
+    }
 }

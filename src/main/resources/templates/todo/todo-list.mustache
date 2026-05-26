@@ -244,6 +244,15 @@
         cursor: pointer; transition: 0.2s; white-space: nowrap;
     }
     .btn-kick:hover { background: #f87171; color: #fff; }
+
+    .btn-leave {
+        background: transparent;
+        border: 0.5px solid rgba(255,255,255,0.1);
+        color: #555; padding: 5px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-leave:hover { background: rgba(255,255,255,0.05); color: #aaa; }
 </style>
 
 <!-- hidden: 현재 유저 정보 -->
@@ -502,8 +511,8 @@
             .then(members => {
                 const list = document.getElementById('memberList');
                 list.innerHTML = members.map(m => {
-                    // 총무이고 본인이 아닌 경우에만 강퇴 버튼 표시
                     const showKick = currentUserIsAdmin && m.userId !== currentUserId;
+                    const showLeave = m.userId === currentUserId && m.role !== 'ADMIN';
                     return `
                         <div class="member-item">
                             <div class="member-avatar ${m.role === 'ADMIN' ? 'admin' : ''}">
@@ -521,6 +530,12 @@
                                     강퇴
                                 </button>
                             ` : ''}
+                            ${showLeave ? `
+                                <button class="btn-leave"
+                                    onclick="leaveGroup(${groupId})">
+                                    나가기
+                                </button>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
@@ -533,9 +548,21 @@
         fetch(`/groups/${groupId}/members/${groupMemberId}/kick`, { method: 'POST' })
             .then(res => {
                 if (res.ok) {
-                    openMemberModal(groupId); // 목록 새로고침
+                    openMemberModal(groupId);
                 } else {
-                    alert('강퇴에 실패했습니다.');
+                    res.text().then(msg => alert(msg || '강퇴에 실패했습니다.'));
+                }
+            });
+    }
+
+    function leaveGroup(groupId) {
+        if (!confirm('그룹을 나가시겠습니까?')) return;
+        fetch(`/groups/${groupId}/leave`, { method: 'POST' })
+            .then(res => {
+                if (res.ok) {
+                    location.href = '/groups';
+                } else {
+                    res.text().then(msg => alert(msg || '나가기에 실패했습니다.'));
                 }
             });
     }

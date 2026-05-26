@@ -5,6 +5,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -31,4 +32,10 @@ public interface TodoRepository extends JpaRepository<Todo,Integer> {
     @Modifying
     @Transactional
     void deleteByGroupMemberId(Integer groupMemberId);
+
+    List<Todo> findByGroupMemberId(Integer groupMemberId);
+
+    @Modifying
+    @Query(value = "UPDATE todo_tb SET fine_id = null WHERE group_member_id = :groupMemberId", nativeQuery = true)
+    void detachFineByGroupMemberId(@Param("groupMemberId") Integer groupMemberId);
 }

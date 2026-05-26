@@ -22,10 +22,23 @@
         padding: 22px 24px;
     }
     .summary-card.danger { background: #1a1010; border-color: rgba(248,113,113,0.2); }
+    .summary-card.warning { background: #1a1500; border-color: rgba(245,158,11,0.2); }
+    .summary-card.success { background: #0d1a10; border-color: rgba(52,211,153,0.2); }
 
     .summary-label { font-size: 9px; letter-spacing: 2px; color: #444; margin-bottom: 8px; display: block; text-transform: uppercase; }
-    .summary-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: #fff; }
+    .summary-card.danger .summary-label { color: rgba(248,113,113,0.5); }
+    .summary-card.warning .summary-label { color: rgba(245,158,11,0.5); }
+    .summary-card.success .summary-label { color: rgba(52,211,153,0.5); }
+
+    .summary-value { font-size: 24px; font-weight: 800; letter-spacing: -1px; color: #fff; margin-bottom: 4px; }
     .summary-value.red { color: var(--danger); }
+    .summary-value.yellow { color: #f59e0b; }
+    .summary-value.green { color: #34d399; }
+
+    .summary-sub { font-size: 12px; color: #333; font-weight: 600; }
+    .summary-sub.red { color: rgba(248,113,113,0.5); }
+    .summary-sub.yellow { color: rgba(245,158,11,0.5); }
+    .summary-sub.green { color: rgba(52,211,153,0.5); }
 
     .fine-main-card {
         background: #111214;
@@ -87,7 +100,6 @@
 
     .empty-cell { text-align: center; padding: 80px 0 !important; color: #2a2a2a; font-size: 14px; }
 
-    /* 납부 모달 */
     .modal-overlay {
         display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.75); z-index: 999;
@@ -130,7 +142,6 @@
     .btn-modal-submit:hover { background: #e08e00; transform: translateY(-2px); }
 </style>
 
-<!-- isAdmin 값을 JS로 넘기기 위한 hidden input -->
 <input type="hidden" id="isAdmin" value="{{isAdmin}}">
 
 <main class="fine-page-container">
@@ -141,14 +152,27 @@
             <h1 style="font-size: 26px; font-weight: 700; letter-spacing: -0.5px;">벌금 현황</h1>
         </div>
 
+        <!-- 요약 카드 -->
         <div class="fine-summary-grid">
-            <div class="summary-card">
-                <span class="summary-label">미납 건수</span>
-                <div class="summary-value">{{fineInfo.expiredFines.size}}<span style="font-size: 16px; color: #444; margin-left: 4px;">건</span></div>
+            <div class="summary-card danger">
+                <span class="summary-label">UNPAID</span>
+                <div class="summary-value red">{{fineInfo.unpaidCount}}<span style="font-size: 14px; margin-left: 4px;">건</span></div>
+                <div class="summary-sub red">₩{{fineInfo.unpaidAmount}}</div>
+            </div>
+            <div class="summary-card warning">
+                <span class="summary-label">PENDING</span>
+                <div class="summary-value yellow">{{fineInfo.pendingCount}}<span style="font-size: 14px; margin-left: 4px;">건</span></div>
+                <div class="summary-sub yellow">₩{{fineInfo.pendingAmount}}</div>
+            </div>
+            <div class="summary-card success">
+                <span class="summary-label">PAID</span>
+                <div class="summary-value green">{{fineInfo.paidCount}}<span style="font-size: 14px; margin-left: 4px;">건</span></div>
+                <div class="summary-sub green">₩{{fineInfo.paidAmount}}</div>
             </div>
             <div class="summary-card danger">
                 <span class="summary-label">총 미납 벌금</span>
                 <div class="summary-value red">₩{{fineInfo.totalFinesAmount}}</div>
+                <div class="summary-sub red">미납 + 승인대기 합산</div>
             </div>
         </div>
 
@@ -171,24 +195,36 @@
                 <tbody>
                 {{#fineInfo.expiredFines}}
                     <tr>
-                        <td><span class="user-badge">@ {{todo.groupMember.user.nickname}}</span></td>
                         <td>
-                            <div style="color: #ccc;">{{todo.work}}</div>
+                            {{#todo}}
+                                <span class="user-badge">@ {{todo.groupMember.user.nickname}}</span>
+                            {{/todo}}
+                            {{^todo}}
+                                <span style="font-size: 12px; color: #444; font-style: italic;">탈퇴한 멤버</span>
+                            {{/todo}}
+                        </td>
+                        <td>
+                            {{#todo}}
+                                <div style="color: #ccc;">{{todo.work}}</div>
+                            {{/todo}}
+                            {{^todo}}
+                                <div style="font-size: 12px; color: #444; font-style: italic;">삭제된 미션</div>
+                            {{/todo}}
                             {{#memo}}
                                 <div class="memo-text">💬 {{memo}}</div>
                             {{/memo}}
                         </td>
                         <td><span class="fine-amount">₩{{amount}}</span></td>
                         <td><span class="status-badge status-{{status}}">{{status}}</span></td>
-                        <td style="text-align:right;">
+                        <td style="text-align:right;" data-fine-id="{{fineId}}">
                             {{#isUnpaid}}
                                 <button class="btn-pay"
-                                        onclick="openPayModal({{id}}, '{{todo.work}}', {{amount}})">
+                                        onclick="openPayModal({{fineId}}, '{{todo.work}}', {{amount}})">
                                     납부 신청
                                 </button>
                             {{/isUnpaid}}
                             {{#isPending}}
-                                <form class="approve-form" action="/fines/{{id}}/approve"
+                                <form class="approve-form" action="/fines/{{fineId}}/approve"
                                       method="post" style="display:none;">
                                     <input type="hidden" name="groupId" value="{{groupId}}">
                                     <button type="submit" class="btn-approve"
@@ -234,7 +270,6 @@
 </div>
 
 <script>
-    // 관리자면 승인 버튼 표시
     document.addEventListener('DOMContentLoaded', function() {
         const isAdmin = document.getElementById('isAdmin').value === 'true';
         if (isAdmin) {

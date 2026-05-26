@@ -21,11 +21,12 @@ public class GroupMember {
     private Group group;
     @Enumerated(EnumType.STRING)
     private GroupRole role;
+    @Column(columnDefinition = "boolean default true")
+    private boolean isActive = true;
 
 
     @Builder
-    public GroupMember(Integer id, User user, Group group, GroupRole role) {
-        this.id = id;
+    public GroupMember(User user, Group group, GroupRole role) {
         this.user = user;
         this.group = group;
         this.role = role;

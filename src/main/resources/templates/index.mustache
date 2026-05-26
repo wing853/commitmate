@@ -16,7 +16,6 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
         body { background-color: var(--bg); color: #fff; overflow-x: hidden; letter-spacing: -0.3px; }
-
         .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; width: 100%; }
 
         /* ── Header ── */
@@ -28,30 +27,26 @@
             backdrop-filter: blur(20px); z-index: 100;
         }
         .header-inner { display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #fff; }
+        .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #fff; text-decoration: none; }
         .logo span { color: var(--danger); }
 
         nav { display: flex; gap: 8px; align-items: center; }
         .nav-link {
             color: var(--text-muted); text-decoration: none;
             font-size: 13px; font-weight: 500;
-            padding: 7px 14px; border-radius: 8px;
-            transition: 0.2s;
+            padding: 7px 14px; border-radius: 8px; transition: 0.2s;
         }
         .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
-
         .btn-signup-sm {
             background: #fff; color: #0e0f11;
             padding: 8px 18px; border-radius: 8px;
             font-size: 13px; font-weight: 700;
-            text-decoration: none;
-            transition: 0.2s;
+            text-decoration: none; transition: 0.2s;
         }
         .btn-signup-sm:hover { background: #e0e0e0; }
 
         /* ── Hero ── */
         .hero { padding: 100px 0 80px; text-align: center; }
-
         .hero-badge {
             display: inline-flex; align-items: center; gap: 8px;
             background: rgba(248,113,113,0.08);
@@ -64,109 +59,122 @@
             content: ''; width: 6px; height: 6px;
             background: var(--danger); border-radius: 50%;
         }
-
         .hero h1 {
             font-size: clamp(36px, 7vw, 72px);
             font-weight: 800; line-height: 1.1;
-            margin-bottom: 24px; letter-spacing: -2px;
-            color: #fff;
+            margin-bottom: 24px; letter-spacing: -2px; color: #fff;
         }
         .hero h1 span { color: var(--danger); }
-
         .hero p {
             color: var(--text-muted); font-size: 17px;
             max-width: 520px; margin: 0 auto 48px; line-height: 1.7;
         }
-
         .btn-cta {
             background: var(--danger); color: #fff;
             padding: 16px 40px; border-radius: 12px;
             font-size: 16px; font-weight: 700;
-            text-decoration: none; display: inline-block;
-            transition: 0.2s;
+            text-decoration: none; display: inline-block; transition: 0.2s;
         }
         .btn-cta:hover { background: #f95e5e; transform: translateY(-2px); }
 
-        /* ── Dashboard Mockup ── */
-        .mockup-wrap {
-            max-width: 960px; margin: 72px auto 0;
-            display: grid; grid-template-columns: 1fr 280px; gap: 16px;
-            text-align: left;
+        /* ── 기능 소개 ── */
+        .features { padding: 80px 0; }
+        .section-eyebrow {
+            font-size: 10px; letter-spacing: 3px;
+            color: var(--danger); margin-bottom: 12px; text-align: center;
+        }
+        .section-title {
+            font-size: 32px; font-weight: 800;
+            text-align: center; margin-bottom: 8px; letter-spacing: -1px;
+        }
+        .section-sub {
+            text-align: center; color: var(--text-muted);
+            font-size: 15px; margin-bottom: 56px;
         }
 
-        .main-card {
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .feature-card {
             background: #111214;
             border: 0.5px solid rgba(255,255,255,0.08);
-            border-radius: 20px; padding: 28px;
+            border-radius: 20px; padding: 32px;
+            transition: 0.2s;
         }
-
-        .card-header {
-            display: flex; justify-content: space-between;
-            align-items: flex-start; margin-bottom: 24px;
+        .feature-card:hover {
+            border-color: rgba(248,113,113,0.3);
+            transform: translateY(-4px);
         }
-        .card-header h3 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
-        .card-header p { font-size: 12px; color: var(--text-muted); }
-        .countdown { font-size: 11px; font-weight: 700; color: var(--danger); letter-spacing: 0.5px; }
-
-        .task-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 16px 0; border-bottom: 0.5px solid var(--border);
-        }
-        .task-item:last-child { border-bottom: none; }
-
-        .check-box {
-            width: 20px; height: 20px;
-            border: 1.5px solid #2a2d33; border-radius: 6px;
-            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-        }
-        .check-box.done { background: var(--green); border-color: var(--green); }
-
-        .task-text { font-size: 13px; color: #bbb; flex: 1; }
-        .task-text.done { color: #3a5a42; text-decoration: line-through; }
-        .task-fine { font-size: 11px; color: var(--danger); font-weight: 700; white-space: nowrap; }
-
-        /* 사이드 카드 */
-        .side-card { display: flex; flex-direction: column; gap: 12px; }
-
-        .glass-panel {
-            background: #111214;
-            border: 0.5px solid rgba(255,255,255,0.08);
-            border-radius: 16px; padding: 18px;
-        }
-
-        .panel-label { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 8px; }
-
-        .danger-amount {
-            font-size: 22px; font-weight: 800;
-            color: var(--danger); letter-spacing: -0.5px;
-            margin-bottom: 10px;
-        }
-
-        .penalty-bar {
-            height: 3px; background: #222; border-radius: 10px; overflow: hidden; margin-bottom: 10px;
-        }
-        .penalty-fill { height: 100%; background: var(--danger); width: 65%; }
-
-        .panel-sub { font-size: 11px; color: #3a3a3a; }
-
-        .feed-item {
-            display: flex; align-items: center; gap: 10px;
-            font-size: 12px; color: #555; padding: 8px 0;
-            border-bottom: 0.5px solid var(--border);
-        }
-        .feed-item:last-child { border-bottom: none; padding-bottom: 0; }
-
-        .avatar {
-            width: 24px; height: 24px; border-radius: 50%;
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 14px;
+            background: rgba(248,113,113,0.08);
+            border: 0.5px solid rgba(248,113,113,0.2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: 700; flex-shrink: 0;
+            font-size: 22px; margin-bottom: 20px;
         }
+        .feature-card h3 {
+            font-size: 18px; font-weight: 700;
+            margin-bottom: 10px; letter-spacing: -0.3px;
+        }
+        .feature-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
 
-        .feed-name { color: #aaa; font-weight: 600; }
+        /* ── 흐름 섹션 ── */
+        .flow { padding: 80px 0; background: #0a0b0d; }
+        .flow-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0; margin-top: 56px; position: relative;
+        }
+        .flow-step {
+            text-align: center; padding: 32px 24px; position: relative;
+        }
+        .flow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute; right: -12px; top: 50%;
+            transform: translateY(-50%);
+            color: #333; font-size: 20px;
+        }
+        .step-num {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(248,113,113,0.1);
+            border: 0.5px solid rgba(248,113,113,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700; color: var(--danger);
+            margin: 0 auto 16px;
+        }
+        .flow-step h4 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+        .flow-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+        /* ── CTA 섹션 ── */
+        .cta-section {
+            padding: 100px 0; text-align: center;
+            border-top: 0.5px solid var(--border);
+        }
+        .cta-section h2 {
+            font-size: 40px; font-weight: 800;
+            margin-bottom: 16px; letter-spacing: -1px;
+        }
+        .cta-section h2 span { color: var(--danger); }
+        .cta-section p {
+            color: var(--text-muted); font-size: 16px;
+            margin-bottom: 40px; line-height: 1.7;
+        }
+        .cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-secondary {
+            background: transparent;
+            border: 0.5px solid rgba(255,255,255,0.15);
+            color: #aaa; padding: 14px 32px; border-radius: 12px;
+            font-size: 15px; font-weight: 600;
+            text-decoration: none; transition: 0.2s;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
         /* ── Footer ── */
         footer {
-            padding: 60px 0; text-align: center;
+            padding: 48px 0; text-align: center;
             color: #2a2a2a; font-size: 12px;
             border-top: 0.5px solid var(--border);
             letter-spacing: 2px;
@@ -177,86 +185,115 @@
 
 <header>
     <div class="container header-inner">
-        <div class="logo">Commit<span>Mate</span>.</div>
+        <a href="/" class="logo">Commit<span>Mate</span>.</a>
         <nav>
-            <a href="#" class="nav-link">사용법</a>
-            <a href="#" class="nav-link">커뮤니티</a>
             <a href="/login-form" class="nav-link">로그인</a>
-            <a href="signup-form" class="btn-signup-sm">회원가입</a>
+            <a href="/signup-form" class="btn-signup-sm">회원가입</a>
         </nav>
     </div>
 </header>
 
+<!-- Hero -->
 <section class="hero">
     <div class="container">
-        <div class="hero-badge">현재 2,491개의 팀이 목표를 지키고 있습니다</div>
+        <div class="hero-badge">그룹 기반 벌금형 목표 관리 서비스</div>
         <h1>의지가 흔들린다면<br><span>지갑</span>을 거세요.</h1>
-        <p>투명한 장부 관리, 자동 벌금 정산, 강력한 커뮤니티.<br>당신의 꾸준함을 시스템으로 완성합니다.</p>
-        <a href="signup-form" class="btn-cta">지금 무료로 시작하기</a>
+        <p>그룹을 만들고 미션을 등록하세요.<br>
+            실패하면 벌금, 성공하면 성취감.<br>
+            투명한 정산으로 팀의 목표를 완성합니다.</p>
+        <a href="/signup-form" class="btn-cta">지금 무료로 시작하기</a>
+    </div>
+</section>
 
-        <!-- Dashboard Mockup -->
-        <div class="mockup-wrap">
-            <div class="main-card">
-                <div class="card-header">
-                    <div>
-                        <h3>오늘의 미션</h3>
-                        <p>2026년 5월 11일 월요일</p>
-                    </div>
-                    <span class="countdown">마감까지 02:41:09</span>
-                </div>
+<!-- 기능 소개 -->
+<section class="features">
+    <div class="container">
+        <p class="section-eyebrow">FEATURES</p>
+        <h2 class="section-title">CommitMate가 제공하는 것들</h2>
+        <p class="section-sub">목표 달성을 위한 모든 것을 갖췄습니다.</p>
 
-                <div class="task-list">
-                    <div class="task-item">
-                        <div class="check-box done">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0d1f16" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        </div>
-                        <span class="task-text done">아침 7시 기상 및 오운완 인증</span>
-                    </div>
-                    <div class="task-item">
-                        <div class="check-box"></div>
-                        <span class="task-text">기술 블로그 포스팅 1개 업로드</span>
-                        <span class="task-fine">₩5,000</span>
-                    </div>
-                    <div class="task-item">
-                        <div class="check-box"></div>
-                        <span class="task-text">리액트 공식 문서 3챕터 정독</span>
-                        <span class="task-fine">₩3,000</span>
-                    </div>
-                </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>그룹 관리</h3>
+                <p>그룹을 만들고 초대 링크 또는 가입 코드로 팀원을 초대하세요. 총무가 그룹을 관리하고 멤버를 강퇴할 수 있습니다.</p>
             </div>
-
-            <div class="side-card">
-                <div class="glass-panel">
-                    <div class="panel-label">TOTAL UNPAID</div>
-                    <div class="danger-amount">₩8,000</div>
-                    <div class="penalty-bar"><div class="penalty-fill"></div></div>
-                    <div class="panel-sub">어제보다 미완수 확률이 12% 높습니다.</div>
-                </div>
-
-                <div class="glass-panel" style="flex: 1;">
-                    <div class="panel-label" style="margin-bottom: 4px;">LIVE FEED</div>
-                    <div class="feed-item">
-                        <div class="avatar" style="background:#1c2e24; color:#34d399;">김</div>
-                        <span><span class="feed-name">김민수</span>님이 미션을 완료했습니다.</span>
-                    </div>
-                    <div class="feed-item">
-                        <div class="avatar" style="background:#2a1010; color:#f87171;">이</div>
-                        <span><span class="feed-name">이영희</span>님이 벌금 ₩5,000 적립..</span>
-                    </div>
-                    <div class="feed-item">
-                        <div class="avatar" style="background:#0c2236; color:#7aa2c8;">박</div>
-                        <span><span class="feed-name">박준형</span>님이 인증샷을 공유했습니다.</span>
-                    </div>
-                </div>
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3>미션 등록</h3>
+                <p>그룹 내에서 미션을 등록하고 마감 기한을 설정하세요. 기한 내 완료하지 못하면 벌금이 부과됩니다.</p>
             </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>마감 알림</h3>
+                <p>프로그레스 바를 통해 마감까지 남은 시간을 한눈에 확인하세요. 임박할수록 경고 색상으로 표시됩니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💸</div>
+                <h3>벌금 정산</h3>
+                <p>미션 실패 시 벌금이 자동으로 등록됩니다. 납부 신청 후 총무의 승인을 통해 투명하게 정산됩니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <h3>소셜 로그인</h3>
+                <p>Google 계정으로 간편하게 시작하세요. 별도의 회원가입 없이 바로 그룹에 참여할 수 있습니다.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔑</div>
+                <h3>초대 시스템</h3>
+                <p>초대 링크를 공유하거나 6자리 가입 코드를 전달해 팀원을 초대하세요. 두 가지 방식으로 편리하게 참여할 수 있습니다.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 서비스 흐름 -->
+<section class="flow">
+    <div class="container">
+        <p class="section-eyebrow">HOW IT WORKS</p>
+        <h2 class="section-title">이렇게 사용하세요</h2>
+        <p class="section-sub">4단계로 목표를 완성하세요.</p>
+
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="step-num">1</div>
+                <h4>그룹 생성</h4>
+                <p>그룹을 만들고<br>팀원을 초대하세요</p>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">2</div>
+                <h4>미션 등록</h4>
+                <p>마감 기한과<br>벌금을 설정하세요</p>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">3</div>
+                <h4>미션 수행</h4>
+                <p>기한 내 미션을<br>완료하세요</p>
+            </div>
+            <div class="flow-step">
+                <div class="step-num">4</div>
+                <h4>벌금 정산</h4>
+                <p>실패 시 납부 신청 후<br>총무 승인으로 정산</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <h2>지금 바로 <span>시작</span>하세요</h2>
+        <p>팀원들과 함께 목표를 세우고<br>서로의 의지를 지켜주세요.</p>
+        <div class="cta-buttons">
+            <a href="/signup-form" class="btn-cta">회원가입하기</a>
+            <a href="/login-form" class="btn-secondary">로그인</a>
         </div>
     </div>
 </section>
 
 <footer>
     <p>COMMITMATE — NO MORE EXCUSES. JUST RESULTS.</p>
+    <p style="margin-top: 8px;">© 2026 CommitMate. All rights reserved.</p>
 </footer>
 
 </body>

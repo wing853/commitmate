@@ -62,6 +62,10 @@ public class Fine {
         return this.todo.isExpired(); // Todo의 판단 로직을 그대로 사용
     }
 
+    public Integer getFineId(){
+        return this.id;
+    }
+
     public boolean isUnpaid()  { return this.status == FineStatus.UNPAID; }
     public boolean isPending() { return this.status == FineStatus.PENDING; }
     public boolean isPaid()    { return this.status == FineStatus.PAID; }

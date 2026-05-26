@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Controller
@@ -59,11 +60,32 @@ public class UserController {
 
     }
 
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public String logout(HttpSession session) {
         if(session != null) {
             session.invalidate();
         }
         return "redirect:/";
+    }
+
+    @GetMapping("/user/profile")
+    public String updateFormPage(HttpSession session,Model model) {
+
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        model.addAttribute("sessionUser", sessionUser);
+        return "user/update-form";
+    }
+
+    @PostMapping("/user/profile/update")
+    public String updateProfile(@RequestParam(value = "nickname", required = false) String nickname,
+                                @RequestParam(value = "currentPassword", required = false) String currentPassword,
+                                @RequestParam(value = "newPassword", required = false) String newPassword,
+                                @RequestParam(value = "newPasswordConfirm", required = false) String newPasswordConfirm,
+                                HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        us.updateProfile(sessionUser.getId(), nickname, currentPassword, newPassword, newPasswordConfirm);
+        User updatedUser = us.findById(sessionUser.getId());
+        session.setAttribute("sessionUser", updatedUser);
+        return "redirect:/user/profile";
     }
 }

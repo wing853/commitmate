@@ -87,7 +87,7 @@ public class GroupController {
     public String joinByInviteCode(@PathVariable("code") String code, HttpSession session,
                                    GroupRequest.JoinDTO joinDTO) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        gs.joinByInviteCode(code, sessionUser,joinDTO);
+        gs.joinByInviteCode(code, sessionUser);
         return "redirect:/groups";
     }
 
@@ -96,7 +96,7 @@ public class GroupController {
     public String joinByJoinCode(@ModelAttribute GroupRequest.JoinDTO joinDTO,
                                  HttpSession session) {
         User sessionUser = (User) session.getAttribute("sessionUser");
-        gs.joinByJoinCode(joinDTO.getJoinCode(), sessionUser,joinDTO);
+        gs.joinByJoinCode(joinDTO.getJoinCode(), sessionUser);
         return "redirect:/groups";
     }
 
@@ -120,6 +120,16 @@ public class GroupController {
                                            HttpSession session) {
         User sessionUser = (User) session.getAttribute("sessionUser");
         gs.kickMember(groupId, groupMemberId, sessionUser.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    // 그룹 나가기
+    @PostMapping("/groups/{groupId}/leave")
+    @ResponseBody
+    public ResponseEntity<Void> leaveGroup(@PathVariable Integer groupId,
+                                           HttpSession session) {
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        gs.leaveGroup(groupId, sessionUser.getId());
         return ResponseEntity.ok().build();
     }
 }

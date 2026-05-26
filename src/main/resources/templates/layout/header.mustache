@@ -46,7 +46,12 @@
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 11px; font-weight: 700; color: var(--danger);
-            overflow: hidden;
+            overflow: hidden; text-decoration: none;
+            cursor: pointer; transition: 0.2s;
+        }
+        .avatar:hover {
+            border-color: rgba(248,113,113,0.6);
+            background: rgba(248,113,113,0.1);
         }
 
         .btn-logout {
@@ -124,8 +129,12 @@
         <div class="user-profile">
             {{#sessionUser}}
                 <span class="user-name">{{nickname}} 님</span>
-                <div class="avatar">{{nickname}}</div>
-                <a href="/logout" class="btn-logout">로그아웃</a>
+                <a href="/user/profile" class="avatar" title="프로필 수정">
+                    {{nickname}}
+                </a>
+                <form action="/logout" method="post" style="display:inline;">
+                    <button type="submit" class="btn-logout">로그아웃</button>
+                </form>
             {{/sessionUser}}
         </div>
     </div>
