@@ -134,7 +134,7 @@ public class GroupController {
     }
 
     // 총무 위임
-    @PostMapping
+    @PostMapping("/groups/{groupId}/members/{groupMemberId}/delegate")
     @ResponseBody
     public ResponseEntity<Void> delegateAdmin(@PathVariable Integer groupId,
                                               @PathVariable Integer groupMemberId,

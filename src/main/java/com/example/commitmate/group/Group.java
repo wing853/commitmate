@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -23,6 +24,8 @@ public class Group {
     private String joinCode;
     @CreationTimestamp
     private Timestamp createdAt;
+    @ColumnDefault("0")
+    private Integer groupPoint = 0;
 
     @Builder
     public Group(String roomName, String description, String inviteCode,String joinCode) {

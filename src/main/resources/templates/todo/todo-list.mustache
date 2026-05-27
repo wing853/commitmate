@@ -62,7 +62,7 @@
     .status-card.complete .s-count { color: #34d399; }
     .status-card.expired  .s-count { color: #f87171; }
 
-    .action-bar { display: flex; gap: 8px; margin-bottom: 20px; }
+    .action-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
 
     .btn-filter-pill {
         display: flex; align-items: center; gap: 8px;
@@ -303,18 +303,24 @@
 
         <!-- 액션 바 -->
         <div class="action-bar">
-            {{#isFiltered}}
-                <a href="?" class="btn-filter-pill filter-active">
-                    <div class="dot"></div>
-                    <span>전체 미션 보기</span>
-                </a>
-            {{/isFiltered}}
-            {{^isFiltered}}
-                <a href="?filter=my" class="btn-filter-pill">
-                    <div class="dot"></div>
-                    <span>내 미션 보기</span>
-                </a>
-            {{/isFiltered}}
+            <!-- 내 미션 토글 -->
+            <button onclick="toggleMyFilter()"
+                    class="btn-filter-pill {{#isFiltered}}filter-active{{/isFiltered}}">
+                <div class="dot"></div>
+                <span>내 미션 보기</span>
+            </button>
+
+            <!-- 상태 필터 (버튼 하나로 순환) -->
+            <button onclick="toggleStatus()"
+                    class="btn-filter-pill {{#currentStatus}}filter-active{{/currentStatus}}">
+                <div class="dot"></div>
+                <span>
+                    {{#isStatusReady}}미완료{{/isStatusReady}}
+                    {{#isStatusComplete}}완료{{/isStatusComplete}}
+                    {{#isStatusExpired}}기간 지난{{/isStatusExpired}}
+                    {{^currentStatus}}상태 필터{{/currentStatus}}
+                </span>
+            </button>
 
             {{#todoList.0}}
                 <button onclick="openMemberModal({{groupMember.group.id}})" class="btn-action-link">👥 멤버 보기</button>
@@ -490,6 +496,34 @@
 
     function toggleTodo(todoId, groupId) {
         location.href = `/todo/${todoId}/toggle?groupId=${groupId}`;
+    }
+
+    // 내 미션 토글
+    function toggleMyFilter() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('filter') === 'my') {
+            params.delete('filter');
+        } else {
+            params.set('filter', 'my');
+        }
+        window.location.search = params.toString();
+    }
+
+    // 상태 필터 순환
+    function toggleStatus() {
+        const params = new URLSearchParams(window.location.search);
+        const current = params.get('status');
+
+        if (!current) {
+            params.set('status', 'ready');
+        } else if (current === 'ready') {
+            params.set('status', 'complete');
+        } else if (current === 'complete') {
+            params.set('status', 'expired');
+        } else {
+            params.delete('status');
+        }
+        window.location.search = params.toString();
     }
 
     document.addEventListener('DOMContentLoaded', function () {

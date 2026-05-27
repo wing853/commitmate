@@ -166,8 +166,7 @@ public class GroupService {
                 .filter(f -> f.getGroupMember() != null)
                 .filter(f -> f.getGroupMember().getId().equals(groupMemberId))
                 .filter(Fine::isExpired)
-                .anyMatch(f -> f.getStatus() == FineStatus.UNPAID
-                        || f.getStatus() == FineStatus.PENDING);
+                .anyMatch(f -> f.getStatus() == FineStatus.UNPAID);
 
         if (hasUnpaidFine) {
             throw new Exception400("미납 또는 승인 대기 중인 벌금이 있어 강퇴할 수 없습니다.");
@@ -204,8 +203,7 @@ public class GroupService {
                 .filter(f -> f.getGroupMember() != null)
                 .filter(f -> f.getGroupMember().getId().equals(member.getId()))
                 .filter(Fine::isExpired)
-                .anyMatch(f -> f.getStatus() == FineStatus.UNPAID
-                        || f.getStatus() == FineStatus.PENDING);
+                .anyMatch(f -> f.getStatus() == FineStatus.UNPAID);
 
         if (hasUnpaidFine) {
             throw new Exception400("미납 또는 승인 대기 중인 벌금이 있어 나갈 수 없습니다.");
@@ -230,6 +228,7 @@ public class GroupService {
 
     // 총무 권한 위임
 
+    @Transactional
     public void delegateAdmin(Integer groupId, Integer groupMemberId, Integer requestUserId){
         GroupMember requester = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId,requestUserId).orElseThrow(
                 () -> new Exception403("권한이 없습니다.")

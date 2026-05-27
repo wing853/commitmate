@@ -24,28 +24,40 @@ public class TodoController {
     @GetMapping("/groups/{groupId}/todos")
     public String listTodos(@PathVariable Integer groupId,
                             @RequestParam(name = "filter", required = false) String filter,
+                            @RequestParam(name = "status", required = false) String status,
                             HttpSession session, Model model) {
-
 
         User sessionUser = (User) session.getAttribute("sessionUser");
 
-        // 1. 그룹 정보 가져오기 (헤더용)
         model.addAttribute("group", gs.findGroupById(groupId));
-        model.addAttribute("sessionUser",sessionUser);
-
-
+        model.addAttribute("sessionUser", sessionUser);
         model.addAttribute("isAdmin", gs.isAdmin(groupId, sessionUser.getId()));
 
-        // 2. 투두 목록 필터 로직 (아까 짠 코드 그대로!)
         List<Todo> todoList = "my".equals(filter)
                 ? ts.findMyTodos(groupId, sessionUser.getId())
                 : ts.showTodo(groupId);
 
+        // status 필터링
+        if (status != null) {
+            todoList = todoList.stream()
+                    .filter(todo -> {
+                        if ("ready".equals(status)) return todo.isReady();
+                        if ("complete".equals(status)) return todo.isComplete();
+                        if ("expired".equals(status)) return todo.isExpired();
+                        return true;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        }
 
         model.addAttribute("todoList", todoList);
         model.addAttribute("isFiltered", "my".equals(filter));
+        model.addAttribute("currentStatus", status);
+        model.addAttribute("isStatusReady", "ready".equals(status));   // 추가
+        model.addAttribute("isStatusComplete", "complete".equals(status)); // 추가
+        model.addAttribute("isStatusExpired", "expired".equals(status));   // 추가
+        model.addAttribute("isStatusNone", status == null);                // 추가
 
-        return "todo/todo-list"; // 실제 머스테치 페이지
+        return "todo/todo-list";
     }
 
 

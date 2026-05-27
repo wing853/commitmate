@@ -67,6 +67,5 @@ public class Fine {
     }
 
     public boolean isUnpaid()  { return this.status == FineStatus.UNPAID; }
-    public boolean isPending() { return this.status == FineStatus.PENDING; }
     public boolean isPaid()    { return this.status == FineStatus.PAID; }
 }

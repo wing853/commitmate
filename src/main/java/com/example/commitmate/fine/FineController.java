@@ -3,6 +3,7 @@ package com.example.commitmate.fine;
 import com.example.commitmate.groupmember.GroupRole;
 import com.example.commitmate.todo.Todo;
 import com.example.commitmate.user.User;
+import com.example.commitmate.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -20,17 +21,49 @@ import java.util.stream.Collectors;
 public class FineController {
 
     private final FineService fs;
+    private final UserService us;
 
     @GetMapping("/groups/{groupId}/fines")
     public String showFines(@PathVariable("groupId") Integer groupId,
+                            @RequestParam(name = "filter", required = false) String filter,
+                            @RequestParam(name = "status", required = false) String status,
                             Model model,
                             HttpSession session) {
 
         User sessionUser = (User) session.getAttribute("sessionUser");
-
+        model.addAttribute("sessionUser", sessionUser);
         FineResponse.GroupFineInfo fineInfo = fs.getFineInfo(groupId);
-        model.addAttribute("fineInfo",fineInfo);
+
+        // 내 벌금 필터
+        List<Fine> fineList = "my".equals(filter)
+                ? fineInfo.getExpiredFines().stream()
+                .filter(f -> f.getGroupMember() != null &&
+                        f.getGroupMember().getUser().getId().equals(sessionUser.getId()))
+                .collect(java.util.stream.Collectors.toList())
+                : fineInfo.getExpiredFines();
+
+        // 납부 상태 필터
+        if (status != null) {
+            fineList = fineList.stream()
+                    .filter(f -> {
+                        if ("unpaid".equals(status)) return f.isUnpaid();
+                        if ("paid".equals(status)) return f.isPaid();
+                        return true;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        fineInfo.setExpiredFines(fineList);
+
+        model.addAttribute("fineInfo", fineInfo);
         model.addAttribute("isAdmin", fs.isAdmin(groupId, sessionUser.getId()));
+        model.addAttribute("group", fs.getGroup(groupId));
+        model.addAttribute("isFiltered", "my".equals(filter));
+        model.addAttribute("currentStatus", status);
+        model.addAttribute("isStatusUnpaid", "unpaid".equals(status));
+        model.addAttribute("isStatusPaid", "paid".equals(status));
+        model.addAttribute("isStatusNone", status == null);
+
         return "fine/fine-list";
     }
 
@@ -41,16 +74,11 @@ public class FineController {
                           HttpSession session) {
         User sessionUser = (User) session.getAttribute("sessionUser");
         fs.payFine(fineId, sessionUser.getId(), memo);
+
+        User updatedUser = us.findById(sessionUser.getId());
+        session.setAttribute("sessionUser",updatedUser);
+
         return "redirect:/groups/" + groupId + "/fines";
     }
 
-    // 납부 승인 (PENDING → PAID)
-    @PostMapping("/fines/{fineId}/approve")
-    public String approveFine(@PathVariable("fineId") Integer fineId,
-                              @RequestParam("groupId") Integer groupId,
-                              HttpSession session) {
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        fs.approveFine(fineId, sessionUser.getId(), groupId);
-        return "redirect:/groups/" + groupId + "/fines";
-    }
 }

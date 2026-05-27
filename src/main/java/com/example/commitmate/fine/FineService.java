@@ -2,9 +2,14 @@ package com.example.commitmate.fine;
 
 import com.example.commitmate.core.errors.Exception400;
 import com.example.commitmate.core.errors.Exception403;
+import com.example.commitmate.core.errors.Exception404;
+import com.example.commitmate.group.Group;
+import com.example.commitmate.group.GroupRepository;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import com.example.commitmate.groupmember.GroupRole;
+import com.example.commitmate.user.User;
+import com.example.commitmate.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 public class FineService {
     private final FineRepository fr;
     private final GroupMemberRepository gmr;
+    private final UserRepository ur;
+    private final GroupRepository gr;
 
     public List<Fine> findAllFine(Integer groupId) {
         List<Fine> fines = fr.findByGroupId(groupId);
@@ -38,23 +45,19 @@ public class FineService {
         expiredFines.addAll(withdrawnFines);
 
         int unpaidCount = (int) expiredFines.stream().filter(Fine::isUnpaid).count();
-        int pendingCount = (int) expiredFines.stream().filter(Fine::isPending).count();
         int paidCount = (int) expiredFines.stream().filter(Fine::isPaid).count();
 
         int unpaidAmount = expiredFines.stream().filter(Fine::isUnpaid).mapToInt(Fine::getAmount).sum();
-        int pendingAmount = expiredFines.stream().filter(Fine::isPending).mapToInt(Fine::getAmount).sum();
         int paidAmount = expiredFines.stream().filter(Fine::isPaid).mapToInt(Fine::getAmount).sum();
 
-        int totalAmount = unpaidAmount + pendingAmount;
+        int totalAmount = unpaidAmount;
 
         return FineResponse.GroupFineInfo.builder()
                 .expiredFines(expiredFines)
                 .totalFinesAmount(totalAmount)
                 .unpaidCount(unpaidCount)
-                .pendingCount(pendingCount)
                 .paidCount(paidCount)
                 .unpaidAmount(unpaidAmount)
-                .pendingAmount(pendingAmount)
                 .paidAmount(paidAmount)
                 .build();
     }
@@ -70,42 +73,34 @@ public class FineService {
         }
 
         if(!fine.isUnpaid()) {
-            throw new Exception400("선택한 벌금은 납부 승인 대기중이거나 납부가 완료된 상태입니다");
+            throw new Exception400("선택한 벌금은 납부가 완료된 상태입니다");
         }
 
-        fine.setStatus(FineStatus.PENDING);
-        fine.setMemo(memo);
-    }
-
-    @Transactional
-    public void approveFine(Integer fineId, Integer userId, Integer groupId) {
-        Fine fine = fr.findByIdWithMember(fineId).orElseThrow(
-                () -> new Exception400("벌금 내역을 찾을 수 없습니다.")
+        User user = ur.findById(userId).orElseThrow(
+                () -> new Exception404("사용자를 찾을 수 없습니다")
         );
-
-        GroupMember member = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId).orElseThrow( // 수정
-                () -> new Exception403("그룹 멤버가 아닙니다.")
-        );
-
-        if (!member.isAdmin()) {
-            throw new Exception403("벌금 승인은 총무만 진행 가능합니다.");
+        if(user.getPoint() < fine.getAmount()) {
+            throw new Exception400("포인트가 부족합니다. 현재 보유 포인트: " + user.getPoint() + "P");
         }
 
-        if (fine.isUnpaid()) {
-            throw new Exception400("선택한 벌금은 아직 인증 되지 않은 상태입니다.");
-        }
+        user.setPoint(user.getPoint()-fine.getAmount());
 
-        if (fine.isPaid()) {
-            throw new Exception400("이미 납부가 완료된 벌금입니다.");
-        }
+        Group group = fine.getGroupMember().getGroup();
+        group.setGroupPoint(group.getGroupPoint() + fine.getAmount());
 
         fine.setStatus(FineStatus.PAID);
+        fine.setMemo(memo);
     }
-
 
     public boolean isAdmin(Integer groupId, Integer userId) {
         return gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId) // 수정
                 .map(m -> m.getRole() == GroupRole.ADMIN)
                 .orElse(false);
+    }
+
+    public Group getGroup(Integer groupId) {
+        return gr.findById(groupId).orElseThrow(
+                () -> new Exception400("그룹을 찾을 수 없습니다.")
+        );
     }
 }

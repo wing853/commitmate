@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -26,6 +27,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private AuthProvider provider;
     private String providerId;
+    @ColumnDefault("0")
+    private Integer point = 0;
 
     @Builder
     public User(Integer id, String email, String password,

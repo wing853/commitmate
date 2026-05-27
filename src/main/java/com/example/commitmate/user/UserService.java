@@ -2,6 +2,7 @@ package com.example.commitmate.user;
 
 
 import com.example.commitmate.core.errors.Exception400;
+import com.example.commitmate.core.errors.Exception404;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -96,5 +97,12 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public void chargePoint(Integer userId, Integer amount) {
+        User user = ur.findById(userId).orElseThrow(
+                () -> new Exception404("사용자를 찾을 수 없습니다.")
+        );
+        user.setPoint(user.getPoint() + amount);
+    }
 
 }
