@@ -1,8 +1,6 @@
 package com.example.commitmate.group;
 
-import com.example.commitmate.core.errors.Exception400;
-import com.example.commitmate.core.errors.Exception403;
-import com.example.commitmate.core.errors.Exception404;
+import com.example.commitmate.core.errors.*;
 import com.example.commitmate.fine.Fine;
 import com.example.commitmate.fine.FineRepository;
 import com.example.commitmate.fine.FineStatus;
@@ -12,7 +10,6 @@ import com.example.commitmate.groupmember.GroupRole;
 import com.example.commitmate.todo.Todo;
 import com.example.commitmate.todo.TodoRepository;
 import com.example.commitmate.user.User;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +25,6 @@ public class GroupService {
     private final GroupMemberRepository gmr;
     private final TodoRepository tr;
     private final FineRepository fr;
-    private final EntityManager em;
 
     @Transactional
     public List<GroupResponse.MyGroupDTO> getMyGroups(Integer userId) {
@@ -59,10 +55,10 @@ public class GroupService {
     @Transactional
     public void joinByInviteCode(String inviteCode, User sessionUser) {
         Group group = gr.findByInviteCode(inviteCode).orElseThrow(
-                () -> new Exception400("유효하지 않은 초대링크입니다.")
+                () -> new ExceptionInput("유효하지 않은 초대링크입니다.")
         );
         gmr.findByGroupIdAndUserIdAndIsActiveTrue(group.getId(), sessionUser.getId())
-                .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
+                .ifPresent(m -> { throw new ExceptionInput("이미 참여 중인 그룹입니다."); });
 
         GroupMember member = GroupMember.builder()
                 .user(sessionUser)
@@ -76,10 +72,10 @@ public class GroupService {
     @Transactional
     public void joinByJoinCode(String joinCode, User sessionUser) {
         Group group = gr.findByJoinCode(joinCode).orElseThrow(
-                () -> new Exception400("유효하지 않은 가입코드입니다.")
+                () -> new ExceptionInput("유효하지 않은 가입코드입니다.")
         );
         gmr.findByGroupIdAndUserIdAndIsActiveTrue(group.getId(), sessionUser.getId())
-                .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
+                .ifPresent(m -> { throw new ExceptionInput("이미 참여 중인 그룹입니다."); });
 
         GroupMember member = GroupMember.builder()
                 .user(sessionUser)
@@ -93,14 +89,14 @@ public class GroupService {
     // todo-list에서 초대 정보 조회
     public GroupResponse.InviteInfoDTO getInviteInfo(Integer groupId) {
         Group group = gr.findById(groupId).orElseThrow(
-                () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("해당 그룹을 찾을 수 없습니다.")
         );
         return new GroupResponse.InviteInfoDTO(group);
     }
 
     public GroupResponse.detailDTO findGroupById(Integer id) {
         Group group = gr.findById(id).orElseThrow(
-                () -> new Exception400("해당 그룹을 찾을 수 없습니다")
+                () -> new ExceptionNoInfo("해당 그룹을 찾을 수 없습니다")
         );
 
         return new GroupResponse.detailDTO(group);
@@ -109,7 +105,7 @@ public class GroupService {
     @Transactional
     public void updateGroup(Integer id, GroupRequest.UpdateDTO updateDTO) {
         Group group = gr.findById(id).orElseThrow(
-                () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("해당 그룹을 찾을 수 없습니다.")
         );
 
         group.update(updateDTO.getRoomName(),updateDTO.getDescription());
@@ -118,10 +114,10 @@ public class GroupService {
     @Transactional
     public void deleteGroup(Integer groupId, Integer userId) {
         Group group = gr.findById(groupId).orElseThrow(
-                () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("해당 그룹을 찾을 수 없습니다.")
         );
         GroupMember member = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId).orElseThrow(
-                () -> new Exception403("해당 그룹의 멤버가 아닙니다.")
+                () -> new ExceptionNoInfo("해당 그룹의 멤버가 아닙니다.")
         );
         if (member.getRole() != GroupRole.ADMIN) {
             throw new Exception403("그룹 삭제 권한이 없습니다.");
@@ -155,7 +151,7 @@ public class GroupService {
         }
 
         GroupMember target = gmr.findById(groupMemberId)
-                .orElseThrow(() -> new Exception400("해당 멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ExceptionNoInfo("해당 멤버를 찾을 수 없습니다."));
 
         if (target.getRole() == GroupRole.ADMIN) {
             throw new Exception403("관리자는 강퇴할 수 없습니다.");
@@ -169,7 +165,7 @@ public class GroupService {
                 .anyMatch(f -> f.getStatus() == FineStatus.UNPAID);
 
         if (hasUnpaidFine) {
-            throw new Exception400("미납 또는 승인 대기 중인 벌금이 있어 강퇴할 수 없습니다.");
+            throw new ExceptionNoInfo("미납 또는 승인 대기 중인 벌금이 있어 강퇴할 수 없습니다.");
         }
 
         // Fine의 todo 연결 끊기 (JPQL로 직접 처리)
@@ -206,7 +202,7 @@ public class GroupService {
                 .anyMatch(f -> f.getStatus() == FineStatus.UNPAID);
 
         if (hasUnpaidFine) {
-            throw new Exception400("미납 또는 승인 대기 중인 벌금이 있어 나갈 수 없습니다.");
+            throw new ExceptionFine("미납 벌금이 있어 나갈 수 없습니다.");
         }
 
         // Fine의 todo 연결 끊기
@@ -239,7 +235,7 @@ public class GroupService {
         }
 
         GroupMember member = gmr.findById(groupMemberId).orElseThrow(
-                () -> new Exception404("멤버를 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("멤버를 찾을 수 없습니다.")
         );
 
         member.setRole(GroupRole.ADMIN);

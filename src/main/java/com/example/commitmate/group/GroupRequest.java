@@ -1,10 +1,10 @@
 package com.example.commitmate.group;
 
-import com.example.commitmate.core.errors.Exception400;
+import com.example.commitmate.core.errors.ExceptionInput;
+import com.example.commitmate.core.errors.ExceptionNoInfo;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupRole;
 import com.example.commitmate.user.User;
-import lombok.Builder;
 import lombok.Data;
 
 import java.util.Random;
@@ -48,7 +48,7 @@ public class GroupRequest {
 
         public void validate() {
             if (roomName == null || roomName.trim().isEmpty()) {
-                throw new Exception400("그룹 이름을 입력하세요");
+                throw new ExceptionNoInfo("그룹 이름을 입력하세요");
             }
         }
     }
@@ -60,7 +60,7 @@ public class GroupRequest {
 
         public void validate() {
             if (roomName == null || roomName.trim().isEmpty()) {
-                throw new Exception400("그룹 이름을 입력하세요");
+                throw new ExceptionInput("그룹 이름을 입력하세요");
             }
         }
     }

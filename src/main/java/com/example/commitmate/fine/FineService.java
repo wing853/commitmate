@@ -1,8 +1,6 @@
 package com.example.commitmate.fine;
 
-import com.example.commitmate.core.errors.Exception400;
-import com.example.commitmate.core.errors.Exception403;
-import com.example.commitmate.core.errors.Exception404;
+import com.example.commitmate.core.errors.*;
 import com.example.commitmate.group.Group;
 import com.example.commitmate.group.GroupRepository;
 import com.example.commitmate.groupmember.GroupMember;
@@ -65,7 +63,7 @@ public class FineService {
     @Transactional
     public void payFine(Integer fineId, Integer userId, String memo) {
         Fine fine = fr.findByIdWithMember(fineId).orElseThrow(
-                () -> new Exception400("벌금 내역을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("벌금 내역을 찾을 수 없습니다.")
         );
 
         if(!fine.getGroupMember().getUser().getId().equals(userId)) {
@@ -73,14 +71,14 @@ public class FineService {
         }
 
         if(!fine.isUnpaid()) {
-            throw new Exception400("선택한 벌금은 납부가 완료된 상태입니다");
+            throw new ExceptionFine("선택한 벌금은 납부가 완료된 상태입니다");
         }
 
         User user = ur.findById(userId).orElseThrow(
-                () -> new Exception404("사용자를 찾을 수 없습니다")
+                () -> new ExceptionNoInfo("사용자를 찾을 수 없습니다")
         );
         if(user.getPoint() < fine.getAmount()) {
-            throw new Exception400("포인트가 부족합니다. 현재 보유 포인트: " + user.getPoint() + "P");
+            throw new ExceptionPoint("포인트가 부족합니다. 현재 보유 포인트: " + user.getPoint() + "P");
         }
 
         user.setPoint(user.getPoint()-fine.getAmount());
@@ -100,7 +98,7 @@ public class FineService {
 
     public Group getGroup(Integer groupId) {
         return gr.findById(groupId).orElseThrow(
-                () -> new Exception400("그룹을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("그룹을 찾을 수 없습니다.")
         );
     }
 }

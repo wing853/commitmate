@@ -2,10 +2,7 @@ package com.example.commitmate.todo;
 
 import com.example.commitmate.core.errors.Exception403;
 import com.example.commitmate.group.GroupService;
-import com.example.commitmate.groupmember.GroupMember;
-import com.example.commitmate.groupmember.GroupRole;
 import com.example.commitmate.user.User;
-import com.example.commitmate.user.UserService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

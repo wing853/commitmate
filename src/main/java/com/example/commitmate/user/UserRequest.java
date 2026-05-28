@@ -1,6 +1,6 @@
 package com.example.commitmate.user;
 
-import com.example.commitmate.core.errors.Exception400;
+import com.example.commitmate.core.errors.ExceptionInput;
 import lombok.Data;
 
 public class UserRequest {
@@ -11,11 +11,11 @@ public class UserRequest {
 
         public void validate() {
             if(email == null || email.trim().isEmpty()) {
-                throw new Exception400("이메일을 입력하세요");
+                throw new ExceptionInput("이메일을 입력하세요");
             }
 
             if(password == null || password.trim().isEmpty()) {
-                throw new Exception400("비밀번호를 입력하세요");
+                throw new ExceptionInput("비밀번호를 입력하세요");
             }
         }
 
@@ -29,15 +29,15 @@ public class UserRequest {
 
         public void validate() {
             if(email == null || email.trim().isEmpty()) {
-                throw new Exception400("이메일을 입력하세요");
+                throw new ExceptionInput("이메일을 입력하세요");
             }
 
             if(password == null || password.trim().isEmpty()) {
-                throw new Exception400("비밀번호를 입력하세요");
+                throw new ExceptionInput("비밀번호를 입력하세요");
             }
 
             if(nickname == null || nickname.trim().isEmpty()) {
-                throw new Exception400("닉네임을 입력하세요");
+                throw new ExceptionInput("닉네임을 입력하세요");
             }
         }
 

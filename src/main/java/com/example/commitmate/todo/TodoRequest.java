@@ -3,17 +3,11 @@ package com.example.commitmate.todo;
 
 import com.example.commitmate.core.errors.Exception500;
 import com.example.commitmate.fine.Fine;
-import com.example.commitmate.group.Group;
 import com.example.commitmate.groupmember.GroupMember;
-import com.example.commitmate.user.User;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
 public class TodoRequest {
 

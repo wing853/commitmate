@@ -1,7 +1,8 @@
 package com.example.commitmate.todo;
 
-import com.example.commitmate.core.errors.Exception400;
 import com.example.commitmate.core.errors.Exception403;
+import com.example.commitmate.core.errors.ExceptionExpire;
+import com.example.commitmate.core.errors.ExceptionNoInfo;
 import com.example.commitmate.groupmember.GroupMember;
 import com.example.commitmate.groupmember.GroupMemberRepository;
 import jakarta.transaction.Transactional;
@@ -27,7 +28,7 @@ public class TodoService {
         GroupMember groupMember = gmr.findByGroupIdAndUserIdAndIsActiveTrue( // 수정
                 addDTO.getGroupId(), addDTO.getUserId()
         ).orElseThrow(
-                () -> new Exception400("그룹 멤버를 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("그룹 멤버를 찾을 수 없습니다.")
         );
 
         Todo todo = addDTO.toEntity(groupMember);
@@ -37,7 +38,7 @@ public class TodoService {
     @Transactional
     public void deleteTodo(Integer todoId, Integer userId) {
         Todo todo = tr.findById(todoId).orElseThrow(
-                () -> new Exception400("미션을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("미션을 찾을 수 없습니다.")
         );
 
         if (!todo.getGroupMember().getUser().getId().equals(userId)) {
@@ -45,7 +46,7 @@ public class TodoService {
         }
 
         if(todo.isExpired()) {
-            throw new Exception400("선택한 일정은 기간이 만료되어 삭제할 수 없습니다");
+            throw new ExceptionExpire("선택한 일정은 기간이 만료되어 삭제할 수 없습니다");
         }
 
         tr.deleteById(todoId);
@@ -55,7 +56,7 @@ public class TodoService {
     public void toggleDone(Integer id, Integer userId) {
 
         Todo todo = tr.findById(id).orElseThrow(
-                () -> new Exception400("미션을 찾을 수 없습니다")
+                () -> new ExceptionNoInfo("미션을 찾을 수 없습니다")
         );
 
         if (!todo.getGroupMember().getUser().getId().equals(userId)) {
@@ -64,7 +65,7 @@ public class TodoService {
 
         // 기한 초과 상태면 클릭 막기
         if (todo.getStatus() == TodoStatus.EXPIRED) {
-            throw new Exception400("선택한 일정은 기간이 지나 상태변경을 할 수 없습니다");
+            throw new ExceptionExpire("선택한 일정은 기간이 지나 상태변경을 할 수 없습니다");
         }
 
         // COMPLETE <-> PENDING 토글
@@ -78,7 +79,7 @@ public class TodoService {
     @Transactional
     public void updateTodo(Integer todoId, Integer userId, TodoRequest.UpdateTodoDTO updateTodoDTO) {
         Todo todo = tr.findById(todoId).orElseThrow(
-                () -> new Exception400("미션을 찾을 수 없습니다")
+                () -> new ExceptionNoInfo("미션을 찾을 수 없습니다")
         );
 
         if (!todo.getGroupMember().getUser().getId().equals(userId)) {
@@ -86,7 +87,7 @@ public class TodoService {
         }
 
         if(todo.isExpired()) {
-            throw new Exception400("선택한 일정은 만료되어 수정할 수 없습니다.");
+            throw new ExceptionExpire("선택한 일정은 만료되어 수정할 수 없습니다.");
         }
 
         updateTodoDTO.applyTo(todo);
@@ -95,7 +96,7 @@ public class TodoService {
 
     public Todo findTodo(Integer id) {
         Todo todo = tr.findById(id).orElseThrow(
-                () -> new Exception400("일정을 찾을 수 없습니다.")
+                () -> new ExceptionNoInfo("일정을 찾을 수 없습니다.")
         );
         return todo;
     }

@@ -1,31 +1,35 @@
 package com.example.commitmate.core.errors;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(Exception400.class)
-    public Object handle400(Exception400 e, HttpServletRequest request) {
-        if (e.getMessage().contains("입력") || e.getMessage().contains("선택") ||
-                e.getMessage().contains("만료") || e.getMessage().contains("초대")
-                || e.getMessage().contains("사용")) {
-            return new ResponseEntity<>("""
-           <script>
-               alert("%s");
-               history.back();
-           </script>
-           """.formatted(e.getMessage()),
-                    org.springframework.http.HttpHeaders.EMPTY,
-                    org.springframework.http.HttpStatus.BAD_REQUEST);
-        }
+//    @ExceptionHandler(Exception400.class)
+//    public Object handle400(Exception400 e, HttpServletRequest request) {
+//        if (e.getMessage().contains("입력") || e.getMessage().contains("선택") ||
+//                e.getMessage().contains("만료") || e.getMessage().contains("초대")
+//                || e.getMessage().contains("사용") || e.getMessage().contains("부족")) {
+//            return new ResponseEntity<>("""
+//           <script>
+//               alert("%s");
+//               history.back();
+//           </script>
+//           """.formatted(e.getMessage()),
+//                    org.springframework.http.HttpHeaders.EMPTY,
+//                    org.springframework.http.HttpStatus.BAD_REQUEST);
+//        }
+//
+//        request.setAttribute("msg", e.getMessage());
+//        return new ModelAndView("err/400");
+//    }
 
+    @ExceptionHandler(Exception400.class)
+    public String ex400(Exception400 e, HttpServletRequest request){
         request.setAttribute("msg", e.getMessage());
-        return new ModelAndView("err/400");
+        return "err/400";
     }
 
     @ExceptionHandler(Exception401.class)
@@ -61,4 +65,60 @@ public class GlobalExceptionHandler {
         request.setAttribute("msg", e.getMessage());
         return "err/500";
     }
+
+   @ExceptionHandler(ExceptionInput.class)
+   @ResponseBody
+   public String exInput(ExceptionInput e){
+       return """
+               <script>
+                   alert("%s");
+                   history.back();
+               </script>
+               """.formatted(e.getMessage());
+   }
+
+    @ExceptionHandler(ExceptionNoInfo.class)
+    @ResponseBody
+    public String exNoInfo(ExceptionNoInfo e){
+        return """
+               <script>
+                   alert("%s");
+                   history.back();
+               </script>
+               """.formatted(e.getMessage());
+    }
+
+    @ExceptionHandler(ExceptionExpire.class)
+    @ResponseBody
+    public String exExpire(ExceptionExpire e){
+        return """
+               <script>
+                   alert("%s");
+                   history.back();
+               </script>
+               """.formatted(e.getMessage());
+    }
+
+    @ExceptionHandler(ExceptionFine.class)
+    @ResponseBody
+    public String exFine(ExceptionFine e){
+        return """
+               <script>
+                   alert("%s");
+                   history.back();
+               </script>
+               """.formatted(e.getMessage());
+    }
+
+    @ExceptionHandler(ExceptionPoint.class)
+    @ResponseBody
+    public String exPoint(ExceptionPoint e){
+        return """
+               <script>
+                   alert("%s");
+                   history.back();
+               </script>
+               """.formatted(e.getMessage());
+    }
+
 }
