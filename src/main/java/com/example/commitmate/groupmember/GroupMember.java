@@ -30,7 +30,7 @@ public class GroupMember {
         this.user = user;
         this.group = group;
         this.role = role;
-
+        this.isActive = true;
     }
 
     public boolean isAdmin() {

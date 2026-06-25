@@ -36,7 +36,7 @@ public class Todo {
     @JoinColumn(name = "group_member_id")
     private GroupMember groupMember;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name="fine_id")
     private Fine fine;
 

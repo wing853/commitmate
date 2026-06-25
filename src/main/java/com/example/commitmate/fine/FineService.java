@@ -58,6 +58,7 @@ public class FineService {
                 .unpaidAmount(unpaidAmount)
                 .paidAmount(paidAmount)
                 .build();
+
     }
 
     @Transactional
@@ -90,8 +91,34 @@ public class FineService {
         fine.setMemo(memo);
     }
 
+    @Transactional
+    public void approveFine(Integer fineId, Integer userId, Integer groupId) {
+        Fine fine = fr.findByIdWithMember(fineId).orElseThrow(
+                () -> new Exception400("벌금 내역을 찾을 수 없습니다.")
+        );
+
+        GroupMember member = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId).orElseThrow(
+                () -> new Exception403("그룹 멤버가 아닙니다.")
+        );
+
+        if(!member.isAdmin()) {
+            // todo: 총무 벌금 납부는 추후 개발 예정
+            throw new Exception403("벌금 승인은 총무만 진행 가능합니다.");
+        }
+
+        if(fine.isUnpaid()) {
+            throw new Exception400("선택한 벌금은 아직 인증 되지 않은 상태입니다.");
+        }
+
+        if (fine.isPaid()) {
+            throw new Exception400("이미 납부가 완료된 벌금입니다.");
+        }
+
+        fine.setStatus(FineStatus.PAID);
+    }
+
     public boolean isAdmin(Integer groupId, Integer userId) {
-        return gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId) // 수정
+        return gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId)
                 .map(m -> m.getRole() == GroupRole.ADMIN)
                 .orElse(false);
     }
