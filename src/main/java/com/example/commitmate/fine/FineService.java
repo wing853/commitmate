@@ -64,7 +64,7 @@ public class FineService {
                 () -> new Exception400("벌금 내역을 찾을 수 없습니다.")
         );
 
-        GroupMember member = gmr.findByGroupIdAndUserId(groupId, userId).orElseThrow(
+        GroupMember member = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId).orElseThrow(
                 () -> new Exception403("그룹 멤버가 아닙니다.")
         );
 
@@ -85,7 +85,7 @@ public class FineService {
     }
 
     public boolean isAdmin(Integer groupId, Integer userId) {
-        return gmr.findByGroupIdAndUserId(groupId, userId)
+        return gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, userId)
                 .map(m -> m.getRole() == GroupRole.ADMIN)
                 .orElse(false);
     }

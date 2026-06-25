@@ -1,9 +1,11 @@
 package com.example.commitmate.fine;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +25,9 @@ public interface FineRepository extends JpaRepository<Fine, Integer> {
             "JOIN FETCH gm.user u " +
             "WHERE f.id = :fineId")
     Optional<Fine> findByIdWithMember(@Param("fineId") Integer fineId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Fine f SET f.todo = null WHERE f.todo.groupMember.id = :groupMemberId")
+    void detachTodoByGroupMemberId(@Param("groupMemberId") Integer groupMemberId);
 }

@@ -134,5 +134,4 @@ public class TodoController {
         return "redirect:/groups/" + groupId;
     }
 
-
 }

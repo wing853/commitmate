@@ -11,11 +11,15 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Intege
 
     List<GroupMember> findByUserId(Integer userId);
 
+    List<GroupMember> findByGroupId(Integer groupId);
+
+    Optional<GroupMember> findByGroupIdAndUserId(Integer groupId, Integer userId);
+
     @Modifying
     @Transactional
     void deleteByGroupId(Integer groupId);
 
-    Optional<GroupMember> findByGroupIdAndUserId(Integer groupId, Integer userId);
-    List<GroupMember> findByGroupId(Integer groupId);
-
+    List<GroupMember>findByUserIdAndIsActiveTrue(Integer userId);
+    List<GroupMember>findByGroupIdAndIsActiveTrue(Integer groupId);
+    Optional<GroupMember>findByGroupIdAndUserIdAndIsActiveTrue(Integer groupId, Integer UserId);
 }

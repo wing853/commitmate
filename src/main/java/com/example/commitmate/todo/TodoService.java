@@ -24,7 +24,7 @@ public class TodoService {
 
     @Transactional
     public void addTodo(TodoRequest.AddDTO addDTO) {
-        GroupMember groupMember = gmr.findByGroupIdAndUserId(
+        GroupMember groupMember = gmr.findByGroupIdAndUserIdAndIsActiveTrue(
                 addDTO.getGroupId(), addDTO.getUserId()
         ).orElseThrow(
                 () -> new Exception400("그룹 멤버를 찾을 수 없습니다.")

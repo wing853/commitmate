@@ -2,6 +2,7 @@ package com.example.commitmate.group;
 
 import com.example.commitmate.core.errors.Exception400;
 import com.example.commitmate.core.errors.Exception403;
+import com.example.commitmate.fine.Fine;
 import com.example.commitmate.fine.FineRepository;
 import com.example.commitmate.fine.FineStatus;
 import com.example.commitmate.groupmember.GroupMember;
@@ -28,7 +29,7 @@ public class GroupService {
     @Transactional
     public List<GroupResponse.MyGroupDTO> getMyGroups(Integer userId) {
         // 1. 내가 가입한 그룹 엔티티 리스트만 조회
-        List<GroupMember> members = gmr.findByUserId(userId);
+        List<GroupMember> members = gmr.findByUserIdAndIsActiveTrue(userId);
 
         // 2. DTO로 변환
         return members.stream()
@@ -64,7 +65,7 @@ public class GroupService {
                 () -> new Exception400("유효하지 않은 초대링크입니다.")
         );
 
-        gmr.findByGroupIdAndUserId(group.getId(), sessionUser.getId())
+        gmr.findByGroupIdAndUserIdAndIsActiveTrue(group.getId(), sessionUser.getId())
                 .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
 
         GroupMember member = joinDTO.toEntity(sessionUser,group);
@@ -79,7 +80,7 @@ public class GroupService {
                 () -> new Exception400("유효하지 않은 가입코드입니다.")
         );
 
-        gmr.findByGroupIdAndUserId(group.getId(), sessionUser.getId())
+        gmr.findByGroupIdAndUserIdAndIsActiveTrue(group.getId(), sessionUser.getId())
                 .ifPresent(m -> { throw new Exception400("이미 참여 중인 그룹입니다."); });
 
         GroupMember member = joinDTO.toEntity(sessionUser,group);
@@ -118,7 +119,7 @@ public class GroupService {
                 () -> new Exception400("해당 그룹을 찾을 수 없습니다.")
         );
 
-        GroupMember member = gmr.findByGroupIdAndUserId(groupId,userId).orElseThrow(
+        GroupMember member = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId,userId).orElseThrow(
                 () -> new Exception403("해당 그룹의 멤버가 아닙니다.(그룹을 확인하세요.)")
         );
 
@@ -132,7 +133,7 @@ public class GroupService {
     }
 
     public List<GroupResponse.MemberDTO> getMembers(Integer groupId) {
-        List<GroupMember> members = gmr.findByGroupId(groupId);
+        List<GroupMember> members = gmr.findByGroupIdAndIsActiveTrue(groupId);
         return members.stream()
                 .map(GroupResponse.MemberDTO::new)
                 .collect(Collectors.toList());
@@ -147,7 +148,7 @@ public class GroupService {
     @Transactional
     public void kickMember(Integer groupId, Integer groupMemberId, Integer requestUserId) {
         // 요청자가 관리자인지 확인
-        GroupMember requester = gmr.findByGroupIdAndUserId(groupId, requestUserId)
+        GroupMember requester = gmr.findByGroupIdAndUserIdAndIsActiveTrue(groupId, requestUserId)
                 .orElseThrow(() -> new Exception403("권한이 없습니다."));
 
         if (requester.getRole() != GroupRole.ADMIN) {
@@ -165,8 +166,9 @@ public class GroupService {
         // 미납 벌금 확인 (UNPAID 또는 PENDING 상태)
         boolean hasUnpaidFine = target.getUser().getId() != null &&
                 fr.findByGroupId(groupId).stream()
+                        .filter(f -> f.getGroupMember() != null) // null 체크 추가
                         .filter(f -> f.getGroupMember().getId().equals(groupMemberId))
-                        .filter(f->f.isExpired())
+                        .filter(Fine::isExpired)
                         .anyMatch(f -> f.getStatus() == FineStatus.UNPAID
                                 || f.getStatus() == FineStatus.PENDING);
 
@@ -174,8 +176,10 @@ public class GroupService {
             throw new Exception400("미납 또는 승인 대기 중인 벌금이 있어 강퇴할 수 없습니다.");
         }
 
+        fr.detachTodoByGroupMemberId(groupMemberId);
+
         tr.deleteByGroupMemberId(groupMemberId);
 
-        gmr.delete(target);
+        target.setActive(false);
     }
 }
