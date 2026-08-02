@@ -1,0 +1,212 @@
+{{> layout/header}}
+
+<style>
+    .save-form-container {
+        padding: 60px 0;
+        min-height: calc(100vh - 70px);
+        background-color: var(--bg);
+        display: flex;
+        align-items: center;
+    }
+
+    .form-container {
+        width: 100%;
+        background: #111214;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .card-eyebrow {
+        font-size: 10px;
+        letter-spacing: 3px;
+        color: var(--danger);
+        margin-bottom: 6px;
+    }
+
+    .card-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+    }
+
+    .card-sub {
+        font-size: 13px;
+        color: #444;
+        margin-bottom: 32px;
+    }
+
+    .form-group { margin-bottom: 22px; }
+
+    .form-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .form-control {
+        width: 100%;
+        background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 14px 16px;
+        color: #fff;
+        font-size: 14px;
+        transition: 0.2s;
+        outline: none;
+    }
+    .form-control::placeholder { color: #333; }
+    .form-control:focus {
+        border-color: rgba(248,113,113,0.4);
+        background: rgba(248,113,113,0.04);
+    }
+    .form-control::-webkit-calendar-picker-indicator {
+        filter: invert(0.3); cursor: pointer;
+    }
+    .form-control::-webkit-outer-spin-button,
+    .form-control::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .form-control[type=number] { -moz-appearance: textfield; }
+
+    .info-display {
+        background: rgba(255,255,255,0.02);
+        border: 0.5px solid rgba(255,255,255,0.08);
+        padding: 14px 16px;
+        border-radius: 10px;
+        color: #aaa;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .form-hint {
+        font-size: 11px;
+        color: #333;
+        margin-top: 6px;
+    }
+
+    .penalty-wrap { position: relative; }
+    .penalty-symbol {
+        position: absolute; left: 14px; top: 50%;
+        transform: translateY(-50%);
+        color: #444; font-size: 14px; pointer-events: none;
+    }
+    .penalty-wrap .form-control { padding-left: 30px; }
+
+    .divider {
+        border: none;
+        border-top: 0.5px solid rgba(255,255,255,0.06);
+        margin: 32px 0 24px;
+    }
+
+    .btn-group {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 10px;
+    }
+
+    .btn-cancel {
+        background: transparent;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        color: #555;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-cancel:hover { background: rgba(255,255,255,0.04); color: #aaa; }
+
+    .btn-submit {
+        background: var(--danger);
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .btn-submit:hover { background: #f95e5e; transform: translateY(-2px); }
+</style>
+<link rel="stylesheet" href="/css/app-theme.css">
+
+<main class="save-form-container">
+    <div class="container creation-layout">
+        <aside class="form-aside mission-aside">
+            <span class="aside-badge">02 · MISSION</span>
+            <h2>해야 할 일을<br>분명한 약속으로.</h2>
+            <p>구체적인 미션과 마감 시간을 정하면 실행 가능성이 더 높아져요.</p>
+            <div class="mission-preview">
+                <span class="preview-check">✓</span>
+                <div><small>TODAY'S GOAL</small><strong>오늘의 미션을 완료해요</strong><i></i></div>
+            </div>
+            <ul class="aside-tips">
+                <li><b>1</b>완료 여부를 판단할 수 있게 작성하기</li>
+                <li><b>2</b>현실적인 마감 시간 정하기</li>
+                <li><b>3</b>동기부여가 될 벌금 설정하기</li>
+            </ul>
+        </aside>
+        <div class="form-container">
+            <p class="card-eyebrow">NEW MISSION</p>
+            <h1 class="card-title">미션 추가하기</h1>
+            <p class="card-sub">워크스페이스에 기록할 오늘의 목표를 입력하세요.</p>
+
+            <form action="/groups/{{groupId}}/todo/save" method="post">
+                <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+
+                <div class="form-group">
+                    <label class="form-label">할 일 내용</label>
+                    <input type="text" name="work" class="form-control"
+                           placeholder="예: Spring Boot JPA 강의 3강 듣기" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">수행자</label>
+                    <div class="info-display">@ {{sessionUser.nickname}}</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">마감 기한</label>
+                    <input type="datetime-local" name="deadline" class="form-control" required>
+                    <p class="form-hint">설정한 시간이 지나면 미달성 시 벌금이 부과될 수 있습니다.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">미달성 벌금</label>
+                    <div class="penalty-wrap">
+                        <span class="penalty-symbol">₩</span>
+                        <input type="number" name="amount" class="form-control"
+                               placeholder="0" min="0" step="100">
+                    </div>
+                    <p class="form-hint">미션 미달성 시 부과될 금액입니다.</p>
+                </div>
+
+                <input type="hidden" name="groupId" value="{{groupId}}">
+                <input type="hidden" name="userId" value="{{sessionUser.id}}">
+
+                <hr class="divider">
+
+                <div class="btn-group">
+                    <a href="/groups/{{groupId}}" class="btn-cancel">취소</a>
+                    <button type="submit" class="btn-submit">미션 추가하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+{{> layout/footer}}

@@ -1,0 +1,42 @@
+:root { --purple:#6551e8; --purple-dark:#5741df; --lavender:#f0edff; --ink:#17203a; --muted:#747c91; --line:#e1e4ef; }
+* { box-sizing:border-box; }
+body { margin:0; color:var(--ink); background:#fafbff; font-family:"Noto Sans KR",sans-serif; letter-spacing:-.035em; }
+button,input { font:inherit; }
+.login-page { min-height:100vh; display:grid; grid-template-columns:minmax(470px,.88fr) minmax(540px,1.12fr); }
+.login-panel { min-height:100vh; padding:42px clamp(45px,7vw,105px) 28px; display:flex; flex-direction:column; background:#fff; }
+.brand { width:max-content; display:flex; align-items:center; gap:12px; color:var(--ink); font-size:23px; font-weight:800; text-decoration:none; letter-spacing:-.05em; }
+.brand > span:last-child span { color:var(--purple); }
+.brand-icon { width:39px; height:43px; position:relative; display:grid; place-items:center; border:4px solid var(--purple); border-radius:8px; color:var(--purple); }
+.brand-icon i { width:17px; height:8px; position:absolute; top:-8px; border-radius:5px 5px 2px 2px; background:var(--purple); }
+.brand-icon b { font-size:22px; transform:rotate(-7deg); }
+.login-content { width:min(100%,440px); margin:auto; padding:50px 0; }
+.eyebrow { margin:0 0 10px; color:var(--purple); font-size:11px; font-weight:800; letter-spacing:.13em; }
+.login-heading h1 { margin:0 0 11px; font-size:32px; letter-spacing:-.055em; }
+.login-heading > p:last-child { margin:0 0 36px; color:var(--muted); font-size:14px; }
+.auth-alert { margin:-14px 0 24px; padding:13px 15px; border:1px solid #bce5d0; border-radius:10px; color:#25875e; background:#effaf4; font-size:11px; line-height:1.6; }
+.form-group { margin-bottom:21px; }
+.label-row { display:flex; align-items:center; justify-content:space-between; }
+label { display:block; margin-bottom:9px; font-size:13px; font-weight:700; }
+.forgot-link { margin-bottom:9px; color:var(--purple); font-size:11px; font-weight:600; text-decoration:none; }
+.forgot-link:hover { text-decoration:underline; }
+.input-wrap { position:relative; }
+.input-wrap > svg { width:18px; height:18px; position:absolute; left:16px; top:50%; transform:translateY(-50%); fill:none; stroke:#9ba0b3; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; pointer-events:none; }
+input { width:100%; height:52px; padding:0 46px; outline:0; border:1px solid var(--line); border-radius:11px; color:var(--ink); background:#fbfbfe; font-size:13px; transition:.2s; }
+input::placeholder { color:#afb3c1; }
+input:focus { border-color:#8a7af0; background:#fff; box-shadow:0 0 0 4px rgba(101,81,232,.09); }
+.password-toggle { width:42px; height:100%; position:absolute; right:4px; top:0; display:grid; place-items:center; border:0; background:transparent; cursor:pointer; }
+.password-toggle svg { width:19px; fill:none; stroke:#9ba0b3; stroke-width:1.6; }
+.login-button { width:100%; height:54px; margin-top:7px; display:flex; align-items:center; justify-content:center; gap:24px; border:0; border-radius:11px; color:#fff; background:linear-gradient(135deg,#725af0,#563ee1); box-shadow:0 10px 24px rgba(87,65,223,.22); font-size:14px; font-weight:700; cursor:pointer; transition:.2s; }
+.login-button:hover { transform:translateY(-2px); box-shadow:0 14px 28px rgba(87,65,223,.28); }
+.divider { height:1px; margin:31px 0; position:relative; background:var(--line); text-align:center; }.divider span { padding:0 14px; position:relative; top:-10px; color:#a4a8b7; background:#fff; font-size:11px; }
+.google-button { height:52px; display:flex; align-items:center; justify-content:center; gap:12px; border:1px solid var(--line); border-radius:11px; color:#4d5365; background:#fff; font-size:13px; font-weight:600; text-decoration:none; transition:.2s; }.google-button:hover { border-color:#bbb4ec; background:#faf9ff; }.google-button svg { width:19px; }
+.signup-link { margin:25px 0 0; color:var(--muted); font-size:12px; text-align:center; }.signup-link a { margin-left:5px; color:var(--purple); font-weight:700; text-underline-offset:4px; }
+.copyright { margin:0; color:#adb1bf; font-size:10px; }
+.visual-panel { min-height:100vh; padding:70px 65px; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(circle at 70% 28%,#fff 0,rgba(255,255,255,0) 32%),linear-gradient(145deg,#f4f2ff,#eae7ff); }
+.visual-panel::before,.visual-panel::after { content:""; position:absolute; border-radius:50%; background:rgba(255,255,255,.45); }.visual-panel::before { width:360px;height:360px;right:-190px;top:-180px; }.visual-panel::after { width:240px;height:240px;left:-140px;bottom:-90px; }
+.visual-copy { width:min(620px,100%); position:relative; z-index:2; text-align:center; }.visual-copy > span { color:var(--purple); font-size:10px; font-weight:800; letter-spacing:.18em; }.visual-copy h2 { margin:12px 0; font-size:34px; line-height:1.35; letter-spacing:-.055em; }.visual-copy p { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+.visual-art { width:min(650px,90%); margin-top:5px; position:relative; }.visual-art .halo { width:82%; height:70%; position:absolute; left:10%; top:14%; border-radius:46% 54% 61% 39%; background:rgba(255,255,255,.56); transform:rotate(-7deg); }.visual-art img { width:100%; position:relative; z-index:1; mix-blend-mode:multiply; filter:drop-shadow(0 25px 25px rgba(77,61,151,.09)); }
+.mission-toast { position:absolute; left:11%; bottom:10%; z-index:3; padding:14px 19px; display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,.9); border-radius:13px; background:rgba(255,255,255,.84); box-shadow:0 13px 30px rgba(75,64,135,.13); backdrop-filter:blur(10px); }.mission-toast > span { width:32px;height:32px;display:grid;place-items:center;border-radius:50%;color:#fff;background:var(--purple);font-weight:800; }.mission-toast strong,.mission-toast small { display:block; }.mission-toast strong { margin-bottom:3px;font-size:12px; }.mission-toast small { color:var(--muted);font-size:9px; }
+@media(max-width:900px){.login-page{grid-template-columns:1fr}.visual-panel{display:none}.login-panel{padding:32px clamp(24px,9vw,90px)}.login-content{padding:60px 0}}
+@media(max-width:480px){.login-panel{padding:25px 22px}.brand{font-size:19px}.brand-icon{width:33px;height:36px;border-width:3px}.login-content{padding:48px 0 35px}.login-heading h1{font-size:27px}.copyright{text-align:center}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}

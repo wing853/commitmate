@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitMate | 그룹 설정</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"/>
+    <style>
+        :root {
+            --bg: #0e0f11;
+            --border: rgba(255,255,255,0.06);
+            --text-muted: #555;
+            --danger: #f87171;
+            --green: #34d399;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg); color: #fff; letter-spacing: -0.3px; min-height: 100vh; }
+
+        header {
+            height: 64px; display: flex; align-items: center;
+            border-bottom: 0.5px solid var(--border);
+            position: sticky; top: 0;
+            background: rgba(14,15,17,0.85);
+            backdrop-filter: blur(20px); z-index: 100;
+        }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; width: 100%; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; color: #fff; text-decoration: none; }
+        .logo span { color: var(--danger); }
+        .admin-badge { font-size: 11px; color: var(--danger); letter-spacing: 1px; }
+
+        .setup-wrapper { padding: 48px 0 80px; }
+
+        .page-eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--danger); margin-bottom: 6px; }
+        .page-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .page-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 40px; }
+
+        .main-card {
+            background: #111214;
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 36px;
+        }
+
+        .form-group { margin-bottom: 24px; }
+        .form-label {
+            display: block; font-size: 11px; font-weight: 600;
+            color: #444; margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .form-control {
+            width: 100%;
+            background: rgba(255,255,255,0.03) !important;
+            border: 0.5px solid rgba(255,255,255,0.08) !important;
+            border-radius: 10px; padding: 13px 16px;
+            color: #fff !important; font-size: 14px; transition: 0.2s; outline: none;
+        }
+        .form-control::placeholder { color: #333; }
+        .form-control:focus {
+            border-color: rgba(248,113,113,0.4) !important;
+            background: rgba(248,113,113,0.04) !important;
+            box-shadow: none !important;
+        }
+        .form-control:-webkit-autofill,
+        .form-control:-webkit-autofill:focus {
+            -webkit-text-fill-color: #fff !important;
+            -webkit-box-shadow: 0 0 0px 1000px #111214 inset;
+        }
+        textarea.form-control { resize: none; height: 140px; }
+
+        .btn-save {
+            background: var(--danger); color: #fff; border: none;
+            padding: 13px 24px; border-radius: 10px;
+            font-size: 14px; font-weight: 700; transition: 0.2s;
+            width: 100%; cursor: pointer;
+        }
+        .btn-save:hover { background: #f95e5e; transform: translateY(-2px); }
+
+        .info-panel {
+            background: #111214;
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 24px; margin-bottom: 12px;
+        }
+        .info-panel h5 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: #aaa; }
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.04);
+            font-size: 13px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-key { color: var(--text-muted); }
+        .info-val { color: var(--danger); font-weight: 600; font-size: 12px; }
+        .info-val.active { color: var(--green); }
+
+        .danger-card {
+            background: rgba(248,113,113,0.03);
+            border: 0.5px solid rgba(248,113,113,0.15);
+            border-radius: 16px; padding: 24px;
+        }
+        .danger-card h5 { font-size: 14px; font-weight: 700; color: var(--danger); margin-bottom: 8px; }
+        .danger-card p { font-size: 12px; color: #444; margin-bottom: 18px; line-height: 1.6; }
+
+        .btn-delete {
+            background: transparent; color: var(--danger);
+            border: 0.5px solid rgba(248,113,113,0.3);
+            padding: 9px 20px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; transition: 0.2s; cursor: pointer;
+        }
+        .btn-delete:hover { background: var(--danger); color: #fff; }
+
+        footer { padding: 40px 0; text-align: center; color: #222; font-size: 11px; letter-spacing: 2px; }
+    </style>
+    <link rel="stylesheet" href="/css/app-theme.css">
+</head>
+<body>
+
+<header>
+    <div class="container header-inner">
+        <a href="/groups" class="logo">Commit<span>Mate</span>.</a>
+        <span class="admin-badge">● ADMIN MODE</span>
+    </div>
+</header>
+
+<main class="container setup-wrapper">
+    <p class="page-eyebrow">SETTINGS</p>
+    <h1 class="page-title">그룹 설정</h1>
+    <p class="page-sub">팀의 목표를 명확히 하고 벌금 시스템을 견고하게 유지하세요.</p>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="main-card">
+                <form action="/groups/{{groups.id}}/update" method="post">
+                    <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+                    <div class="form-group">
+                        <label class="form-label">그룹 이름</label>
+                        <input type="text" class="form-control" name="roomName"
+                               value="{{groups.roomName}}" placeholder="예: 매일 아침 7시 기상 챌린지" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 28px;">
+                        <label class="form-label">그룹 설명</label>
+                        <textarea class="form-control" name="description"
+                                  placeholder="미션 실패 시 벌금 규정과 인증 방법을 상세히 적어주세요.">{{groups.description}}</textarea>
+                    </div>
+                    <button type="submit" class="btn-save">변경 사항 적용하기</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-panel">
+                <h5>System Info</h5>
+                <div class="info-row">
+                    <span class="info-key">그룹 이름</span>
+                    <span class="info-val">{{groups.roomName}}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">상태</span>
+                    <span class="info-val active">운영 중</span>
+                </div>
+            </div>
+
+            <div class="danger-card">
+                <h5>위험 구역</h5>
+                <p>그룹을 삭제하면 모든 데이터가 즉시 소멸되며 되돌릴 수 없습니다.</p>
+                <form action="/groups/{{groups.id}}/delete" method="post" onsubmit="return confirmDelete()">
+                    <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+                    <button type="submit" class="btn-delete">그룹 영구 삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>COMMITMATE — NO MORE EXCUSES. JUST RESULTS.</footer>
+
+<script>
+    function confirmDelete() {
+        return confirm("정말로 '{{groups.roomName}}' 그룹을 삭제하시겠습니까?\n이 작업은 즉시 실행되며 복구가 불가능합니다.");
+    }
+</script>
+</body>
+</html>

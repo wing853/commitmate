@@ -1,0 +1,686 @@
+{{> layout/header}}
+
+<style>
+    .todo-page-container {
+        width: 100%;
+        min-height: calc(100vh - 70px);
+        background-color: var(--bg);
+        padding: 48px 0 80px;
+        position: relative;
+    }
+
+    .mission-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 32px;
+    }
+
+    .mission-header-left .sub-label {
+        font-size: 10px;
+        letter-spacing: 3px;
+        color: #444;
+        margin-bottom: 6px;
+    }
+
+    .mission-header-left h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+
+    .unpaid-box {
+        background: #1a1010;
+        border: 0.5px solid rgba(248,113,113,0.2);
+        border-radius: 10px;
+        padding: 10px 18px;
+        text-align: right;
+        text-decoration: none;
+        display: block;
+        transition: 0.2s;
+    }
+    .unpaid-box:hover { border-color: rgba(248,113,113,0.5); background: #1e1212; }
+    .unpaid-box .unpaid-label { font-size: 9px; letter-spacing: 2px; color: #5a3535; margin-bottom: 3px; }
+    .unpaid-box .unpaid-amount { font-size: 14px; font-weight: 600; color: #f87171; line-height: 1; }
+
+    .status-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .status-card { border-radius: 12px; padding: 12px 14px; border: 0.5px solid #2a2d33; background: #1c1f23; }
+    .status-card.complete { background: #161e18; border-color: #1e3d2a; }
+    .status-card.expired  { background: #1a1010; border-color: rgba(248,113,113,0.25); }
+    .status-card .s-label { font-size: 9px; letter-spacing: 2px; color: #555; margin-bottom: 4px; }
+    .status-card.complete .s-label { color: rgba(52,211,153,0.5); }
+    .status-card.expired  .s-label { color: rgba(248,113,113,0.5); }
+    .status-card .s-count { font-size: 20px; font-weight: 700; color: #fff; }
+    .status-card.complete .s-count { color: #34d399; }
+    .status-card.expired  .s-count { color: #f87171; }
+
+    .action-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+
+    .btn-filter-pill {
+        display: flex; align-items: center; gap: 8px;
+        background: #1c1f23; border: 0.5px solid #2a2d33;
+        padding: 9px 18px; border-radius: 50px;
+        cursor: pointer; transition: all 0.2s ease; text-decoration: none;
+    }
+    .btn-filter-pill .dot { width: 6px; height: 6px; background: #444; border-radius: 50%; transition: 0.2s; }
+    .btn-filter-pill span { color: #777; font-size: 13px; font-weight: 600; }
+    .btn-filter-pill:hover { background: #22262d; border-color: #3a3d45; }
+    .btn-filter-pill.filter-active { background: rgba(77,163,255,0.08); border-color: rgba(77,163,255,0.4); }
+    .btn-filter-pill.filter-active .dot { background: #4da3ff; }
+    .btn-filter-pill.filter-active span { color: #4da3ff; }
+
+    .btn-action-link {
+        display: flex; align-items: center; gap: 8px;
+        padding: 9px 18px; border-radius: 50px;
+        text-decoration: none; font-size: 13px; font-weight: 600;
+        border: 0.5px solid #2a2d33; background: #1c1f23; color: #777;
+        transition: 0.2s; cursor: pointer;
+    }
+    .btn-action-link:hover { background: #22262d; color: #aaa; }
+    .btn-action-link.primary { background: #f87171; border-color: #f87171; color: #fff; }
+    .btn-action-link.primary:hover { background: #f95e5e; }
+
+    .mission-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .mission-row {
+        border-radius: 14px; padding: 16px 18px;
+        display: flex; align-items: center; gap: 14px;
+        background: #151618; border: 0.5px solid #252830;
+        position: relative; overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .mission-row:hover { transform: translateY(-2px); border-color: #35383f; }
+    .mission-row.complete { background: #131a15; border-color: #1a3020; opacity: 0.75; }
+    .mission-row.expired  { background: #150d0d; border-color: rgba(248,113,113,0.25); }
+    .mission-row.warning  { border-color: rgba(245,158,11,0.35); }
+
+    .mission-row::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 3px; border-radius: 3px 0 0 3px; background: transparent;
+    }
+    .mission-row.complete::before { background: #34d399; }
+    .mission-row.expired::before  { background: #f87171; }
+    .mission-row.warning::before  { background: #f59e0b; }
+
+    .check-box {
+        width: 28px; height: 28px; border-radius: 8px;
+        border: 1.5px solid #2a2d33;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0; cursor: pointer; transition: 0.2s; margin-left: 6px;
+    }
+    .check-box:hover { border-color: #4da3ff; }
+    .check-box.done { background: #34d399; border-color: #34d399; }
+    .check-box.fail { background: #2a1010; border-color: #f87171; }
+
+    .user-badge { font-size: 12px; color: #555; width: 72px; flex-shrink: 0; }
+
+    .mission-content { flex: 1; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+
+    .mission-text { font-size: 14px; color: #e0e0e0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mission-row.complete .mission-text { color: #3a5a42; text-decoration: line-through; }
+    .mission-row.expired  .mission-text { color: #c09090; }
+
+    .progress-wrap { display: flex; align-items: center; gap: 8px; }
+    .progress-bar-bg { flex: 1; height: 3px; background: #222529; border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 10px; }
+    .progress-pct { font-size: 10px; color: #444; white-space: nowrap; min-width: 28px; text-align: right; }
+
+    .deadline-col { flex-shrink: 0; text-align: right; min-width: 90px; }
+    .deadline-label { font-size: 9px; letter-spacing: 1px; color: #444; margin-bottom: 3px; }
+    .deadline-val { font-size: 12px; color: #666; }
+    .deadline-val.expired { color: #f87171; font-weight: 700; }
+
+    .status-col { flex-shrink: 0; text-align: right; min-width: 90px; }
+    .status-label { font-size: 9px; letter-spacing: 1px; color: #444; margin-bottom: 3px; }
+    .status-val { font-size: 13px; font-weight: 700; }
+    .status-val.complete { color: #34d399; }
+    .status-val.expired  { color: #f87171; font-size: 18px; }
+    .status-val.fine     { color: #f87171; font-size: 16px; }
+    .status-val.free     { color: #444; }
+
+    .action-col { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-todo-action {
+        background: transparent; border: 0.5px solid #252830; color: #555;
+        padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; text-decoration: none;
+        display: inline-flex; align-items: center;
+    }
+    .btn-todo-edit:hover   { border-color: #4da3ff; color: #4da3ff; }
+    .btn-todo-delete:hover { border-color: #f87171; color: #f87171; }
+
+    .empty-state { text-align: center; padding: 80px 0; color: #333; font-size: 14px; }
+
+    /* ── 모달 공통 ── */
+    .modal-overlay {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.75); z-index: 999;
+        align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+        background: #111214;
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 20px; padding: 36px;
+        width: 90%; max-width: 440px; position: relative;
+    }
+    .modal-close {
+        position: absolute; top: 16px; right: 16px;
+        background: transparent; border: none; color: #444;
+        font-size: 18px; cursor: pointer; transition: 0.2s; line-height: 1;
+    }
+    .modal-close:hover { color: #aaa; }
+    .modal-eyebrow { font-size: 10px; letter-spacing: 3px; color: #f87171; margin-bottom: 6px; }
+    .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+    .modal-section-label { font-size: 10px; letter-spacing: 1px; color: #444; text-transform: uppercase; margin-bottom: 8px; }
+    .modal-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.06); margin: 20px 0; }
+    .modal-hint { font-size: 11px; color: #333; margin-top: 10px; }
+
+    /* ── 초대 모달 ── */
+    .invite-link-row { display: flex; gap: 8px; margin-bottom: 20px; }
+    .invite-link-text {
+        flex: 1; background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px; padding: 12px 14px;
+        font-size: 12px; color: #888; word-break: break-all; line-height: 1.5;
+    }
+    .join-code-box {
+        background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.08);
+        border-radius: 10px; padding: 16px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .join-code-text { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: 6px; }
+    .btn-copy {
+        background: transparent; border: 0.5px solid rgba(255,255,255,0.08);
+        color: #777; padding: 8px 14px; border-radius: 8px;
+        font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-copy:hover { background: rgba(255,255,255,0.05); color: #aaa; }
+    .btn-copy-primary {
+        background: #f87171; border: none; color: #fff;
+        padding: 10px 16px; border-radius: 8px;
+        font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-copy-primary:hover { background: #f95e5e; }
+
+    /* ── 멤버 모달 ── */
+    .member-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+    .member-item {
+        display: flex; align-items: center; gap: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 0.5px solid rgba(255,255,255,0.06);
+        border-radius: 10px; padding: 12px 14px;
+    }
+    .member-avatar {
+        width: 32px; height: 32px; border-radius: 50%;
+        background: #1a1010; border: 0.5px solid rgba(248,113,113,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 700; color: #f87171; flex-shrink: 0;
+    }
+    .member-avatar.admin { border-color: rgba(248,113,113,0.4); }
+    .member-info { flex: 1; }
+    .member-name { font-size: 14px; font-weight: 600; color: #e0e0e0; }
+    .member-role {
+        font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 3px;
+    }
+    .member-role.admin { background: rgba(248,113,113,0.1); color: #f87171; }
+    .member-role.member { background: rgba(255,255,255,0.05); color: #555; }
+
+    .btn-kick {
+        background: transparent;
+        border: 0.5px solid rgba(248,113,113,0.25);
+        color: #f87171; padding: 5px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-kick:hover { background: #f87171; color: #fff; }
+
+    .btn-leave {
+        background: transparent;
+        border: 0.5px solid rgba(255,255,255,0.1);
+        color: #555; padding: 5px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-leave:hover { background: rgba(255,255,255,0.05); color: #aaa; }
+
+    .btn-delegate {
+        background: transparent;
+        border: 0.5px solid rgba(245,158,11,0.25);
+        color: #f59e0b; padding: 5px 12px;
+        border-radius: 8px; font-size: 11px; font-weight: 600;
+        cursor: pointer; transition: 0.2s; white-space: nowrap;
+    }
+    .btn-delegate:hover { background: #f59e0b; color: #fff; }
+</style>
+<link rel="stylesheet" href="/css/app-theme.css">
+
+<!-- hidden: 현재 유저 정보 -->
+<input type="hidden" id="currentUserId" value="{{sessionUser.id}}">
+<input type="hidden" id="currentUserIsAdmin" value="{{isAdmin}}">
+
+<main class="todo-page-container">
+    <div class="container">
+
+        <!-- 헤더 -->
+        <div class="mission-header">
+            <div class="mission-header-left">
+                <div class="sub-label">COMMITMATE</div>
+                <h1>{{group.roomName}}</h1>
+            </div>
+            {{#todoList.0}}
+                <a href="/groups/{{groupMember.group.id}}/fines" class="unpaid-box">
+                    <div class="unpaid-label">TOTAL UNPAID →</div>
+                    <div class="unpaid-amount">벌금 현황</div>
+                </a>
+            {{/todoList.0}}
+        </div>
+
+        <!-- 상태 요약 -->
+        <div class="status-summary">
+            <div class="status-card">
+                <div class="s-label">READY</div>
+                <div class="s-count" id="cnt-ready">-</div>
+            </div>
+            <div class="status-card complete">
+                <div class="s-label">COMPLETE</div>
+                <div class="s-count" id="cnt-complete">-</div>
+            </div>
+            <div class="status-card expired">
+                <div class="s-label">EXPIRED</div>
+                <div class="s-count" id="cnt-expired">-</div>
+            </div>
+        </div>
+
+        <!-- 액션 바 -->
+        <div class="action-bar">
+            <!-- 내 미션 토글 -->
+            <button onclick="toggleMyFilter()"
+                    class="btn-filter-pill {{#isFiltered}}filter-active{{/isFiltered}}">
+                <div class="dot"></div>
+                <span>내 미션 보기</span>
+            </button>
+
+            <!-- 상태 필터 (버튼 하나로 순환) -->
+            <button onclick="toggleStatus()"
+                    class="btn-filter-pill {{#currentStatus}}filter-active{{/currentStatus}}">
+                <div class="dot"></div>
+                <span>
+                    {{#isStatusReady}}미완료{{/isStatusReady}}
+                    {{#isStatusComplete}}완료{{/isStatusComplete}}
+                    {{#isStatusExpired}}기간 지난{{/isStatusExpired}}
+                    {{^currentStatus}}상태 필터{{/currentStatus}}
+                </span>
+            </button>
+
+            {{#todoList.0}}
+                <button onclick="openMemberModal({{groupMember.group.id}})" class="btn-action-link">👥 멤버 보기</button>
+                <button onclick="openInviteModal({{groupMember.group.id}})" class="btn-action-link">🔗 초대하기</button>
+                <a href="/groups/{{groupMember.group.id}}/todo-form" class="btn-action-link primary">+ 새 미션</a>
+            {{/todoList.0}}
+            {{^todoList.0}}
+                <button onclick="openMemberModal({{group.id}})" class="btn-action-link">👥 멤버 보기</button>
+                <button onclick="openInviteModal({{group.id}})" class="btn-action-link">🔗 초대하기</button>
+                <a href="/groups/{{group.id}}/todo-form" class="btn-action-link primary">+ 새 미션</a>
+            {{/todoList.0}}
+        </div>
+
+        <!-- 미션 리스트 -->
+        <div class="mission-list" id="missionList">
+            {{#todoList}}
+                <div class="mission-row {{#isComplete}}complete{{/isComplete}}{{#isExpired}}expired{{/isExpired}}"
+                     data-status="{{#isComplete}}complete{{/isComplete}}{{#isExpired}}expired{{/isExpired}}{{#isReady}}ready{{/isReady}}">
+
+                    {{#isComplete}}
+                        <div class="check-box done" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d1f16"
+                                 stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                    {{/isComplete}}
+                    {{^isComplete}}
+                        {{#isExpired}}
+                            <div class="check-box fail">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f87171"
+                                     stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </div>
+                        {{/isExpired}}
+                        {{#isReady}}
+                            <div class="check-box" onclick="toggleTodo({{id}}, {{groupMember.group.id}})"></div>
+                        {{/isReady}}
+                    {{/isComplete}}
+
+                    <span class="user-badge">@ {{groupMember.user.nickname}}</span>
+
+                    <div class="mission-content">
+                        <span class="mission-text">{{work}}</span>
+                        {{#isReady}}
+                            <div class="progress-wrap">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width:{{deadlineProgress}}%; background:{{progressColor}};"></div>
+                                </div>
+                                <span class="progress-pct" style="color:{{progressColor}};">{{deadlineProgress}}%</span>
+                            </div>
+                        {{/isReady}}
+                        {{#isComplete}}
+                            <div class="progress-wrap">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width:100%; background:#34d399;"></div>
+                                </div>
+                                <span class="progress-pct" style="color:#34d399;">100%</span>
+                            </div>
+                        {{/isComplete}}
+                        {{#isExpired}}
+                            <div class="progress-wrap">
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width:100%; background:#f87171;"></div>
+                                </div>
+                                <span class="progress-pct" style="color:#f87171;">만료</span>
+                            </div>
+                        {{/isExpired}}
+                    </div>
+
+                    <div class="deadline-col">
+                        <div class="deadline-label">DEADLINE</div>
+                        <div class="deadline-val {{#isExpired}}expired{{/isExpired}}">{{getFormatDeadline}}</div>
+                    </div>
+
+                    <div class="status-col">
+                        {{#isComplete}}
+                            <div class="status-label">STATUS</div>
+                            <div class="status-val complete">DONE</div>
+                        {{/isComplete}}
+                        {{^isComplete}}
+                            {{#isExpired}}
+                                <div class="status-label">PENALTY</div>
+                                {{#fine}}
+                                    {{#isHasAmount}}
+                                        <div class="status-val expired">₩{{amount}}</div>
+                                    {{/isHasAmount}}
+                                    {{^isHasAmount}}
+                                        <div class="status-val expired">EXPIRED</div>
+                                    {{/isHasAmount}}
+                                {{/fine}}
+                                {{^fine}}
+                                    <div class="status-val expired">EXPIRED</div>
+                                {{/fine}}
+                            {{/isExpired}}
+                            {{#isReady}}
+                                {{#fine}}
+                                    {{#isHasAmount}}
+                                        <div class="status-label">PAYMENT DUE</div>
+                                        <div class="status-val fine">₩{{amount}}</div>
+                                    {{/isHasAmount}}
+                                    {{^isHasAmount}}
+                                        <div class="status-label">PAYMENT DUE</div>
+                                        <div class="status-val free">NO PENALTY</div>
+                                    {{/isHasAmount}}
+                                {{/fine}}
+                                {{^fine}}
+                                    <div class="status-label">PAYMENT DUE</div>
+                                    <div class="status-val free">NO PENALTY</div>
+                                {{/fine}}
+                            {{/isReady}}
+                        {{/isComplete}}
+                    </div>
+
+                    <div class="action-col">
+                        <a href="/groups/{{groupMember.group.id}}/todos/{{id}}/update-form"
+                           class="btn-todo-action btn-todo-edit">수정</a>
+                        <form action="/todo/{{id}}/delete" method="post"
+                              onsubmit="return confirm('미션을 삭제할까요?');" style="display:inline;">
+                            <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+                            <input type="hidden" name="groupId" value="{{groupMember.group.id}}">
+                            <button type="submit" class="btn-todo-action btn-todo-delete">삭제</button>
+                        </form>
+                    </div>
+                </div>
+            {{/todoList}}
+
+            {{^todoList}}
+                <div class="empty-state">아직 미션이 없어요. 새 미션을 추가해보세요!</div>
+            {{/todoList}}
+        </div>
+    </div>
+</main>
+
+<!-- 멤버 모달 -->
+<div id="memberModal" class="modal-overlay">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeMemberModal()">✕</button>
+        <p class="modal-eyebrow">MEMBERS</p>
+        <h3 class="modal-title">그룹 멤버</h3>
+        <div id="memberList" class="member-list"></div>
+    </div>
+</div>
+
+<!-- 초대 모달 -->
+<div id="inviteModal" class="modal-overlay">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeInviteModal()">✕</button>
+        <p class="modal-eyebrow">INVITE</p>
+        <h3 class="modal-title">팀원 초대하기</h3>
+
+        <div class="modal-section-label">초대 링크</div>
+        <div class="invite-link-row">
+            <div id="inviteLinkText" class="invite-link-text"></div>
+            <button class="btn-copy-primary" onclick="copyInviteLink()">링크 복사</button>
+        </div>
+
+        <hr class="modal-divider">
+
+        <div class="modal-section-label">가입 코드</div>
+        <div class="join-code-box">
+            <span id="joinCodeText" class="join-code-text"></span>
+            <button class="btn-copy" onclick="copyJoinCode()">복사</button>
+        </div>
+        <p class="modal-hint">코드를 직접 입력해서도 그룹에 참여할 수 있어요.</p>
+    </div>
+</div>
+
+<script>
+    const currentUserId = parseInt(document.getElementById('currentUserId').value);
+    const currentUserIsAdmin = document.getElementById('currentUserIsAdmin').value === 'true';
+
+    function toggleTodo(todoId, groupId) {
+        fetch(`/todo/${todoId}/toggle?groupId=${groupId}`, {
+            method: 'POST',
+            headers: { '{{_csrf.headerName}}': '{{_csrf.token}}' }
+        }).then(() => location.reload());
+    }
+
+    // 내 미션 토글
+    function toggleMyFilter() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('filter') === 'my') {
+            params.delete('filter');
+        } else {
+            params.set('filter', 'my');
+        }
+        window.location.search = params.toString();
+    }
+
+    // 상태 필터 순환
+    function toggleStatus() {
+        const params = new URLSearchParams(window.location.search);
+        const current = params.get('status');
+
+        if (!current) {
+            params.set('status', 'ready');
+        } else if (current === 'ready') {
+            params.set('status', 'complete');
+        } else if (current === 'complete') {
+            params.set('status', 'expired');
+        } else {
+            params.delete('status');
+        }
+        window.location.search = params.toString();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('.mission-row');
+        let ready = 0, complete = 0, expired = 0;
+        rows.forEach(r => {
+            const s = r.dataset.status;
+            if (s === 'complete') complete++;
+            else if (s === 'expired') expired++;
+            else ready++;
+        });
+        document.getElementById('cnt-ready').textContent = ready;
+        document.getElementById('cnt-complete').textContent = complete;
+        document.getElementById('cnt-expired').textContent = expired;
+
+        rows.forEach(r => {
+            if (r.dataset.status === 'ready') {
+                const pct = parseInt(r.querySelector('.progress-pct')?.textContent) || 0;
+                if (pct >= 80) r.classList.add('warning');
+            }
+        });
+    });
+
+    // 멤버 모달
+    function openMemberModal(groupId) {
+        fetch(`/groups/${groupId}/members`)
+            .then(res => res.json())
+            .then(members => {
+                const list = document.getElementById('memberList');
+                list.innerHTML = members.map(m => {
+                    const showKick = currentUserIsAdmin && m.userId !== currentUserId;
+                    const showLeave = m.userId === currentUserId && m.role !== 'ADMIN';
+                    const showDelegate = currentUserIsAdmin && m.userId !== currentUserId && m.role !== 'ADMIN';
+                    return `
+                        <div class="member-item">
+                            <div class="member-avatar ${m.role === 'ADMIN' ? 'admin' : ''}">
+                                ${m.nickname.charAt(0)}
+                            </div>
+                            <div class="member-info">
+                                <div class="member-name">${m.nickname}</div>
+                                <span class="member-role ${m.role === 'ADMIN' ? 'admin' : 'member'}">
+                                    ${m.role === 'ADMIN' ? '총무' : '멤버'}
+                                </span>
+                            </div>
+                            ${showDelegate ? `
+                                <button class="btn-delegate"
+                                    onclick="delegateAdmin(${m.id}, '${m.nickname}', ${groupId})">
+                                    위임
+                                </button>
+                            ` : ''}
+                            ${showKick ? `
+                                <button class="btn-kick"
+                                    onclick="kickMember(${m.id}, '${m.nickname}', ${groupId})">
+                                    강퇴
+                                </button>
+                            ` : ''}
+                            ${showLeave ? `
+                                <button class="btn-leave"
+                                    onclick="leaveGroup(${groupId})">
+                                    나가기
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+                document.getElementById('memberModal').classList.add('active');
+            });
+    }
+
+    function delegateAdmin(groupMemberId, nickname, groupId) {
+        if (!confirm(`'${nickname}'님에게 총무를 위임하시겠습니까?`)) return;
+        fetch(`/groups/${groupId}/members/${groupMemberId}/delegate`, {
+            method: 'POST',
+            headers: { '{{_csrf.headerName}}': '{{_csrf.token}}' }
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert('총무가 위임되었습니다.');
+                    location.reload();
+                } else {
+                    res.text().then(msg => alert(msg || '위임에 실패했습니다.'));
+                }
+            });
+    }
+
+    function kickMember(groupMemberId, nickname, groupId) {
+        if (!confirm(`'${nickname}'님을 강퇴하시겠습니까?`)) return;
+        fetch(`/groups/${groupId}/members/${groupMemberId}/kick`, {
+            method: 'POST',
+            headers: { '{{_csrf.headerName}}': '{{_csrf.token}}' }
+        })
+            .then(res => {
+                if (res.ok) {
+                    openMemberModal(groupId);
+                } else {
+                    res.text().then(msg => alert(msg || '강퇴에 실패했습니다.'));
+                }
+            });
+    }
+
+    function leaveGroup(groupId) {
+        if (!confirm('그룹을 나가시겠습니까?')) return;
+        fetch(`/groups/${groupId}/leave`, {
+            method: 'POST',
+            headers: { '{{_csrf.headerName}}': '{{_csrf.token}}' }
+        })
+            .then(res => {
+                if (res.ok) {
+                    location.href = '/groups';
+                } else {
+                    res.text().then(msg => alert(msg || '나가기에 실패했습니다.'));
+                }
+            });
+    }
+
+    function closeMemberModal() {
+        document.getElementById('memberModal').classList.remove('active');
+    }
+
+    document.getElementById('memberModal').addEventListener('click', function(e) {
+        if (e.target === this) closeMemberModal();
+    });
+
+    // 초대 모달
+    function openInviteModal(groupId) {
+        fetch(`/groups/${groupId}/invite-info`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('inviteLinkText').textContent =
+                    `${window.location.origin}/invite/${data.inviteCode}`;
+                document.getElementById('joinCodeText').textContent = data.joinCode;
+                document.getElementById('inviteModal').classList.add('active');
+            });
+    }
+
+    function closeInviteModal() {
+        document.getElementById('inviteModal').classList.remove('active');
+    }
+
+    function copyInviteLink() {
+        const text = document.getElementById('inviteLinkText').textContent;
+        navigator.clipboard.writeText(text).then(() => alert('초대링크가 복사됐어요!'));
+    }
+
+    function copyJoinCode() {
+        const text = document.getElementById('joinCodeText').textContent;
+        navigator.clipboard.writeText(text).then(() => alert('가입코드가 복사됐어요!'));
+    }
+
+    document.getElementById('inviteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeInviteModal();
+    });
+</script>
+
+{{> layout/footer}}

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitMate | 회원가입</title>
+    <style>
+        :root {
+            --bg: #0e0f11;
+            --border: rgba(255,255,255,0.06);
+            --text-muted: #555;
+            --danger: #f87171;
+            --input-bg: rgba(255,255,255,0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body {
+            background-color: var(--bg); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; overflow-x: hidden; letter-spacing: -0.3px;
+        }
+
+        .signup-container {
+            width: 100%; max-width: 420px; padding: 40px;
+            background: #111214;
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 20px; font-weight: 700; letter-spacing: -0.5px;
+            text-decoration: none; color: #fff; display: block; margin-bottom: 28px;
+        }
+        .logo span { color: var(--danger); }
+
+        .header-msg { margin-bottom: 32px; }
+        .header-msg h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+        .header-msg p { color: var(--text-muted); font-size: 14px; }
+
+        .form-group { text-align: left; margin-bottom: 16px; }
+        .form-group label {
+            display: block; font-size: 11px; font-weight: 600;
+            color: #444; margin-bottom: 8px; letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%; padding: 14px 16px;
+            background: var(--input-bg);
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff; font-size: 14px;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        input::placeholder { color: #333; }
+        input:focus {
+            border-color: rgba(248,113,113,0.4);
+            background: rgba(248,113,113,0.04);
+        }
+
+        .btn-signup {
+            width: 100%; padding: 14px; margin-top: 8px;
+            background: var(--danger);
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-signup:hover { background: #f95e5e; transform: translateY(-2px); }
+
+        .auth-footer { margin-top: 24px; font-size: 13px; color: var(--text-muted); }
+        .auth-footer a { color: #aaa; text-decoration: none; font-weight: 600; margin-left: 4px; }
+        .auth-footer a:hover { color: #fff; }
+
+        .divider {
+            border: none; border-top: 0.5px solid rgba(255,255,255,0.06);
+            margin: 28px 0 24px;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/app-theme.css">
+</head>
+<body>
+<main class="signup-page">
+<aside class="signup-aside">
+    <a href="/" class="signup-brand">Commit<span>Mate</span></a>
+    <div class="signup-aside-copy">
+        <span class="aside-badge">START TOGETHER</span>
+        <h1>작심삼일도<br><em>함께라면 끝까지.</em></h1>
+        <p>계정을 만들고 친구들과 첫 번째 약속을 시작하세요.</p>
+        <div class="signup-steps">
+            <div><i>1</i><span><strong>그룹 만들기</strong>목표를 공유할 공간을 만들어요.</span></div>
+            <div><i>2</i><span><strong>미션 등록하기</strong>담당자와 마감을 정해요.</span></div>
+            <div><i>3</i><span><strong>함께 달성하기</strong>과정을 기록하고 결과를 확인해요.</span></div>
+        </div>
+    </div>
+</aside>
+<section class="signup-form-area">
+<div class="signup-container">
+    <a href="/login-form" class="logo">Commit<span>Mate</span>.</a>
+
+    <div class="header-msg">
+        <h2>새로운 시작</h2>
+        <p>나만의 커밋 동료들을 만나보세요.</p>
+    </div>
+
+    <form action="/signup" method="post" id="signupForm">
+        <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+        <div class="form-group">
+            <label>이메일</label>
+            <input type="email" name="email" placeholder="name@example.com" required>
+        </div>
+
+        <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" name="nickname" placeholder="멋진 닉네임을 입력하세요" required>
+        </div>
+
+        <div class="form-group phone-verification-group">
+            <label for="phoneNumber">휴대폰 번호</label>
+            <div class="verification-row">
+                <input id="phoneNumber" type="tel" name="phoneNumber"
+                       placeholder="010-1234-5678" inputmode="numeric" autocomplete="tel" maxlength="13" required>
+                <button type="button" id="sendCodeButton" class="verification-button">인증번호 받기</button>
+            </div>
+            <div id="codeArea" class="code-area" hidden>
+                <div class="verification-row code-row">
+                    <input id="verificationCode" type="text" placeholder="6자리 인증번호"
+                           inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+                    <button type="button" id="verifyCodeButton" class="verification-button outline">인증 확인</button>
+                </div>
+                <div class="verification-meta"><span id="verificationMessage">인증번호를 입력해 주세요.</span><b id="verificationTimer">03:00</b></div>
+            </div>
+            <input type="hidden" id="phoneVerificationToken" name="phoneVerificationToken">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label>비밀번호</label>
+            <input type="password" name="password" placeholder="8자 이상 입력하세요" required>
+        </div>
+
+        <button type="submit" class="btn-signup">계정 생성하기</button>
+    </form>
+
+    <hr class="divider">
+
+    <div class="auth-footer">
+        이미 계정이 있으신가요? <a href="/login-form">로그인</a>
+    </div>
+</div>
+</section>
+</main>
+
+<script>
+    const phoneInput = document.getElementById('phoneNumber');
+    const codeInput = document.getElementById('verificationCode');
+    const sendButton = document.getElementById('sendCodeButton');
+    const verifyButton = document.getElementById('verifyCodeButton');
+    const codeArea = document.getElementById('codeArea');
+    const message = document.getElementById('verificationMessage');
+    const timer = document.getElementById('verificationTimer');
+    const tokenInput = document.getElementById('phoneVerificationToken');
+    let countdown;
+
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+        if (!tokenInput.value) {
+            event.preventDefault();
+            message.textContent = '휴대폰 번호 인증을 완료해 주세요.';
+            message.className = 'error-text';
+            codeArea.hidden = false;
+            phoneInput.focus();
+        }
+    });
+
+    phoneInput.addEventListener('input', function() {
+        const numbers = this.value.replace(/\D/g, '').slice(0, 11);
+        this.value = numbers.replace(/(\d{3})(\d{4})(\d{0,4})/, (_, a, b, c) => c ? `${a}-${b}-${c}` : b ? `${a}-${b}` : a);
+        tokenInput.value = '';
+    });
+
+    sendButton.addEventListener('click', async function() {
+        const response = await fetch('/api/phone-verifications/send', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', '{{_csrf.headerName}}': '{{_csrf.token}}'},
+            body: JSON.stringify({phoneNumber: phoneInput.value})
+        });
+        const data = await response.json();
+        message.textContent = data.message;
+        message.className = response.ok ? 'success-text' : 'error-text';
+        if (!response.ok) return;
+        codeArea.hidden = false;
+        codeInput.focus();
+        startTimer(180);
+        startResendDelay(60);
+    });
+
+    verifyButton.addEventListener('click', async function() {
+        const response = await fetch('/api/phone-verifications/verify', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', '{{_csrf.headerName}}': '{{_csrf.token}}'},
+            body: JSON.stringify({phoneNumber: phoneInput.value, code: codeInput.value})
+        });
+        const data = await response.json();
+        message.textContent = data.message;
+        message.className = response.ok ? 'success-text' : 'error-text';
+        if (!response.ok) return;
+        tokenInput.value = data.verificationToken;
+        clearInterval(countdown);
+        timer.textContent = '인증 완료';
+        phoneInput.readOnly = true;
+        codeInput.readOnly = true;
+        sendButton.disabled = true;
+        verifyButton.disabled = true;
+        document.querySelector('.phone-verification-group').classList.add('verified');
+    });
+
+    function startTimer(seconds) {
+        clearInterval(countdown);
+        const render = () => {
+            const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+            const sec = String(seconds % 60).padStart(2, '0');
+            timer.textContent = `${min}:${sec}`;
+            if (seconds-- <= 0) {
+                clearInterval(countdown);
+                timer.textContent = '만료';
+                message.textContent = '인증번호가 만료되었습니다. 다시 요청해 주세요.';
+                message.className = 'error-text';
+            }
+        };
+        render();
+        countdown = setInterval(render, 1000);
+    }
+
+    function startResendDelay(seconds) {
+        sendButton.disabled = true;
+        const resend = setInterval(() => {
+            sendButton.textContent = `재전송 ${seconds--}초`;
+            if (seconds < 0) {
+                clearInterval(resend);
+                sendButton.disabled = false;
+                sendButton.textContent = '인증번호 재전송';
+            }
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>

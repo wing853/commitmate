@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - 페이지 없음</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body {
+            background-color: #0e0f11; color: #fff;
+            display: flex; align-items: center; justify-content: center; height: 100vh;
+        }
+        .error-wrapper {
+            text-align: center; padding: 48px;
+            background: #111214;
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 20px; width: 90%; max-width: 460px;
+        }
+        .error-code {
+            font-size: 96px; font-weight: 800; margin: 0;
+            color: #1e1e20; letter-spacing: -4px; line-height: 1;
+        }
+        .error-title { font-size: 20px; font-weight: 700; margin: 16px 0 12px; color: #fff; }
+        .error-desc { color: #444; font-size: 14px; line-height: 1.7; margin-bottom: 36px; }
+        .btn-home {
+            background: #fff; color: #0e0f11;
+            padding: 12px 28px; border-radius: 10px;
+            font-weight: 700; font-size: 14px;
+            text-decoration: none; display: inline-block; transition: 0.2s;
+        }
+        .btn-home:hover { transform: translateY(-2px); opacity: 0.9; }
+    </style>
+    <link rel="stylesheet" href="/css/app-theme.css">
+</head>
+<body>
+<div class="error-wrapper">
+    <h1 class="error-code">404</h1>
+    <h2 class="error-title">페이지를 찾을 수 없습니다</h2>
+    <p class="error-desc">
+        요청하신 페이지가 존재하지 않거나 이동되었습니다.<br>
+        주소를 다시 확인하거나 홈으로 돌아가세요.
+    </p>
+    <a href="/" class="btn-home">홈으로 돌아가기</a>
+</div>
+</body>
+</html>

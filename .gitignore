@@ -37,3 +37,8 @@ out/
 .vscode/
 
 .env
+
+### Flutter local files ###
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+mobile/android/local.properties

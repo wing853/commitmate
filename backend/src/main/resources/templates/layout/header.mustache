@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommitMate</title>
+    <style>
+        :root {
+            --bg: #0e0f11;
+            --danger: #f87171;
+            --border: rgba(255,255,255,0.06);
+            --text-muted: #555;
+            --glass: rgba(255,255,255,0.02);
+            --green: #34d399;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        body { background-color: var(--bg); color: #fff; overflow-x: hidden; letter-spacing: -0.3px; min-height: 100vh; }
+
+        header {
+            height: 64px; display: flex; align-items: center;
+            border-bottom: 0.5px solid var(--border);
+            position: sticky; top: 0;
+            background: rgba(14,15,17,0.85);
+            backdrop-filter: blur(20px); z-index: 100;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; width: 100%; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+
+        .logo {
+            font-size: 18px; font-weight: 700; letter-spacing: -0.5px;
+            text-decoration: none; color: #fff;
+        }
+        .logo span { color: var(--danger); }
+
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+
+        .user-name { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+
+        .point-badge {
+            font-size: 12px; font-weight: 700;
+            color: #f59e0b;
+            background: rgba(245,158,11,0.1);
+            border: 0.5px solid rgba(245,158,11,0.25);
+            padding: 5px 12px; border-radius: 20px;
+        }
+
+        .btn-charge {
+            padding: 6px 14px; font-size: 12px; font-weight: 600;
+            color: #fff; background: #f59e0b;
+            border: none; border-radius: 8px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-charge:hover { background: #e08e00; }
+
+        .avatar {
+            width: 30px; height: 30px;
+            background: #1a1010;
+            border: 0.5px solid rgba(248,113,113,0.25);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: var(--danger);
+            overflow: hidden; text-decoration: none;
+            cursor: pointer; transition: 0.2s;
+        }
+        .avatar:hover {
+            border-color: rgba(248,113,113,0.6);
+            background: rgba(248,113,113,0.1);
+        }
+
+        .btn-logout {
+            padding: 6px 14px; font-size: 12px; font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 0.5px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            transition: 0.2s; background: transparent; cursor: pointer;
+        }
+        .btn-logout:hover {
+            color: var(--danger);
+            border-color: rgba(248,113,113,0.25);
+            background: rgba(248,113,113,0.05);
+        }
+
+        /* 공통 카드/그리드 */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: #111214;
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 28px;
+            transition: all 0.2s ease;
+            position: relative; display: flex; flex-direction: column;
+            cursor: pointer; text-decoration: none; color: inherit;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(248,113,113,0.3);
+            background: #131416;
+        }
+
+        .badge {
+            display: inline-block; padding: 4px 10px;
+            border-radius: 6px; font-size: 10px; font-weight: 700;
+            margin-bottom: 16px; width: fit-content;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .badge.admin {
+            background: rgba(248,113,113,0.1);
+            color: var(--danger);
+            border: 0.5px solid rgba(248,113,113,0.2);
+        }
+        .badge.member {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-muted);
+            border: 0.5px solid rgba(255,255,255,0.06);
+        }
+
+        .btn-admin-edit {
+            margin-top: 16px; width: 100%; padding: 9px;
+            background: rgba(255,255,255,0.03);
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 10px; color: #555; font-size: 12px;
+            font-weight: 600; text-align: center; text-decoration: none;
+            transition: 0.2s; display: flex; align-items: center;
+            justify-content: center; gap: 6px;
+        }
+        .btn-admin-edit:hover {
+            background: rgba(248,113,113,0.08);
+            border-color: rgba(248,113,113,0.25);
+            color: var(--danger);
+        }
+
+        /* 모달 */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.75); z-index: 999;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: #111214;
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 20px; padding: 36px;
+            width: 90%; max-width: 420px; position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px;
+            background: transparent; border: none; color: #444;
+            font-size: 18px; cursor: pointer; transition: 0.2s;
+        }
+        .modal-close:hover { color: #aaa; }
+        .modal-eyebrow { font-size: 10px; letter-spacing: 3px; color: #f59e0b; margin-bottom: 6px; }
+        .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .modal-sub { font-size: 13px; color: #555; margin-bottom: 24px; }
+        .modal-label { font-size: 11px; color: #444; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+        .modal-input {
+            width: 100%; background: rgba(255,255,255,0.03);
+            border: 0.5px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 13px 16px;
+            color: #fff; font-size: 14px; outline: none; transition: 0.2s;
+            margin-bottom: 16px;
+        }
+        .modal-input:focus { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.04); }
+        .modal-input::placeholder { color: #333; }
+        .btn-modal-submit {
+            width: 100%; background: #f59e0b; color: #fff;
+            border: none; padding: 14px; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        }
+        .btn-modal-submit:hover { background: #e08e00; }
+
+        .btn-amount {
+            background: rgba(245,158,11,0.08);
+            border: 0.5px solid rgba(245,158,11,0.25);
+            color: #f59e0b; padding: 12px;
+            border-radius: 10px; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-amount:hover { background: #f59e0b; color: #fff; }
+        .btn-amount.selected { background: #f59e0b; color: #fff; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/app-theme.css">
+</head>
+<body>
+<header>
+    <div class="container header-inner">
+        <a href="/groups" class="logo">Commit<span>Mate</span>.</a>
+        <div class="user-profile">
+            {{#sessionUser}}
+                <span class="user-name">{{nickname}} 님</span>
+                <span class="point-badge">⚡ {{point}}P</span>
+                <button class="btn-charge" onclick="openChargeModal()">충전</button>
+                <a href="/user/profile" class="avatar" title="{{nickname}} · 프로필 수정">
+                    <span data-avatar-name="{{nickname}}" aria-hidden="true"></span>
+                </a>
+                <form action="/logout" method="post" style="display:inline;">
+                    <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">
+                    <button type="submit" class="btn-logout">로그아웃</button>
+                </form>
+            {{/sessionUser}}
+        </div>
+    </div>
+</header>
+
+<!-- 포인트 충전 모달 -->
+<div id="chargeModal" class="modal-overlay">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeChargeModal()">✕</button>
+        <p class="modal-eyebrow">POINT CHARGE</p>
+        <h3 class="modal-title">포인트 충전</h3>
+        <p class="modal-sub">충전할 금액을 선택하세요.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px;">
+            <button class="btn-amount" onclick="selectAmount(5000, this)">5,000P</button>
+            <button class="btn-amount" onclick="selectAmount(10000, this)">10,000P</button>
+            <button class="btn-amount" onclick="selectAmount(30000, this)">30,000P</button>
+            <button class="btn-amount" onclick="selectAmount(50000, this)">50,000P</button>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <div class="modal-label">직접 입력</div>
+            <input type="number" id="chargeAmount" class="modal-input"
+                   placeholder="충전할 포인트 입력" min="1000" step="1000">
+        </div>
+
+        <button class="btn-modal-submit" onclick="chargePoint()">충전하기</button>
+    </div>
+</div>
+
+<script>
+    function openChargeModal() {
+        document.getElementById('chargeModal').classList.add('active');
+    }
+
+    function closeChargeModal() {
+        document.getElementById('chargeModal').classList.remove('active');
+        document.getElementById('chargeAmount').value = '';
+        document.querySelectorAll('.btn-amount').forEach(btn => btn.classList.remove('selected'));
+    }
+
+    function selectAmount(amount, btn) {
+        document.getElementById('chargeAmount').value = amount;
+        document.querySelectorAll('.btn-amount').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    function chargePoint() {
+        const amount = parseInt(document.getElementById('chargeAmount').value);
+        if (!amount || amount < 1000) {
+            alert('1,000P 이상 입력해주세요.');
+            return;
+        }
+        fetch('/user/point/charge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', '{{_csrf.headerName}}': '{{_csrf.token}}' },
+            body: JSON.stringify({ amount: amount })
+        }).then(res => {
+            if (res.ok) {
+                alert(`${amount.toLocaleString()}P 충전 완료!`);
+                closeChargeModal();
+                location.reload();
+            } else {
+                alert('충전에 실패했습니다.');
+            }
+        });
+    }
+
+    document.getElementById('chargeModal').addEventListener('click', function(e) {
+        if (e.target === this) closeChargeModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[data-avatar-name]').forEach(function(avatar) {
+            const nickname = avatar.dataset.avatarName.trim();
+            avatar.textContent = Array.from(nickname)[0] || '?';
+        });
+    });
+</script>

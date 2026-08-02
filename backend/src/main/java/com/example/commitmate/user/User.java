@@ -1,0 +1,52 @@
+package com.example.commitmate.user;
+
+import jakarta.persistence.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.sql.Timestamp;
+
+@Data
+@Entity
+@Table(name="user_tb")
+@NoArgsConstructor
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(unique = true)
+    private String email;
+    private String password;
+    @Column(unique = true)
+    private String nickname;
+    @Column(unique = true, length = 11)
+    private String phoneNumber;
+    @CreationTimestamp
+    private Timestamp createdAt;
+    @Enumerated(EnumType.STRING)
+    private AuthProvider provider;
+    private String providerId;
+    @ColumnDefault("0")
+    private Integer point = 0;
+
+    @Builder
+    public User(Integer id, String email, String password,
+                String nickname, Timestamp createdAt,
+                AuthProvider provider, String providerId, String phoneNumber) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+        this.createdAt = createdAt;
+        this.provider = provider;
+        this.providerId = providerId;
+        this.phoneNumber = phoneNumber;
+    }
+
+    public boolean isLocalUser() {
+        return this.provider == AuthProvider.LOCAL || this.provider == null;
+    }
+}
