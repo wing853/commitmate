@@ -1,6 +1,6 @@
 FROM gradle:8.5-jdk21 AS build
 WORKDIR /app
-COPY . .
+COPY backend/ .
 RUN gradle build -x test --no-daemon
 
 FROM eclipse-temurin:21-jre-jammy

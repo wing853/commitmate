@@ -36,6 +36,11 @@ public class AppApiController {
     private final PhoneVerificationService phoneVerificationService;
     private final PasswordResetService passwordResetService;
 
+    @GetMapping("/health")
+    public Map<String, String> health() {
+        return Map.of("status", "UP");
+    }
+
     @PostMapping("/phone-verifications/send")
     public Map<String, String> sendPhoneCode(@RequestBody Map<String, String> request) {
         phoneVerificationService.sendCode(request.get("phoneNumber"));
