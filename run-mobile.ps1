@@ -18,7 +18,13 @@ Push-Location $mobileRoot
 try {
     & $flutterExecutable pub get
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-    & $flutterExecutable run
+    $apiBaseUrl = [Environment]::GetEnvironmentVariable('COMMITMATE_API_URL')
+    if ([string]::IsNullOrWhiteSpace($apiBaseUrl)) {
+        & $flutterExecutable run
+    }
+    else {
+        & $flutterExecutable run --dart-define="API_BASE_URL=$apiBaseUrl"
+    }
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 finally {

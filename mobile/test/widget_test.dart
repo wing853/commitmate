@@ -1,15 +1,16 @@
 import 'package:commit_mate/main.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  testWidgets('앱의 기본 탭과 홈 화면을 표시한다', (tester) async {
-    await tester.pumpWidget(const CommitMateApp());
+  testWidgets('저장된 세션이 없으면 로그인 화면을 표시한다', (tester) async {
+    SharedPreferences.setMockInitialValues({});
 
-    expect(find.text('홈'), findsOneWidget);
-    expect(find.text('할 일'), findsOneWidget);
-    expect(find.text('벌금'), findsOneWidget);
-    expect(find.text('통계'), findsOneWidget);
-    expect(find.text('마이'), findsOneWidget);
-    expect(find.text('안녕하세요, 민준님 👋'), findsOneWidget);
+    await tester.pumpWidget(const CommitMateApp());
+    await tester.pumpAndSettle();
+
+    expect(find.text('CommitMate'), findsOneWidget);
+    expect(find.text('로그인'), findsOneWidget);
+    expect(find.text('처음이신가요? 회원가입'), findsOneWidget);
   });
 }

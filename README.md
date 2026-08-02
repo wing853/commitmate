@@ -36,6 +36,16 @@ cd backend
 .\run-mobile.ps1
 ```
 
+Android 에뮬레이터는 기본적으로 `http://10.0.2.2:8080/api/app`에 연결합니다.
+실제 휴대폰에서는 PC와 같은 Wi-Fi에 연결하고 PC의 LAN IP를 지정합니다.
+
+```powershell
+$env:COMMITMATE_API_URL='http://192.168.0.10:8080/api/app'
+.\run-mobile.ps1
+```
+
+백엔드는 기본 8080 포트를 사용하며 `SERVER_PORT` 환경변수로 변경할 수 있습니다.
+
 또는 모바일 디렉터리에서:
 
 ```powershell

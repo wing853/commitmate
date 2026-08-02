@@ -18,6 +18,7 @@ public class SecurityConfig {
                 // Mustache에는 Thymeleaf 보안 dialect 같은 지연 토큰 처리가 없으므로
                 // 요청마다 토큰을 즉시(eager) 확정하는 핸들러를 사용한다.
                 .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/app/**")
                         .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
                 )
                 .authorizeHttpRequests(auth -> auth
