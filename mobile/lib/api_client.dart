@@ -16,7 +16,7 @@ class ApiClient {
 
   static const baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8080/api/app',
+    defaultValue: 'https://commitmate-l75c.onrender.com/api/app',
   );
 
   final http.Client _client;
