@@ -110,6 +110,15 @@ public class AppApiController {
         return userMap(updated);
     }
 
+    @DeleteMapping("/me")
+    public ResponseEntity<Void> withdraw(@RequestBody(required = false) WithdrawRequest request,
+                                         HttpSession session) {
+        User current = currentUser(session);
+        userService.withdraw(current.getId(), request == null ? null : request.password());
+        session.invalidate();
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/me/points")
     public Map<String, Object> chargePoints(@RequestBody PointRequest request, HttpSession session) {
         User current = currentUser(session);
@@ -325,4 +334,5 @@ public class AppApiController {
                                  String newPasswordConfirm) {}
     public record PointRequest(Integer amount) {}
     public record MemoRequest(String memo) {}
+    public record WithdrawRequest(String password) {}
 }

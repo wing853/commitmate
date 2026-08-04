@@ -12,4 +12,9 @@ public class DevelopmentSmsSender implements SmsSender {
     public void sendVerificationCode(String phoneNumber, String code) {
         log.warn("[개발용 SMS] 수신번호: {}, 인증번호: {}", phoneNumber, code);
     }
+
+    @Override
+    public void sendMessage(String phoneNumber, String message) {
+        log.warn("[개발용 SMS] 수신번호: {}, 메시지: {}", phoneNumber, message);
+    }
 }

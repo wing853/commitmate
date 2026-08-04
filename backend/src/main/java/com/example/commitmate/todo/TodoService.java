@@ -63,8 +63,8 @@ public class TodoService {
             throw new Exception403("일정 삭제 권한이 없습니다(자신의 일정인지 확인하세요.)");
         }
 
-        // 기한 초과 상태면 클릭 막기
-        if (todo.getStatus() == TodoStatus.EXPIRED) {
+        // 기한 초과 상태면 클릭 막기 (status 필드는 지연 갱신되므로 실시간 판정을 사용)
+        if (todo.isExpired()) {
             throw new ExceptionExpire("선택한 일정은 기간이 지나 상태변경을 할 수 없습니다");
         }
 

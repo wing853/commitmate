@@ -1,6 +1,7 @@
 package com.example.commitmate.todo;
 
 import com.example.commitmate.core.errors.Exception403;
+import com.example.commitmate.core.errors.ExceptionExpire;
 import com.example.commitmate.group.GroupService;
 import com.example.commitmate.user.User;
 import jakarta.servlet.http.HttpSession;
@@ -101,6 +102,9 @@ public class TodoController {
 
         if(!todo.getGroupMember().getUser().getId().equals(sessionUser.getId())) {
             throw new Exception403("수정 권한이 없습니다.");
+        }
+        if (todo.isExpired()) {
+            throw new ExceptionExpire("선택한 일정은 만료되어 수정할 수 없습니다.");
         }
         model.addAttribute("groupId",groupId);
         model.addAttribute("todo", todo);

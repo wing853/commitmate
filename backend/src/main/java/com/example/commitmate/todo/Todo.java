@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -31,6 +32,10 @@ public class Todo {
     @Column(name = "deadline")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private Timestamp deadline;
+    @ColumnDefault("false")
+    private boolean reminderSent;
+    @ColumnDefault("false")
+    private boolean expiredNotified;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_member_id")

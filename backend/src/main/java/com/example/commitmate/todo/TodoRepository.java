@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,4 +39,26 @@ public interface TodoRepository extends JpaRepository<Todo,Integer> {
     @Modifying
     @Query(value = "UPDATE todo_tb SET fine_id = null WHERE group_member_id = :groupMemberId", nativeQuery = true)
     void detachFineByGroupMemberId(@Param("groupMemberId") Integer groupMemberId);
+
+    @Query("""
+            select t from Todo t
+            join fetch t.groupMember gm
+            join fetch gm.user u
+            where t.status = 'READY'
+              and t.reminderSent = false
+              and t.deadline is not null
+              and t.deadline between :now and :threshold
+            """)
+    List<Todo> findUpcomingDeadlineTodosForReminder(@Param("now") Timestamp now, @Param("threshold") Timestamp threshold);
+
+    @Query("""
+            select t from Todo t
+            join fetch t.groupMember gm
+            join fetch gm.user u
+            where t.status <> 'FINISH'
+              and t.expiredNotified = false
+              and t.deadline is not null
+              and t.deadline < :now
+            """)
+    List<Todo> findNewlyExpiredTodosForNotification(@Param("now") Timestamp now);
 }

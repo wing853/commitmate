@@ -1501,8 +1501,20 @@ class Todos extends StatelessWidget {
             }
           },
           child: GestureDetector(
-            onTap: () => toggle(x),
-            onLongPress: () => edit(c, todo: x),
+            onTap: () {
+              if (x['status'] == 'EXPIRED') {
+                msg(c, '마감이 지난 일정은 상태를 변경할 수 없어요.');
+                return;
+              }
+              toggle(x);
+            },
+            onLongPress: () {
+              if (x['status'] == 'EXPIRED') {
+                msg(c, '마감이 지난 일정은 수정할 수 없어요.');
+                return;
+              }
+              edit(c, todo: x);
+            },
             child: TodoCard(x),
           ),
         ),
@@ -2208,6 +2220,12 @@ class Profile extends StatelessWidget {
         icon: const Icon(Icons.logout),
         label: const Text('로그아웃'),
       ),
+      TextButton.icon(
+        onPressed: () => withdraw(c),
+        style: TextButton.styleFrom(foregroundColor: C.red),
+        icon: const Icon(Icons.person_remove_outlined),
+        label: const Text('회원 탈퇴'),
+      ),
     ],
   );
   Future<void> charge(BuildContext c) async {
@@ -2275,6 +2293,31 @@ class Profile extends StatelessWidget {
         if (c.mounted) msg(c, e.toString());
       }
     }
+  }
+
+  Future<void> withdraw(BuildContext c) async {
+    final isLocal = (user['provider']?.toString() ?? 'LOCAL') == 'LOCAL';
+    final p = TextEditingController();
+    final proceed = isLocal
+        ? await form(c, '회원 탈퇴', [
+            const Text('탈퇴하면 계정 정보가 삭제되며 되돌릴 수 없습니다.\n비밀번호를 입력해 확인해 주세요.'),
+            gap,
+            TextField(
+              controller: p,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: '비밀번호'),
+            ),
+          ])
+        : await confirm(c, '탈퇴하면 계정 정보가 삭제되며 되돌릴 수 없습니다.\n정말 탈퇴하시겠어요?');
+    if (!proceed) return;
+    try {
+      await api.delete('/me', {'password': p.text});
+    } catch (e) {
+      if (c.mounted) msg(c, e.toString());
+      return;
+    }
+    await api.clearSession();
+    logout();
   }
 }
 

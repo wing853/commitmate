@@ -31,6 +31,7 @@ public class User {
     private String providerId;
     @ColumnDefault("0")
     private Integer point = 0;
+    private Timestamp withdrawnAt;
 
     @Builder
     public User(Integer id, String email, String password,

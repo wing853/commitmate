@@ -439,8 +439,10 @@
                     </div>
 
                     <div class="action-col">
+                        {{^isExpired}}
                         <a href="/groups/{{groupMember.group.id}}/todos/{{id}}/update-form"
                            class="btn-todo-action btn-todo-edit">수정</a>
+                        {{/isExpired}}
                         <form action="/todo/{{id}}/delete" method="post"
                               onsubmit="return confirm('미션을 삭제할까요?');" style="display:inline;">
                             <input type="hidden" name="{{_csrf.parameterName}}" value="{{_csrf.token}}">

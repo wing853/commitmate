@@ -65,6 +65,7 @@ public class TodoRequest {
                     String formatted = deadline.replace("T", " ");
                     if (formatted.length() == 16) formatted += ":00";
                     todo.setDeadline(Timestamp.valueOf(formatted));
+                    todo.setReminderSent(false);
                 } catch (Exception e) {
                     throw new Exception500("날짜 형식이 올바르지 않습니다.");
                 }

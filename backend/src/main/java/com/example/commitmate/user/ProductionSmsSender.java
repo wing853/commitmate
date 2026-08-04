@@ -50,12 +50,21 @@ public class ProductionSmsSender implements SmsSender {
 
     @Override
     public void sendVerificationCode(String phoneNumber, String code) {
+        send(phoneNumber, "[commitmate] 인증번호 [" + code + "]를 입력해 주세요.", "인증번호 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+
+    @Override
+    public void sendMessage(String phoneNumber, String message) {
+        send(phoneNumber, message, "문자 발송에 실패했습니다.");
+    }
+
+    private void send(String phoneNumber, String text, String failureMessage) {
         if (apiKey.isBlank() || apiSecret.isBlank() || senderNumber.isBlank()) {
             throw new ExceptionInput("SMS 발송 서비스 설정이 필요합니다.");
         }
 
         try {
-            String body = objectMapper.writeValueAsString(buildRequestBody(phoneNumber, code));
+            String body = objectMapper.writeValueAsString(buildRequestBody(phoneNumber, text));
 
             HttpRequest request = HttpRequest.newBuilder(SEND_URI)
                     .header("Content-Type", "application/json; charset=utf-8")
@@ -67,21 +76,21 @@ public class ProductionSmsSender implements SmsSender {
 
             if (response.statusCode() / 100 != 2) {
                 log.error("[SOLAPI] SMS 발송 실패. status={}, body={}", response.statusCode(), response.body());
-                throw new ExceptionInput("인증번호 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+                throw new ExceptionInput(failureMessage);
             }
         } catch (ExceptionInput e) {
             throw e;
         } catch (Exception e) {
             log.error("[SOLAPI] SMS 발송 중 오류", e);
-            throw new ExceptionInput("인증번호 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+            throw new ExceptionInput(failureMessage);
         }
     }
 
-    private Map<String, Object> buildRequestBody(String phoneNumber, String code) {
+    private Map<String, Object> buildRequestBody(String phoneNumber, String text) {
         Map<String, Object> message = new LinkedHashMap<>();
         message.put("to", phoneNumber);
         message.put("from", senderNumber);
-        message.put("text", "[commitmate] 인증번호 [" + code + "]를 입력해 주세요.");
+        message.put("text", text);
 
         Map<String, Object> root = new LinkedHashMap<>();
         root.put("message", message);
