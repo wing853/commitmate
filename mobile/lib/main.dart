@@ -1801,6 +1801,69 @@ class Fines extends StatelessWidget {
       padding: pad,
       children: [
         const Section('벌금 내역'),
+        if (data['isAdmin'] == true)
+          Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [C.dark, C.primary]),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: C.primary.withValues(alpha: .24),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: Colors.white24,
+                  child: Icon(
+                    Icons.admin_panel_settings_rounded,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '방장 정산 관리',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      Text(
+                        '그룹 적립금 ${money(data['groupPoint'])}P',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(c).push(
+                    MaterialPageRoute(
+                      builder: (_) => _FineAdminPage(data: data),
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xffffd83d),
+                    foregroundColor: const Color(0xff2d2700),
+                    minimumSize: const Size(70, 42),
+                  ),
+                  child: const Text('관리'),
+                ),
+              ],
+            ),
+          ),
         Row(
           children: [
             Expanded(
@@ -1863,6 +1926,161 @@ class Fines extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FineAdminPage extends StatelessWidget {
+  const _FineAdminPage({required this.data});
+  final Map<String, dynamic> data;
+  @override
+  Widget build(BuildContext context) {
+    final members = List<Map<String, dynamic>>.from(
+      (data['memberSummaries'] ?? []).map((e) => Map<String, dynamic>.from(e)),
+    );
+    members.sort(
+      (a, b) => ((b['unpaidAmount'] ?? 0) as num).compareTo(
+        (a['unpaidAmount'] ?? 0) as num,
+      ),
+    );
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          '방장 벌금 관리',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          children: [
+            const _DialogHeading(title: '방장 벌금 관리'),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: Metric(
+                    '전체 미납',
+                    '${money(data['unpaidAmount'])}원',
+                    C.red,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Metric(
+                    '그룹 적립금',
+                    '${money(data['groupPoint'])}P',
+                    C.primary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            const _DialogTip(
+              icon: Icons.info_outline_rounded,
+              text: '멤버별 미납 현황입니다. 벌금 납부는 해당 멤버 본인만 할 수 있어요.',
+            ),
+            const SizedBox(height: 20),
+            const Section('멤버별 정산 현황'),
+            if (members.isEmpty)
+              const Empty(
+                Icons.verified_rounded,
+                '정산 내역이 없어요',
+                '아직 발생한 벌금이 없습니다.',
+              ),
+            ...members.map((member) {
+              final items = List<Map<String, dynamic>>.from(
+                (member['items'] ?? []).map(
+                  (e) => Map<String, dynamic>.from(e),
+                ),
+              );
+              final unpaid = items
+                  .where((item) => item['status'] == 'UNPAID')
+                  .toList();
+              return Card(
+                child: ExpansionTile(
+                  tilePadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+                  leading: CircleAvatar(
+                    backgroundColor: C.soft,
+                    child: Text(
+                      member['nickname'].toString().characters.first,
+                      style: const TextStyle(
+                        color: C.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    member['nickname'].toString(),
+                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  ),
+                  subtitle: Text(
+                    '미납 ${member['unpaidCount']}건 · ${money(member['unpaidAmount'])}원',
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: unpaid.isEmpty
+                          ? const Color(0xffe8f8f0)
+                          : const Color(0xffffeaed),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      unpaid.isEmpty ? '정산 완료' : '미납',
+                      style: TextStyle(
+                        color: unpaid.isEmpty ? C.green : C.red,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  children: unpaid.isEmpty
+                      ? [
+                          const ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(
+                              Icons.check_circle_rounded,
+                              color: C.green,
+                            ),
+                            title: Text('미납 벌금이 없습니다.'),
+                          ),
+                        ]
+                      : unpaid
+                            .map(
+                              (fine) => ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                dense: true,
+                                leading: const Icon(
+                                  Icons.warning_amber_rounded,
+                                  color: C.red,
+                                ),
+                                title: Text(fine['work'].toString()),
+                                subtitle: Text(
+                                  fine['memo']?.toString() ?? '미납',
+                                ),
+                                trailing: Text(
+                                  '${money(fine['amount'])}원',
+                                  style: const TextStyle(
+                                    color: C.red,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                ),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 }

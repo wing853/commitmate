@@ -224,6 +224,7 @@ public class AppApiController {
     @GetMapping("/groups/{groupId}/fines")
     public Map<String, Object> fines(@PathVariable Integer groupId, HttpSession session) {
         requireMember(groupId, session);
+        User current = currentUser(session);
         FineResponse.GroupFineInfo info = fineService.getFineInfo(groupId);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("totalAmount", info.getTotalFinesAmount());
@@ -232,6 +233,33 @@ public class AppApiController {
         result.put("unpaidAmount", info.getUnpaidAmount());
         result.put("paidAmount", info.getPaidAmount());
         result.put("items", info.getExpiredFines().stream().map(this::fineMap).toList());
+        result.put("isAdmin", fineService.isAdmin(groupId, current.getId()));
+        result.put("groupPoint", fineService.getGroup(groupId).getGroupPoint());
+
+        Map<Integer, Map<String, Object>> memberSummaries = new LinkedHashMap<>();
+        for (Fine fine : info.getExpiredFines()) {
+            Integer ownerId = fine.getGroupMember().getUser().getId();
+            Map<String, Object> summary = memberSummaries.computeIfAbsent(ownerId, id -> {
+                Map<String, Object> value = new LinkedHashMap<>();
+                value.put("ownerId", id);
+                value.put("nickname", fine.getGroupMember().getUser().getNickname());
+                value.put("unpaidCount", 0);
+                value.put("unpaidAmount", 0);
+                value.put("paidCount", 0);
+                value.put("items", new java.util.ArrayList<Map<String, Object>>());
+                return value;
+            });
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> items = (List<Map<String, Object>>) summary.get("items");
+            items.add(fineMap(fine));
+            if (fine.isUnpaid()) {
+                summary.put("unpaidCount", (Integer) summary.get("unpaidCount") + 1);
+                summary.put("unpaidAmount", (Integer) summary.get("unpaidAmount") + fine.getAmount());
+            } else {
+                summary.put("paidCount", (Integer) summary.get("paidCount") + 1);
+            }
+        }
+        result.put("memberSummaries", memberSummaries.values());
         return result;
     }
 
