@@ -66,6 +66,24 @@ class _AppState extends State<CommitMateApp> {
         margin: const EdgeInsets.only(bottom: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 18,
+        shadowColor: C.dark.withValues(alpha: .22),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        titleTextStyle: const TextStyle(
+          color: C.ink,
+          fontSize: 21,
+          fontWeight: FontWeight.w900,
+        ),
+        contentTextStyle: const TextStyle(color: C.muted, height: 1.55),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
@@ -457,7 +475,13 @@ class _ShellState extends State<Shell> {
           refresh();
         },
       ),
-      Todos(api: widget.api, todos: todos, groupId: groupId, refresh: refresh),
+      Todos(
+        api: widget.api,
+        todos: todos,
+        groupId: groupId,
+        refresh: refresh,
+        toggle: toggleTodo,
+      ),
       Fines(
         api: widget.api,
         data: fines,
@@ -585,6 +609,20 @@ class _ShellState extends State<Shell> {
       ),
     ),
   );
+
+  Future<void> toggleTodo(Map<String, dynamic> todo) async {
+    final previous = todo['status'];
+    setState(() => todo['status'] = previous == 'FINISH' ? 'READY' : 'FINISH');
+    try {
+      await widget.api.post('/todos/${todo['id']}/toggle');
+    } catch (error) {
+      if (mounted) {
+        setState(() => todo['status'] = previous);
+        msg(context, error.toString());
+      }
+    }
+  }
+
   Future<void> createGroup() async {
     final n = TextEditingController(), d = TextEditingController();
     if (await form(context, '새 그룹 만들기', [
@@ -645,7 +683,7 @@ class _ShellState extends State<Shell> {
       await showDialog<void>(
         context: context,
         builder: (dc) => AlertDialog(
-          title: const Text('그룹 상세 관리'),
+          title: const _DialogHeading(title: '그룹 상세 관리'),
           content: SizedBox(
             width: 420,
             child: SingleChildScrollView(
@@ -892,11 +930,13 @@ class Todos extends StatelessWidget {
     required this.todos,
     required this.groupId,
     required this.refresh,
+    required this.toggle,
   });
   final ApiClient api;
   final List<Map<String, dynamic>> todos;
   final int? groupId;
   final Future<void> Function() refresh;
+  final Future<void> Function(Map<String, dynamic>) toggle;
   @override
   Widget build(BuildContext c) => ListView(
     padding: pad,
@@ -943,14 +983,7 @@ class Todos extends StatelessWidget {
             }
           },
           child: GestureDetector(
-            onTap: () async {
-              try {
-                await api.post('/todos/${x['id']}/toggle');
-                await refresh();
-              } catch (e) {
-                if (c.mounted) msg(c, e.toString());
-              }
-            },
+            onTap: () => toggle(x),
             onLongPress: () => edit(c, todo: x),
             child: TodoCard(x),
           ),
@@ -968,7 +1001,7 @@ class Todos extends StatelessWidget {
       context: c,
       builder: (dc) => StatefulBuilder(
         builder: (c, setS) => AlertDialog(
-          title: Text(todo == null ? '할 일 추가' : '할 일 수정'),
+          title: _DialogHeading(title: todo == null ? '할 일 추가' : '할 일 수정'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1469,7 +1502,10 @@ Future<bool> form(BuildContext c, String title, List<Widget> children) async =>
     await showDialog<bool>(
       context: c,
       builder: (c) => AlertDialog(
-        title: Text(title),
+        titlePadding: const EdgeInsets.fromLTRB(26, 26, 26, 0),
+        contentPadding: const EdgeInsets.fromLTRB(26, 18, 26, 6),
+        actionsPadding: const EdgeInsets.fromLTRB(26, 12, 26, 24),
+        title: _DialogHeading(title: title),
         content: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: children),
         ),
@@ -1478,14 +1514,89 @@ Future<bool> form(BuildContext c, String title, List<Widget> children) async =>
             onPressed: () => Navigator.pop(c, false),
             child: const Text('취소'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('확인'),
+            icon: const Icon(Icons.check_rounded, size: 18),
+            label: const Text('확인'),
           ),
         ],
       ),
     ) ??
     false;
+
+class _DialogHeading extends StatelessWidget {
+  const _DialogHeading({required this.title});
+  final String title;
+  @override
+  Widget build(BuildContext context) {
+    final data = switch (title) {
+      '새 그룹 만들기' => (Icons.group_add_rounded, '새로운 동료들과 목표를 시작해 보세요.'),
+      '그룹 정보 수정' => (Icons.edit_note_rounded, '그룹 이름과 소개를 원하는 모습으로 바꿔보세요.'),
+      '포인트 충전' => (Icons.add_card_rounded, '벌금 납부에 사용할 포인트를 충전합니다.'),
+      '프로필 수정' => (Icons.manage_accounts_rounded, '닉네임과 계정 보안 정보를 관리하세요.'),
+      '그룹 참여' => (Icons.login_rounded, '전달받은 참여 코드를 입력해 주세요.'),
+      '그룹 상세 관리' => (
+        Icons.admin_panel_settings_rounded,
+        '참여 코드와 멤버 권한을 한곳에서 관리하세요.',
+      ),
+      '할 일 추가' => (
+        Icons.playlist_add_check_circle_rounded,
+        '담당할 약속과 마감 일시를 정해 주세요.',
+      ),
+      '할 일 수정' => (Icons.edit_calendar_rounded, '약속 내용과 마감 조건을 수정합니다.'),
+      _ => (Icons.auto_awesome_rounded, '필요한 정보를 입력해 주세요.'),
+    };
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [C.primary, Color(0xff8a70f4)],
+            ),
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: C.primary.withValues(alpha: .22),
+                blurRadius: 16,
+                offset: const Offset(0, 7),
+              ),
+            ],
+          ),
+          child: Icon(data.$1, color: Colors.white),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                data.$2,
+                style: const TextStyle(
+                  color: C.muted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  height: 1.45,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 Future<bool> confirm(BuildContext c, String text) async =>
     await showDialog<bool>(
       context: c,

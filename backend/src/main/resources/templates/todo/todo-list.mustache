@@ -342,7 +342,7 @@
                      data-status="{{#isComplete}}complete{{/isComplete}}{{#isExpired}}expired{{/isExpired}}{{#isReady}}ready{{/isReady}}">
 
                     {{#isComplete}}
-                        <div class="check-box done" onclick="toggleTodo({{id}}, {{groupMember.group.id}})">
+                        <div class="check-box done" onclick="toggleTodo({{id}}, {{groupMember.group.id}}, this)">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d1f16"
                                  stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -360,7 +360,7 @@
                             </div>
                         {{/isExpired}}
                         {{#isReady}}
-                            <div class="check-box" onclick="toggleTodo({{id}}, {{groupMember.group.id}})"></div>
+                            <div class="check-box" onclick="toggleTodo({{id}}, {{groupMember.group.id}}, this)"></div>
                         {{/isReady}}
                     {{/isComplete}}
 
@@ -496,11 +496,41 @@
     const currentUserId = parseInt(document.getElementById('currentUserId').value);
     const currentUserIsAdmin = document.getElementById('currentUserIsAdmin').value === 'true';
 
-    function toggleTodo(todoId, groupId) {
+    function updateTodoCounts() {
+        const rows = document.querySelectorAll('.mission-row');
+        document.getElementById('cnt-ready').textContent = [...rows].filter(r => r.dataset.status === 'ready').length;
+        document.getElementById('cnt-complete').textContent = [...rows].filter(r => r.dataset.status === 'complete').length;
+        document.getElementById('cnt-expired').textContent = [...rows].filter(r => r.dataset.status === 'expired').length;
+    }
+
+    function toggleTodo(todoId, groupId, checkbox) {
+        if (checkbox.dataset.busy === 'true') return;
+        checkbox.dataset.busy = 'true';
+        const row = checkbox.closest('.mission-row');
+        const wasComplete = row.dataset.status === 'complete';
+        const previousMarkup = checkbox.innerHTML;
+        row.dataset.status = wasComplete ? 'ready' : 'complete';
+        row.classList.toggle('complete', !wasComplete);
+        checkbox.classList.toggle('done', !wasComplete);
+        checkbox.innerHTML = wasComplete ? '' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0d1f16" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        const statusValue = row.querySelector('.status-val');
+        if (statusValue) { statusValue.textContent = wasComplete ? 'READY' : 'DONE'; statusValue.className = `status-val ${wasComplete ? 'free' : 'complete'}`; }
+        updateTodoCounts();
         fetch(`/todo/${todoId}/toggle?groupId=${groupId}`, {
             method: 'POST',
             headers: { '{{_csrf.headerName}}': '{{_csrf.token}}' }
-        }).then(() => location.reload());
+        }).then(response => {
+            if (!response.ok) throw new Error('상태 변경에 실패했습니다.');
+            checkbox.dataset.busy = 'false';
+        }).catch(error => {
+            row.dataset.status = wasComplete ? 'complete' : 'ready';
+            row.classList.toggle('complete', wasComplete);
+            checkbox.classList.toggle('done', wasComplete);
+            checkbox.innerHTML = previousMarkup;
+            checkbox.dataset.busy = 'false';
+            updateTodoCounts();
+            alert(error.message);
+        });
     }
 
     // 내 미션 토글
@@ -540,9 +570,7 @@
             else if (s === 'expired') expired++;
             else ready++;
         });
-        document.getElementById('cnt-ready').textContent = ready;
-        document.getElementById('cnt-complete').textContent = complete;
-        document.getElementById('cnt-expired').textContent = expired;
+        updateTodoCounts();
 
         rows.forEach(r => {
             if (r.dataset.status === 'ready') {
