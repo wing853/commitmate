@@ -1,121 +1,166 @@
 import 'package:flutter/material.dart';
-
 import 'api_client.dart';
 
 void main() => runApp(const CommitMateApp());
 
-class AppColors {
-  static const purple = Color(0xFF6551E8);
-  static const lavender = Color(0xFFF1EEFF);
-  static const yellow = Color(0xFFFFC83D);
-  static const ink = Color(0xFF17203A);
-  static const muted = Color(0xFF7B8194);
-  static const background = Color(0xFFF8F8FC);
-  static const danger = Color(0xFFF06472);
-  static const success = Color(0xFF43B884);
+abstract final class C {
+  static const primary = Color(0xff5b4ae8),
+      dark = Color(0xff352a9e),
+      coral = Color(0xffff765f),
+      gold = Color(0xffffc85a),
+      ink = Color(0xff17182c),
+      muted = Color(0xff777a91),
+      bg = Color(0xfff7f7fc),
+      soft = Color(0xffefedff),
+      green = Color(0xff28a876),
+      red = Color(0xffe9556b);
 }
 
 class CommitMateApp extends StatefulWidget {
   const CommitMateApp({super.key});
   @override
-  State<CommitMateApp> createState() => _CommitMateAppState();
+  State<CommitMateApp> createState() => _AppState();
 }
 
-class _CommitMateAppState extends State<CommitMateApp> {
+class _AppState extends State<CommitMateApp> {
   final api = ApiClient();
   Map<String, dynamic>? user;
   bool loading = true;
-
   @override
   void initState() {
     super.initState();
-    _restore();
+    restore();
   }
 
-  Future<void> _restore() async {
+  Future<void> restore() async {
     await api.initialize();
-    if (!api.hasSession) {
-      if (mounted) setState(() => loading = false);
-      return;
-    }
-    try {
-      user = Map<String, dynamic>.from(await api.get('/me'));
-    } catch (_) {
-      user = null;
+    if (api.hasSession) {
+      try {
+        user = Map<String, dynamic>.from(await api.get('/me'));
+      } catch (_) {
+        await api.clearSession();
+      }
     }
     if (mounted) setState(() => loading = false);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CommitMate',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.purple),
-        scaffoldBackgroundColor: AppColors.background,
-        fontFamilyFallback: const ['Pretendard', 'Noto Sans KR'],
-        cardTheme: CardThemeData(
-          elevation: 0,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'CommitMate',
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: C.primary,
+        primary: C.primary,
+      ),
+      scaffoldBackgroundColor: C.bg,
+      fontFamilyFallback: const ['Pretendard', 'Noto Sans KR'],
+      appBarTheme: const AppBarTheme(
+        backgroundColor: C.bg,
+        surfaceTintColor: Colors.transparent,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        color: Colors.white,
+        margin: const EdgeInsets.only(bottom: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xffe6e5f0)),
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Color(0xffe6e5f0)),
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(0, 52),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
       ),
-      home: loading
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : user == null
-          ? AuthScreen(
-              api: api,
-              onAuthenticated: (value) => setState(() => user = value),
-            )
-          : AppShell(
-              api: api,
-              user: user!,
-              onUserChanged: (value) => setState(() => user = value),
-              onLogout: () => setState(() => user = null),
-            ),
-    );
-  }
+      navigationBarTheme: const NavigationBarThemeData(
+        height: 72,
+        backgroundColor: Colors.white,
+        indicatorColor: C.soft,
+      ),
+    ),
+    home: loading
+        ? const Splash()
+        : user == null
+        ? Auth(api: api, done: (v) => setState(() => user = v))
+        : Shell(
+            api: api,
+            user: user!,
+            changed: (v) => setState(() => user = v),
+            logout: () => setState(() => user = null),
+          ),
+  );
 }
 
-class AuthScreen extends StatefulWidget {
-  const AuthScreen({
-    super.key,
-    required this.api,
-    required this.onAuthenticated,
-  });
-  final ApiClient api;
-  final ValueChanged<Map<String, dynamic>> onAuthenticated;
+class Splash extends StatelessWidget {
+  const Splash({super.key});
   @override
-  State<AuthScreen> createState() => _AuthScreenState();
+  Widget build(BuildContext context) => const Scaffold(
+    backgroundColor: C.primary,
+    body: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image(image: AssetImage('assets/branding/app_icon.png'), width: 128),
+          SizedBox(height: 22),
+          Text(
+            'CommitMate',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          SizedBox(height: 7),
+          Text('함께라서 끝까지 해내는 약속', style: TextStyle(color: Colors.white70)),
+          SizedBox(height: 34),
+          CircularProgressIndicator(color: Colors.white),
+        ],
+      ),
+    ),
+  );
 }
 
-class _AuthScreenState extends State<AuthScreen> {
-  final email = TextEditingController();
-  final password = TextEditingController();
-  bool busy = false;
+class Auth extends StatefulWidget {
+  const Auth({super.key, required this.api, required this.done});
+  final ApiClient api;
+  final ValueChanged<Map<String, dynamic>> done;
+  @override
+  State<Auth> createState() => _AuthState();
+}
 
+class _AuthState extends State<Auth> {
+  final email = TextEditingController(), pw = TextEditingController();
+  bool busy = false, hide = true;
   Future<void> login() async {
+    if (email.text.trim().isEmpty || pw.text.isEmpty) {
+      return msg(context, '이메일과 비밀번호를 입력해 주세요.');
+    }
     setState(() => busy = true);
     try {
-      final result = await widget.api.post('/auth/login', {
-        'email': email.text.trim(),
-        'password': password.text,
-      });
-      widget.onAuthenticated(Map<String, dynamic>.from(result));
-    } catch (error) {
-      if (mounted) _message(context, error.toString());
+      widget.done(
+        Map<String, dynamic>.from(
+          await widget.api.post('/auth/login', {
+            'email': email.text.trim(),
+            'password': pw.text,
+          }),
+        ),
+      );
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -124,238 +169,242 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     body: SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(28),
-        children: [
-          const SizedBox(height: 48),
-          const CircleAvatar(
-            radius: 42,
-            backgroundColor: AppColors.lavender,
-            child: Icon(
-              Icons.fact_check_rounded,
-              color: AppColors.purple,
-              size: 44,
-            ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: ListView(
+            padding: const EdgeInsets.all(28),
+            children: [
+              const SizedBox(height: 20),
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: Image.asset(
+                    'assets/branding/app_icon.png',
+                    width: 105,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'CommitMate',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: C.primary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 22),
+              const Text(
+                '다시 만나 반가워요!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 7),
+              const Text(
+                '친구들과 만든 약속을 오늘도 이어가세요.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: C.muted),
+              ),
+              const SizedBox(height: 34),
+              TextField(
+                controller: email,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: '이메일',
+                  prefixIcon: Icon(Icons.alternate_email),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: pw,
+                obscureText: hide,
+                onSubmitted: (_) => login(),
+                decoration: InputDecoration(
+                  labelText: '비밀번호',
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(() => hide = !hide),
+                    icon: Icon(
+                      hide
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: busy ? null : login,
+                child: Text(busy ? '로그인 중...' : '로그인'),
+              ),
+              TextButton(
+                onPressed: () => forgot(context),
+                child: const Text('비밀번호를 잊으셨나요?'),
+              ),
+              const Divider(height: 32),
+              OutlinedButton(
+                onPressed: () => signup(context),
+                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52)),
+                child: const Text('처음이신가요? 회원가입'),
+              ),
+            ],
           ),
-          const SizedBox(height: 18),
-          const Center(
-            child: Text(
-              'CommitMate',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
-            ),
-          ),
-          const Center(
-            child: Text(
-              '약속을 지키고, 벌금은 줄이고',
-              style: TextStyle(color: AppColors.muted),
-            ),
-          ),
-          const SizedBox(height: 36),
-          TextField(
-            controller: email,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: '이메일',
-              prefixIcon: Icon(Icons.email_outlined),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: password,
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: '비밀번호',
-              prefixIcon: Icon(Icons.lock_outline),
-            ),
-          ),
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: busy ? null : login,
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Text(busy ? '로그인 중...' : '로그인'),
-            ),
-          ),
-          TextButton(
-            onPressed: busy ? null : () => _forgotPassword(context),
-            child: const Text('비밀번호를 잊으셨나요?'),
-          ),
-          TextButton(
-            onPressed: busy ? null : () => _showSignup(context),
-            child: const Text('처음이신가요? 회원가입'),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '서버: ${ApiClient.baseUrl}',
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.muted, fontSize: 10),
-          ),
-        ],
+        ),
       ),
     ),
   );
+  Future<void> forgot(BuildContext c) async {
+    final x = TextEditingController(text: email.text);
+    if (!await form(c, '비밀번호 찾기', [
+      TextField(
+        controller: x,
+        decoration: const InputDecoration(labelText: '가입한 이메일'),
+      ),
+    ])) {
+      return;
+    }
+    try {
+      await widget.api.post('/auth/forgot-password', {'email': x.text.trim()});
+      if (c.mounted) msg(c, '재설정 메일을 확인해 주세요.');
+    } catch (e) {
+      if (c.mounted) msg(c, e.toString());
+    }
+  }
 
-  Future<void> _showSignup(BuildContext context) async {
-    final signupEmail = TextEditingController();
-    final signupPassword = TextEditingController();
-    final nickname = TextEditingController();
-    final phone = TextEditingController();
-    final code = TextEditingController();
+  Future<void> signup(BuildContext c) async {
+    final e = TextEditingController(),
+        p = TextEditingController(),
+        n = TextEditingController(),
+        phone = TextEditingController(),
+        code = TextEditingController();
     String? token;
     await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          Future<void> sendCode() async {
-            try {
-              await widget.api.post('/phone-verifications/send', {
-                'phoneNumber': phone.text,
-              });
-              if (context.mounted) _message(context, '인증번호를 발송했습니다.');
-            } catch (e) {
-              if (context.mounted) _message(context, e.toString());
-            }
-          }
-
-          Future<void> verify() async {
-            try {
-              final result = await widget.api.post(
-                '/phone-verifications/verify',
-                {'phoneNumber': phone.text, 'code': code.text},
-              );
-              setDialogState(
-                () => token = result['verificationToken']?.toString(),
-              );
-            } catch (e) {
-              if (context.mounted) _message(context, e.toString());
-            }
-          }
-
-          Future<void> signup() async {
-            if (token == null) {
-              _message(context, '휴대폰 인증을 완료해 주세요.');
-              return;
-            }
-            try {
-              final result = await widget.api.post('/auth/signup', {
-                'email': signupEmail.text.trim(),
-                'password': signupPassword.text,
-                'nickname': nickname.text.trim(),
-                'phoneNumber': phone.text,
-                'phoneVerificationToken': token,
-              });
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-              widget.onAuthenticated(Map<String, dynamic>.from(result));
-            } catch (e) {
-              if (context.mounted) _message(context, e.toString());
-            }
-          }
-
-          return AlertDialog(
-            title: const Text('회원가입'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: signupEmail,
-                    decoration: const InputDecoration(labelText: '이메일'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: signupPassword,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: '비밀번호'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: nickname,
-                    decoration: const InputDecoration(labelText: '닉네임'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: phone,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      labelText: '휴대폰 번호',
-                      suffixIcon: TextButton(
-                        onPressed: sendCode,
-                        child: const Text('발송'),
-                      ),
+      context: c,
+      builder: (dc) => StatefulBuilder(
+        builder: (c, setS) => AlertDialog(
+          title: const Text('회원가입'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: e,
+                  decoration: const InputDecoration(labelText: '이메일'),
+                ),
+                gap,
+                TextField(
+                  controller: p,
+                  obscureText: true,
+                  decoration: const InputDecoration(labelText: '비밀번호'),
+                ),
+                gap,
+                TextField(
+                  controller: n,
+                  decoration: const InputDecoration(labelText: '닉네임'),
+                ),
+                gap,
+                TextField(
+                  controller: phone,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: '휴대폰 번호',
+                    suffixIcon: TextButton(
+                      onPressed: () async {
+                        try {
+                          await widget.api.post('/phone-verifications/send', {
+                            'phoneNumber': phone.text,
+                          });
+                          if (c.mounted) msg(c, '인증번호를 발송했습니다.');
+                        } catch (x) {
+                          if (c.mounted) msg(c, x.toString());
+                        }
+                      },
+                      child: const Text('발송'),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: code,
-                    decoration: InputDecoration(
-                      labelText: '인증번호',
-                      suffixIcon: TextButton(
-                        onPressed: verify,
-                        child: Text(token == null ? '확인' : '완료'),
-                      ),
+                ),
+                gap,
+                TextField(
+                  controller: code,
+                  decoration: InputDecoration(
+                    labelText: '인증번호',
+                    suffixIcon: TextButton(
+                      onPressed: () async {
+                        try {
+                          final r = await widget.api.post(
+                            '/phone-verifications/verify',
+                            {'phoneNumber': phone.text, 'code': code.text},
+                          );
+                          setS(
+                            () => token = r['verificationToken']?.toString(),
+                          );
+                        } catch (x) {
+                          if (c.mounted) msg(c, x.toString());
+                        }
+                      },
+                      child: Text(token == null ? '확인' : '완료'),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('취소'),
-              ),
-              FilledButton(onPressed: signup, child: const Text('가입')),
-            ],
-          );
-        },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                if (token == null) return msg(c, '휴대폰 인증을 완료해 주세요.');
+                try {
+                  final r = await widget.api.post('/auth/signup', {
+                    'email': e.text.trim(),
+                    'password': p.text,
+                    'nickname': n.text.trim(),
+                    'phoneNumber': phone.text,
+                    'phoneVerificationToken': token,
+                  });
+                  if (dc.mounted) Navigator.pop(dc);
+                  widget.done(Map<String, dynamic>.from(r));
+                } catch (x) {
+                  if (c.mounted) msg(c, x.toString());
+                }
+              },
+              child: const Text('가입하기'),
+            ),
+          ],
+        ),
       ),
     );
   }
-
-  Future<void> _forgotPassword(BuildContext context) async {
-    final resetEmail = TextEditingController(text: email.text);
-    final ok = await _formDialog(context, '비밀번호 찾기', [
-      TextField(
-        controller: resetEmail,
-        keyboardType: TextInputType.emailAddress,
-        decoration: const InputDecoration(labelText: '가입 이메일'),
-      ),
-    ]);
-    if (!ok) return;
-    try {
-      await widget.api.post('/auth/forgot-password', {
-        'email': resetEmail.text.trim(),
-      });
-      if (context.mounted) _message(context, '재설정 메일을 확인해 주세요.');
-    } catch (error) {
-      if (context.mounted) _message(context, error.toString());
-    }
-  }
 }
 
-class AppShell extends StatefulWidget {
-  const AppShell({
+class Shell extends StatefulWidget {
+  const Shell({
     super.key,
     required this.api,
     required this.user,
-    required this.onUserChanged,
-    required this.onLogout,
+    required this.changed,
+    required this.logout,
   });
   final ApiClient api;
   final Map<String, dynamic> user;
-  final ValueChanged<Map<String, dynamic>> onUserChanged;
-  final VoidCallback onLogout;
+  final ValueChanged<Map<String, dynamic>> changed;
+  final VoidCallback logout;
   @override
-  State<AppShell> createState() => _AppShellState();
+  State<Shell> createState() => _ShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _ShellState extends State<Shell> {
   int tab = 0;
   bool loading = true;
-  List<Map<String, dynamic>> groups = [];
-  int? selectedGroupId;
-  List<Map<String, dynamic>> todos = [];
+  List<Map<String, dynamic>> groups = [], todos = [];
   Map<String, dynamic> fines = {'items': []};
-
+  int? groupId;
   @override
   void initState() {
     super.initState();
@@ -363,96 +412,107 @@ class _AppShellState extends State<AppShell> {
   }
 
   Future<void> refresh() async {
-    setState(() => loading = true);
+    if (mounted) setState(() => loading = true);
     try {
       groups = List<Map<String, dynamic>>.from(
         (await widget.api.get(
           '/groups',
         )).map((e) => Map<String, dynamic>.from(e)),
       );
-      if (groups.isNotEmpty) {
-        if (!groups.any((g) => g['id'] == selectedGroupId)) {
-          selectedGroupId = groups.first['id'] as int;
-        }
-        final results = await Future.wait([
-          widget.api.get('/groups/$selectedGroupId/todos'),
-          widget.api.get('/groups/$selectedGroupId/fines'),
-        ]);
-        todos = List<Map<String, dynamic>>.from(
-          results[0].map((e) => Map<String, dynamic>.from(e)),
-        );
-        fines = Map<String, dynamic>.from(results[1]);
-      } else {
-        selectedGroupId = null;
+      if (groups.isEmpty) {
+        groupId = null;
         todos = [];
         fines = {'items': []};
+      } else {
+        if (!groups.any((g) => g['id'] == groupId)) {
+          groupId = groups.first['id'] as int;
+        }
+        final r = await Future.wait([
+          widget.api.get('/groups/$groupId/todos'),
+          widget.api.get('/groups/$groupId/fines'),
+        ]);
+        todos = List<Map<String, dynamic>>.from(
+          r[0].map((e) => Map<String, dynamic>.from(e)),
+        );
+        fines = Map<String, dynamic>.from(r[1]);
       }
     } catch (e) {
-      if (mounted) _message(context, e.toString());
+      if (mounted) msg(context, e.toString());
+    } finally {
+      if (mounted) setState(() => loading = false);
     }
-    if (mounted) setState(() => loading = false);
-  }
-
-  Future<void> chooseGroup(int? value) async {
-    selectedGroupId = value;
-    await refresh();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext c) {
     final pages = [
-      HomePage(
+      Home(
         user: widget.user,
         groups: groups,
         todos: todos,
         fines: fines,
-        selectGroup: chooseGroup,
-        selectedGroupId: selectedGroupId,
+        groupId: groupId,
+        select: (v) {
+          groupId = v;
+          refresh();
+        },
       ),
-      TodoPage(
+      Todos(api: widget.api, todos: todos, groupId: groupId, refresh: refresh),
+      Fines(
         api: widget.api,
-        todos: todos,
-        groupId: selectedGroupId,
-        refresh: refresh,
-      ),
-      FinePage(
-        api: widget.api,
-        fines: fines,
+        data: fines,
         userId: widget.user['id'] as int,
-        onUserChanged: widget.onUserChanged,
+        changed: widget.changed,
         refresh: refresh,
       ),
-      StatsPage(todos: todos, fines: fines),
-      ProfilePage(
+      Stats(todos: todos, fines: fines),
+      Profile(
         api: widget.api,
         user: widget.user,
-        onUserChanged: widget.onUserChanged,
-        onLogout: widget.onLogout,
+        changed: widget.changed,
+        logout: widget.logout,
       ),
     ];
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'CommitMate',
-          style: TextStyle(fontWeight: FontWeight.w900),
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(9),
+              child: Image.asset('assets/branding/app_icon.png', width: 34),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'CommitMate',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ],
         ),
         actions: [
-          IconButton(onPressed: refresh, icon: const Icon(Icons.refresh)),
+          IconButton(
+            onPressed: refresh,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
         ],
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(onRefresh: refresh, child: pages[tab]),
+          : RefreshIndicator(
+              onRefresh: refresh,
+              child: IndexedStack(index: tab, children: pages),
+            ),
       floatingActionButton: tab == 0
           ? FloatingActionButton.extended(
-              onPressed: _groupActions,
-              icon: const Icon(Icons.group_add),
+              onPressed: groupMenu,
+              backgroundColor: C.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.groups),
               label: const Text('그룹 관리'),
             )
           : null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: tab,
-        onDestinationSelected: (value) => setState(() => tab = value),
+        onDestinationSelected: (v) => setState(() => tab = v),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.home_outlined),
@@ -484,242 +544,349 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Future<void> _groupActions() async {
-    await showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Wrap(
-          children: [
+  Future<void> groupMenu() async => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    builder: (sc) => SafeArea(
+      child: Wrap(
+        children: [
+          const ListTile(
+            title: Text(
+              '그룹 관리',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            ),
+          ),
+          ListTile(
+            leading: const RIcon(Icons.add),
+            title: const Text('새 그룹 만들기'),
+            onTap: () {
+              Navigator.pop(sc);
+              createGroup();
+            },
+          ),
+          ListTile(
+            leading: const RIcon(Icons.login),
+            title: const Text('참여 코드로 가입'),
+            onTap: () {
+              Navigator.pop(sc);
+              join();
+            },
+          ),
+          if (groupId != null)
             ListTile(
-              leading: const Icon(Icons.add),
-              title: const Text('그룹 만들기'),
+              leading: const RIcon(Icons.settings),
+              title: const Text('현재 그룹 상세 관리'),
               onTap: () {
-                Navigator.pop(context);
-                _createGroup();
+                Navigator.pop(sc);
+                manage();
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.login),
-              title: const Text('참여 코드로 가입'),
-              onTap: () {
-                Navigator.pop(context);
-                _joinGroup();
-              },
-            ),
-            if (selectedGroupId != null)
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text('초대 및 멤버 보기'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _showGroupInfo();
-                },
-              ),
-            if (selectedGroupId != null)
-              ListTile(
-                leading: const Icon(Icons.exit_to_app),
-                title: const Text('현재 그룹 나가기'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  try {
-                    await widget.api.post('/groups/$selectedGroupId/leave');
-                    await refresh();
-                  } catch (e) {
-                    if (mounted) _message(this.context, e.toString());
-                  }
-                },
-              ),
-          ],
-        ),
+        ],
       ),
-    );
-  }
-
-  Future<void> _createGroup() async {
-    final name = TextEditingController();
-    final description = TextEditingController();
-    final ok = await _formDialog(context, '그룹 만들기', [
+    ),
+  );
+  Future<void> createGroup() async {
+    final n = TextEditingController(), d = TextEditingController();
+    if (await form(context, '새 그룹 만들기', [
       TextField(
-        controller: name,
+        controller: n,
         decoration: const InputDecoration(labelText: '그룹 이름'),
       ),
-      const SizedBox(height: 8),
+      gap,
       TextField(
-        controller: description,
+        controller: d,
+        maxLines: 3,
         decoration: const InputDecoration(labelText: '설명'),
       ),
-    ]);
-    if (ok) {
+    ])) {
       try {
         await widget.api.post('/groups', {
-          'roomName': name.text,
-          'description': description.text,
+          'roomName': n.text.trim(),
+          'description': d.text.trim(),
         });
         await refresh();
       } catch (e) {
-        if (mounted) _message(context, e.toString());
+        if (mounted) msg(context, e.toString());
       }
     }
   }
 
-  Future<void> _joinGroup() async {
-    final code = TextEditingController();
-    final ok = await _formDialog(context, '그룹 참여', [
+  Future<void> join() async {
+    final x = TextEditingController();
+    if (await form(context, '그룹 참여', [
       TextField(
-        controller: code,
+        controller: x,
         textCapitalization: TextCapitalization.characters,
-        decoration: const InputDecoration(labelText: '참여 코드'),
+        decoration: const InputDecoration(labelText: '6자리 참여 코드'),
       ),
-    ]);
-    if (ok) {
+    ])) {
       try {
-        await widget.api.post('/groups/join', {'joinCode': code.text.trim()});
+        await widget.api.post('/groups/join', {
+          'joinCode': x.text.trim().toUpperCase(),
+        });
         await refresh();
       } catch (e) {
-        if (mounted) _message(context, e.toString());
+        if (mounted) msg(context, e.toString());
       }
     }
   }
 
-  Future<void> _showGroupInfo() async {
+  Future<void> manage() async {
     try {
-      final results = await Future.wait([
-        widget.api.get('/groups/$selectedGroupId/invite'),
-        widget.api.get('/groups/$selectedGroupId/members'),
+      final r = await Future.wait([
+        widget.api.get('/groups/$groupId/invite'),
+        widget.api.get('/groups/$groupId/members'),
       ]);
-      final invite = Map<String, dynamic>.from(results[0]);
-      final members = List<dynamic>.from(results[1]);
+      final inv = Map<String, dynamic>.from(r[0]),
+          members = List<Map<String, dynamic>>.from(
+            r[1].map((e) => Map<String, dynamic>.from(e)),
+          );
       if (!mounted) return;
       await showDialog<void>(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('그룹 정보'),
+        builder: (dc) => AlertDialog(
+          title: const Text('그룹 상세 관리'),
           content: SizedBox(
-            width: 360,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SelectableText(
-                  '참여 코드: ${invite['joinCode']}\n초대 코드: ${invite['inviteCode']}',
-                ),
-                const Divider(),
-                ...members.map(
-                  (m) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.person),
-                    title: Text(m['nickname'].toString()),
-                    trailing: Text(m['role'].toString()),
+            width: 420,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: C.soft,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('참여 코드'),
+                        SelectableText(
+                          '${inv['joinCode']}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: C.primary,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  gap,
+                  ...members.map(
+                    (m) => ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        child: Text(m['nickname'].toString().characters.first),
+                      ),
+                      title: Text(m['nickname'].toString()),
+                      subtitle: Text(m['role'] == 'ADMIN' ? '관리자' : '멤버'),
+                      trailing:
+                          m['id'] == widget.user['id'] || m['role'] == 'ADMIN'
+                          ? null
+                          : PopupMenuButton<String>(
+                              onSelected: (a) async {
+                                try {
+                                  await widget.api.post(
+                                    '/groups/$groupId/members/${m['id']}/$a',
+                                  );
+                                  if (dc.mounted) Navigator.pop(dc);
+                                  await refresh();
+                                } catch (e) {
+                                  if (mounted) msg(context, e.toString());
+                                }
+                              },
+                              itemBuilder: (_) => const [
+                                PopupMenuItem(
+                                  value: 'delegate',
+                                  child: Text('관리자 위임'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'kick',
+                                  child: Text('내보내기'),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.pop(dc);
+                editGroup();
+              },
+              child: const Text('정보 수정'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dc);
+                if (await confirm(context, '이 그룹에서 나갈까요?')) {
+                  try {
+                    await widget.api.post('/groups/$groupId/leave');
+                    await refresh();
+                  } catch (e) {
+                    if (mounted) msg(context, e.toString());
+                  }
+                }
+              },
+              child: const Text('나가기'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dc),
               child: const Text('닫기'),
             ),
           ],
         ),
       );
     } catch (e) {
-      if (mounted) _message(context, e.toString());
+      if (mounted) msg(context, e.toString());
+    }
+  }
+
+  Future<void> editGroup() async {
+    final g = groups.firstWhere((x) => x['id'] == groupId),
+        n = TextEditingController(text: g['roomName']?.toString()),
+        d = TextEditingController(text: g['description']?.toString() ?? '');
+    if (await form(context, '그룹 정보 수정', [
+      TextField(
+        controller: n,
+        decoration: const InputDecoration(labelText: '그룹 이름'),
+      ),
+      gap,
+      TextField(
+        controller: d,
+        maxLines: 3,
+        decoration: const InputDecoration(labelText: '설명'),
+      ),
+    ])) {
+      try {
+        await widget.api.patch('/groups/$groupId', {
+          'roomName': n.text.trim(),
+          'description': d.text.trim(),
+        });
+        await refresh();
+      } catch (e) {
+        if (mounted) msg(context, e.toString());
+      }
     }
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({
+class Home extends StatelessWidget {
+  const Home({
     super.key,
     required this.user,
     required this.groups,
     required this.todos,
     required this.fines,
-    required this.selectGroup,
-    required this.selectedGroupId,
+    required this.groupId,
+    required this.select,
   });
-  final Map<String, dynamic> user;
-  final List<Map<String, dynamic>> groups;
-  final List<Map<String, dynamic>> todos;
-  final Map<String, dynamic> fines;
-  final ValueChanged<int?> selectGroup;
-  final int? selectedGroupId;
+  final Map<String, dynamic> user, fines;
+  final List<Map<String, dynamic>> groups, todos;
+  final int? groupId;
+  final ValueChanged<int?> select;
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(20),
-    children: [
-      Text(
-        '안녕하세요, ${user['nickname']}님 👋',
-        style: const TextStyle(fontSize: 23, fontWeight: FontWeight.w900),
-      ),
-      const Text('오늘도 약속을 지켜볼까요?', style: TextStyle(color: AppColors.muted)),
-      const SizedBox(height: 18),
-      Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.purple, Color(0xFF5138D7)],
-          ),
-          borderRadius: BorderRadius.circular(24),
+  Widget build(BuildContext c) {
+    final ready = todos.where((x) => x['status'] == 'READY').toList();
+    return ListView(
+      padding: pad,
+      children: [
+        Text('${user['nickname']}님, 오늘도 반가워요 👋', style: title),
+        const Text(
+          '작은 약속 하나가 팀의 큰 변화를 만들어요.',
+          style: TextStyle(color: C.muted),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '현재 그룹 미납 벌금',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  Text(
-                    '${fines['unpaidAmount'] ?? 0}원',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 27,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  Text(
-                    '보유 포인트 ${user['point'] ?? 0}P',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ],
-              ),
+        const SizedBox(height: 22),
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [C.dark, C.primary, Color(0xff8a70f4)],
             ),
-            const Text('🐷', style: TextStyle(fontSize: 52)),
-          ],
-        ),
-      ),
-      const SizedBox(height: 18),
-      DropdownButtonFormField<int>(
-        initialValue: selectedGroupId,
-        decoration: const InputDecoration(labelText: '현재 그룹'),
-        items: groups
-            .map(
-              (g) => DropdownMenuItem(
-                value: g['id'] as int,
-                child: Text(g['roomName'].toString()),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x385b4ae8),
+                blurRadius: 24,
+                offset: Offset(0, 12),
               ),
-            )
-            .toList(),
-        onChanged: selectGroup,
-      ),
-      const SizedBox(height: 18),
-      const _Title('진행 중인 할 일'),
-      if (todos.isEmpty) const _Empty('등록된 할 일이 없습니다.'),
-      ...todos
-          .where((t) => t['status'] == 'READY')
-          .take(3)
-          .map((t) => _TodoCard(todo: t)),
-    ],
-  );
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '현재 미납 벌금',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                    Text(
+                      '${money(fines['unpaidAmount'])}원',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      '보유 포인트 ${money(user['point'])}P',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.savings, size: 64, color: C.gold),
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
+        if (groups.isNotEmpty)
+          DropdownButtonFormField<int>(
+            initialValue: groupId,
+            decoration: const InputDecoration(
+              labelText: '현재 그룹',
+              prefixIcon: Icon(Icons.groups),
+            ),
+            items: groups
+                .map(
+                  (g) => DropdownMenuItem(
+                    value: g['id'] as int,
+                    child: Text(g['roomName'].toString()),
+                  ),
+                )
+                .toList(),
+            onChanged: select,
+          ),
+        if (groups.isEmpty)
+          const Empty(
+            Icons.group_add_outlined,
+            '아직 참여한 그룹이 없어요',
+            '그룹을 만들거나 참여 코드로 친구들과 시작해 보세요.',
+          ),
+        const SizedBox(height: 24),
+        Section('진행 중인 할 일'),
+        if (ready.isEmpty)
+          const Empty(
+            Icons.task_alt,
+            '모든 약속을 지켰어요!',
+            '새로운 할 일을 추가해 흐름을 이어가세요.',
+          ),
+        ...ready.take(3).map((x) => TodoCard(x)),
+      ],
+    );
+  }
 }
 
-class TodoPage extends StatelessWidget {
-  const TodoPage({
+class Todos extends StatelessWidget {
+  const Todos({
     super.key,
     required this.api,
     required this.todos,
@@ -731,160 +898,236 @@ class TodoPage extends StatelessWidget {
   final int? groupId;
   final Future<void> Function() refresh;
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(20),
+  Widget build(BuildContext c) => ListView(
+    padding: pad,
     children: [
       Row(
         children: [
-          const Expanded(child: _Title('할 일')),
+          const Expanded(child: Section('할 일')),
           FilledButton.icon(
-            onPressed: groupId == null ? null : () => _add(context),
+            onPressed: groupId == null ? null : () => edit(c),
             icon: const Icon(Icons.add),
             label: const Text('추가'),
           ),
         ],
       ),
-      if (groupId == null) const _Empty('먼저 그룹을 만들거나 참여해 주세요.'),
+      if (groupId == null)
+        const Empty(
+          Icons.groups_outlined,
+          '그룹을 먼저 선택해 주세요',
+          '홈에서 그룹을 만들거나 참여할 수 있어요.',
+        ),
       ...todos.map(
-        (todo) => Dismissible(
-          key: ValueKey(todo['id']),
+        (x) => Dismissible(
+          key: ValueKey(x['id']),
           direction: DismissDirection.endToStart,
           background: Container(
-            color: AppColors.danger,
+            margin: const EdgeInsets.only(bottom: 12),
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.only(right: 24),
+            decoration: BoxDecoration(
+              color: C.red,
+              borderRadius: BorderRadius.circular(22),
+            ),
             child: const Icon(Icons.delete, color: Colors.white),
           ),
           confirmDismiss: (_) async {
+            if (!await confirm(c, '이 할 일을 삭제할까요?')) return false;
             try {
-              await api.delete('/todos/${todo['id']}');
+              await api.delete('/todos/${x['id']}');
               await refresh();
               return true;
             } catch (e) {
-              if (context.mounted) _message(context, e.toString());
+              if (c.mounted) msg(c, e.toString());
               return false;
             }
           },
           child: GestureDetector(
             onTap: () async {
               try {
-                await api.post('/todos/${todo['id']}/toggle');
+                await api.post('/todos/${x['id']}/toggle');
                 await refresh();
               } catch (e) {
-                if (context.mounted) _message(context, e.toString());
+                if (c.mounted) msg(c, e.toString());
               }
             },
-            child: _TodoCard(todo: todo),
+            onLongPress: () => edit(c, todo: x),
+            child: TodoCard(x),
           ),
         ),
       ),
     ],
   );
-  Future<void> _add(BuildContext context) async {
-    final work = TextEditingController();
-    final amount = TextEditingController(text: '1000');
-    final deadline = TextEditingController();
-    final ok = await _formDialog(context, '할 일 추가', [
-      TextField(
-        controller: work,
-        decoration: const InputDecoration(labelText: '할 일'),
-      ),
-      const SizedBox(height: 8),
-      TextField(
-        controller: amount,
-        keyboardType: TextInputType.number,
-        decoration: const InputDecoration(labelText: '벌금'),
-      ),
-      const SizedBox(height: 8),
-      TextField(
-        controller: deadline,
-        decoration: const InputDecoration(
-          labelText: '마감 (예: 2026-08-05T21:00)',
+  Future<void> edit(BuildContext c, {Map<String, dynamic>? todo}) async {
+    final w = TextEditingController(text: todo?['work']?.toString()),
+        a = TextEditingController(text: '${todo?['fineAmount'] ?? 1000}');
+    DateTime deadline =
+        DateTime.tryParse(todo?['deadline']?.toString() ?? '') ??
+        DateTime.now().add(const Duration(days: 1));
+    final ok = await showDialog<bool>(
+      context: c,
+      builder: (dc) => StatefulBuilder(
+        builder: (c, setS) => AlertDialog(
+          title: Text(todo == null ? '할 일 추가' : '할 일 수정'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: w,
+                decoration: const InputDecoration(labelText: '할 일'),
+              ),
+              gap,
+              TextField(
+                controller: a,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: '미완료 시 벌금'),
+              ),
+              gap,
+              ListTile(
+                tileColor: C.soft,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                leading: const Icon(Icons.event, color: C.primary),
+                title: const Text('마감 일시'),
+                subtitle: Text(date(deadline.toIso8601String())),
+                onTap: () async {
+                  final d = await showDatePicker(
+                    context: c,
+                    initialDate: deadline,
+                    firstDate: DateTime.now().subtract(const Duration(days: 1)),
+                    lastDate: DateTime.now().add(const Duration(days: 3650)),
+                  );
+                  if (d == null || !c.mounted) return;
+                  final t = await showTimePicker(
+                    context: c,
+                    initialTime: TimeOfDay.fromDateTime(deadline),
+                  );
+                  if (t != null) {
+                    setS(
+                      () => deadline = DateTime(
+                        d.year,
+                        d.month,
+                        d.day,
+                        t.hour,
+                        t.minute,
+                      ),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c, false),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(c, true),
+              child: const Text('저장'),
+            ),
+          ],
         ),
       ),
-    ]);
-    if (ok) {
-      try {
-        await api.post('/groups/$groupId/todos', {
-          'work': work.text,
-          'amount': int.tryParse(amount.text) ?? 0,
-          'deadline': deadline.text,
-        });
-        await refresh();
-      } catch (e) {
-        if (context.mounted) _message(context, e.toString());
+    );
+    if (ok != true) return;
+    try {
+      final b = {
+        'work': w.text.trim(),
+        'amount': int.tryParse(a.text) ?? 0,
+        'deadline': deadline.toIso8601String(),
+      };
+      if (todo == null) {
+        await api.post('/groups/$groupId/todos', b);
+      } else {
+        await api.patch('/todos/${todo['id']}', b);
       }
+      await refresh();
+    } catch (e) {
+      if (c.mounted) msg(c, e.toString());
     }
   }
 }
 
-class FinePage extends StatelessWidget {
-  const FinePage({
+class Fines extends StatelessWidget {
+  const Fines({
     super.key,
     required this.api,
-    required this.fines,
+    required this.data,
     required this.userId,
-    required this.onUserChanged,
+    required this.changed,
     required this.refresh,
   });
   final ApiClient api;
-  final Map<String, dynamic> fines;
+  final Map<String, dynamic> data;
   final int userId;
-  final ValueChanged<Map<String, dynamic>> onUserChanged;
+  final ValueChanged<Map<String, dynamic>> changed;
   final Future<void> Function() refresh;
   @override
-  Widget build(BuildContext context) {
-    final items = List<Map<String, dynamic>>.from(
-      (fines['items'] ?? []).map((e) => Map<String, dynamic>.from(e)),
+  Widget build(BuildContext c) {
+    final xs = List<Map<String, dynamic>>.from(
+      (data['items'] ?? []).map((e) => Map<String, dynamic>.from(e)),
     );
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: pad,
       children: [
-        const _Title('벌금 내역'),
+        const Section('벌금 내역'),
         Row(
           children: [
             Expanded(
-              child: _Metric(
-                '미납',
-                '${fines['unpaidAmount'] ?? 0}원',
-                AppColors.danger,
-              ),
+              child: Metric('미납', '${money(data['unpaidAmount'])}원', C.red),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _Metric(
-                '납부',
-                '${fines['paidAmount'] ?? 0}원',
-                AppColors.success,
-              ),
+              child: Metric('납부', '${money(data['paidAmount'])}원', C.green),
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        if (items.isEmpty) const _Empty('부과된 벌금이 없습니다.'),
-        ...items.map(
-          (fine) => Card(
+        if (xs.isEmpty)
+          const Empty(Icons.savings_outlined, '부과된 벌금이 없어요', '약속을 잘 지키고 있네요!'),
+        ...xs.map(
+          (x) => Card(
             child: ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: AppColors.lavender,
-                child: Icon(Icons.savings, color: AppColors.purple),
+              contentPadding: const EdgeInsets.all(14),
+              leading: const RIcon(Icons.savings),
+              title: Text(
+                x['work'].toString(),
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
-              title: Text(fine['work'].toString()),
-              subtitle: Text('${fine['ownerNickname']} · ${fine['status']}'),
+              subtitle: Text(
+                '${x['ownerNickname']} · ${x['status'] == 'PAID' ? '납부 완료' : '미납'}',
+              ),
               trailing: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '${fine['amount']}원',
+                    '${money(x['amount'])}원',
                     style: const TextStyle(
-                      color: AppColors.danger,
-                      fontWeight: FontWeight.w800,
+                      color: C.red,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
-                  if (fine['status'] == 'UNPAID' && fine['ownerId'] == userId)
-                    TextButton(
-                      onPressed: () => _pay(context, fine['id'] as int),
-                      child: const Text('납부'),
+                  if (x['status'] == 'UNPAID' && x['ownerId'] == userId)
+                    InkWell(
+                      onTap: () async {
+                        try {
+                          changed(
+                            Map<String, dynamic>.from(
+                              await api.post('/fines/${x['id']}/pay', {
+                                'memo': '앱에서 납부',
+                              }),
+                            ),
+                          );
+                          await refresh();
+                        } catch (e) {
+                          if (c.mounted) msg(c, e.toString());
+                        }
+                      },
+                      child: const Text(
+                        '납부하기',
+                        style: TextStyle(color: C.primary, fontSize: 12),
+                      ),
                     ),
                 ],
               ),
@@ -894,33 +1137,23 @@ class FinePage extends StatelessWidget {
       ],
     );
   }
-
-  Future<void> _pay(BuildContext context, int id) async {
-    try {
-      final user = await api.post('/fines/$id/pay', {'memo': '앱에서 납부'});
-      onUserChanged(Map<String, dynamic>.from(user));
-      await refresh();
-    } catch (e) {
-      if (context.mounted) _message(context, e.toString());
-    }
-  }
 }
 
-class StatsPage extends StatelessWidget {
-  const StatsPage({super.key, required this.todos, required this.fines});
+class Stats extends StatelessWidget {
+  const Stats({super.key, required this.todos, required this.fines});
   final List<Map<String, dynamic>> todos;
   final Map<String, dynamic> fines;
   @override
-  Widget build(BuildContext context) {
-    final complete = todos.where((t) => t['status'] == 'FINISH').length;
-    final rate = todos.isEmpty ? 0 : (complete * 100 / todos.length).round();
+  Widget build(BuildContext c) {
+    final done = todos.where((x) => x['status'] == 'FINISH').length,
+        rate = todos.isEmpty ? 0 : (done * 100 / todos.length).round();
     return ListView(
-      padding: const EdgeInsets.all(20),
+      padding: pad,
       children: [
-        const _Title('활동 통계'),
+        const Section('활동 통계'),
         Card(
           child: Padding(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.all(24),
             child: Column(
               children: [
                 Row(
@@ -933,26 +1166,26 @@ class StatsPage extends StatelessWidget {
                     Text(
                       '$rate%',
                       style: const TextStyle(
-                        color: AppColors.purple,
-                        fontSize: 25,
+                        color: C.primary,
+                        fontSize: 30,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                gap,
                 LinearProgressIndicator(
                   value: rate / 100,
                   minHeight: 12,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _SmallStat('전체', '${todos.length}'),
-                    _SmallStat('완료', '$complete'),
-                    _SmallStat('미납', '${fines['unpaidCount'] ?? 0}'),
+                    Small('전체', '${todos.length}'),
+                    Small('완료', '$done'),
+                    Small('미납', '${fines['unpaidCount'] ?? 0}'),
                   ],
                 ),
               ],
@@ -964,58 +1197,66 @@ class StatsPage extends StatelessWidget {
   }
 }
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({
+class Profile extends StatelessWidget {
+  const Profile({
     super.key,
     required this.api,
     required this.user,
-    required this.onUserChanged,
-    required this.onLogout,
+    required this.changed,
+    required this.logout,
   });
   final ApiClient api;
   final Map<String, dynamic> user;
-  final ValueChanged<Map<String, dynamic>> onUserChanged;
-  final VoidCallback onLogout;
+  final ValueChanged<Map<String, dynamic>> changed;
+  final VoidCallback logout;
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.all(20),
+  Widget build(BuildContext c) => ListView(
+    padding: pad,
     children: [
-      const CircleAvatar(
-        radius: 45,
-        backgroundColor: AppColors.lavender,
-        child: Text('🙂', style: TextStyle(fontSize: 40)),
+      CircleAvatar(
+        radius: 48,
+        backgroundColor: C.soft,
+        child: Text(
+          user['nickname'].toString().characters.first,
+          style: const TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.w900,
+            color: C.primary,
+          ),
+        ),
       ),
-      const SizedBox(height: 10),
+      gap,
       Text(
         user['nickname'].toString(),
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
+        style: title,
       ),
       Text(
         user['email'].toString(),
         textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.muted),
+        style: const TextStyle(color: C.muted),
       ),
-      const SizedBox(height: 20),
-      _Metric('보유 포인트', '${user['point'] ?? 0}P', AppColors.purple),
-      const SizedBox(height: 12),
+      const SizedBox(height: 22),
+      Metric('보유 포인트', '${money(user['point'])}P', C.primary),
       FilledButton.tonalIcon(
-        onPressed: () => _charge(context),
+        onPressed: () => charge(c),
         icon: const Icon(Icons.add_card),
         label: const Text('포인트 충전'),
       ),
+      gap,
       OutlinedButton.icon(
-        onPressed: () => _edit(context),
-        icon: const Icon(Icons.edit),
+        onPressed: () => edit(c),
+        icon: const Icon(Icons.manage_accounts),
         label: const Text('프로필 수정'),
       ),
+      gap,
       TextButton.icon(
         onPressed: () async {
           try {
             await api.post('/auth/logout');
           } finally {
             await api.clearSession();
-            onLogout();
+            logout();
           }
         },
         icon: const Icon(Icons.logout),
@@ -1023,120 +1264,118 @@ class ProfilePage extends StatelessWidget {
       ),
     ],
   );
-  Future<void> _charge(BuildContext context) async {
-    final amount = TextEditingController(text: '10000');
-    final ok = await _formDialog(context, '포인트 충전', [
+  Future<void> charge(BuildContext c) async {
+    final a = TextEditingController(text: '10000');
+    if (await form(c, '포인트 충전', [
       TextField(
-        controller: amount,
+        controller: a,
         keyboardType: TextInputType.number,
         decoration: const InputDecoration(labelText: '충전 금액'),
       ),
-    ]);
-    if (ok) {
+    ])) {
       try {
-        final result = await api.post('/me/points', {
-          'amount': int.tryParse(amount.text) ?? 0,
-        });
-        onUserChanged(Map<String, dynamic>.from(result));
+        changed(
+          Map<String, dynamic>.from(
+            await api.post('/me/points', {'amount': int.tryParse(a.text) ?? 0}),
+          ),
+        );
       } catch (e) {
-        if (context.mounted) _message(context, e.toString());
+        if (c.mounted) msg(c, e.toString());
       }
     }
   }
 
-  Future<void> _edit(BuildContext context) async {
-    final nickname = TextEditingController(text: user['nickname'].toString());
-    final current = TextEditingController();
-    final password = TextEditingController();
-    final confirm = TextEditingController();
-    final ok = await _formDialog(context, '프로필 수정', [
+  Future<void> edit(BuildContext c) async {
+    final n = TextEditingController(text: user['nickname'].toString()),
+        cur = TextEditingController(),
+        p = TextEditingController(),
+        pc = TextEditingController();
+    if (await form(c, '프로필 수정', [
       TextField(
-        controller: nickname,
+        controller: n,
         decoration: const InputDecoration(labelText: '닉네임'),
       ),
-      const SizedBox(height: 8),
+      gap,
       TextField(
-        controller: current,
+        controller: cur,
         obscureText: true,
         decoration: const InputDecoration(labelText: '현재 비밀번호'),
       ),
-      const SizedBox(height: 8),
+      gap,
       TextField(
-        controller: password,
+        controller: p,
         obscureText: true,
-        decoration: const InputDecoration(labelText: '새 비밀번호'),
+        decoration: const InputDecoration(labelText: '새 비밀번호 (선택)'),
       ),
-      const SizedBox(height: 8),
+      gap,
       TextField(
-        controller: confirm,
+        controller: pc,
         obscureText: true,
         decoration: const InputDecoration(labelText: '새 비밀번호 확인'),
       ),
-    ]);
-    if (ok) {
+    ])) {
       try {
-        final result = await api.patch('/me', {
-          'nickname': nickname.text,
-          'currentPassword': current.text,
-          'newPassword': password.text,
-          'newPasswordConfirm': confirm.text,
-        });
-        onUserChanged(Map<String, dynamic>.from(result));
+        changed(
+          Map<String, dynamic>.from(
+            await api.patch('/me', {
+              'nickname': n.text.trim(),
+              'currentPassword': cur.text,
+              'newPassword': p.text,
+              'newPasswordConfirm': pc.text,
+            }),
+          ),
+        );
       } catch (e) {
-        if (context.mounted) _message(context, e.toString());
+        if (c.mounted) msg(c, e.toString());
       }
     }
   }
 }
 
-class _TodoCard extends StatelessWidget {
-  const _TodoCard({required this.todo});
-  final Map<String, dynamic> todo;
+class TodoCard extends StatelessWidget {
+  const TodoCard(this.x, {super.key});
+  final Map<String, dynamic> x;
   @override
-  Widget build(BuildContext context) {
-    final status = todo['status'];
+  Widget build(BuildContext c) {
+    final s = x['status'], done = s == 'FINISH', expired = s == 'EXPIRED';
     return Card(
       child: ListTile(
-        leading: Icon(
-          status == 'FINISH'
-              ? Icons.check_circle
-              : status == 'EXPIRED'
-              ? Icons.cancel
+        contentPadding: const EdgeInsets.all(14),
+        leading: RIcon(
+          done
+              ? Icons.check
+              : expired
+              ? Icons.priority_high
               : Icons.radio_button_unchecked,
-          color: status == 'FINISH'
-              ? AppColors.success
-              : status == 'EXPIRED'
-              ? AppColors.danger
-              : AppColors.purple,
+          color: done
+              ? C.green
+              : expired
+              ? C.red
+              : C.primary,
         ),
         title: Text(
-          todo['work'].toString(),
+          x['work'].toString(),
           style: TextStyle(
-            fontWeight: FontWeight.w700,
-            decoration: status == 'FINISH' ? TextDecoration.lineThrough : null,
+            fontWeight: FontWeight.w800,
+            decoration: done ? TextDecoration.lineThrough : null,
           ),
         ),
-        subtitle: Text(
-          '${todo['ownerNickname']} · ${todo['deadline'] ?? '마감 없음'}',
-        ),
+        subtitle: Text('${x['ownerNickname']} · ${date(x['deadline'])}'),
         trailing: Text(
-          '${todo['fineAmount']}원',
-          style: const TextStyle(
-            color: AppColors.danger,
-            fontWeight: FontWeight.w700,
-          ),
+          '${money(x['fineAmount'])}원',
+          style: const TextStyle(color: C.red, fontWeight: FontWeight.w900),
         ),
       ),
     );
   }
 }
 
-class _Title extends StatelessWidget {
-  const _Title(this.text);
+class Section extends StatelessWidget {
+  const Section(this.text, {super.key});
   final String text;
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+  Widget build(BuildContext c) => Padding(
+    padding: const EdgeInsets.only(bottom: 13),
     child: Text(
       text,
       style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
@@ -1144,35 +1383,23 @@ class _Title extends StatelessWidget {
   );
 }
 
-class _Empty extends StatelessWidget {
-  const _Empty(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(28),
-    alignment: Alignment.center,
-    child: Text(text, style: const TextStyle(color: AppColors.muted)),
-  );
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric(this.label, this.value, this.color);
-  final String label;
-  final String value;
+class Metric extends StatelessWidget {
+  const Metric(this.label, this.value, this.color, {super.key});
+  final String label, value;
   final Color color;
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext c) => Card(
     child: Padding(
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: AppColors.muted)),
+          Text(label, style: const TextStyle(color: C.muted, fontSize: 12)),
           Text(
             value,
             style: TextStyle(
               color: color,
-              fontSize: 21,
+              fontSize: 20,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -1182,46 +1409,116 @@ class _Metric extends StatelessWidget {
   );
 }
 
-class _SmallStat extends StatelessWidget {
-  const _SmallStat(this.label, this.value);
-  final String label;
-  final String value;
+class Small extends StatelessWidget {
+  const Small(this.label, this.value, {super.key});
+  final String label, value;
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext c) => Column(
     children: [
       Text(
         value,
-        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20),
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
       ),
-      Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 11)),
+      Text(label, style: const TextStyle(color: C.muted)),
     ],
   );
 }
 
-Future<bool> _formDialog(
-  BuildContext context,
-  String title,
-  List<Widget> children,
-) async =>
+class Empty extends StatelessWidget {
+  const Empty(this.icon, this.title, this.message, {super.key});
+  final IconData icon;
+  final String title, message;
+  @override
+  Widget build(BuildContext c) => Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(28),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(22),
+    ),
+    child: Column(
+      children: [
+        Icon(icon, size: 42, color: C.primary),
+        gap,
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: C.muted, fontSize: 12),
+        ),
+      ],
+    ),
+  );
+}
+
+class RIcon extends StatelessWidget {
+  const RIcon(this.icon, {super.key, this.color = C.primary});
+  final IconData icon;
+  final Color color;
+  @override
+  Widget build(BuildContext c) => CircleAvatar(
+    backgroundColor: C.soft,
+    child: Icon(icon, color: color),
+  );
+}
+
+const gap = SizedBox(height: 10),
+    pad = EdgeInsets.fromLTRB(20, 12, 20, 100),
+    title = TextStyle(fontSize: 23, fontWeight: FontWeight.w900);
+Future<bool> form(BuildContext c, String title, List<Widget> children) async =>
     await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: c,
+      builder: (c) => AlertDialog(
         title: Text(title),
         content: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: children),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(c, false),
             child: const Text('취소'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(c, true),
             child: const Text('확인'),
           ),
         ],
       ),
     ) ??
     false;
-void _message(BuildContext context, String text) =>
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+Future<bool> confirm(BuildContext c, String text) async =>
+    await showDialog<bool>(
+      context: c,
+      builder: (c) => AlertDialog(
+        title: const Text('확인'),
+        content: Text(text),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('취소'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+void msg(BuildContext c, String text) => ScaffoldMessenger.of(c).showSnackBar(
+  SnackBar(content: Text(text), behavior: SnackBarBehavior.floating),
+);
+String money(dynamic v) {
+  final n = int.tryParse('${v ?? 0}') ?? 0;
+  return n.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (m) => ',',
+  );
+}
+
+String date(dynamic v) {
+  final d = DateTime.tryParse('${v ?? ''}');
+  if (d == null) return '마감 없음';
+  String t(int n) => n.toString().padLeft(2, '0');
+  return '${d.month}/${d.day} ${t(d.hour)}:${t(d.minute)}';
+}
