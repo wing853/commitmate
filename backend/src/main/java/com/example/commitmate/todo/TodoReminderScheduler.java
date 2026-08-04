@@ -36,8 +36,9 @@ public class TodoReminderScheduler {
             }
 
             try {
+                long remainingMinutes = Math.max(1, (todo.getDeadline().getTime() - now.getTime()) / (60 * 1000L));
                 pushSender.sendNotification(token, "마감 임박",
-                        "'" + todo.getWork() + "' 마감이 1시간 이내입니다. 서둘러 완료해 주세요!");
+                        "'" + todo.getWork() + "' 마감까지 " + remainingMinutes + "분 남았습니다. 서둘러 완료해 주세요!");
                 todo.setReminderSent(true);
             } catch (Exception e) {
                 log.error("[리마인드 푸시] 발송 실패. todoId={}", todo.getId(), e);
@@ -65,7 +66,7 @@ public class TodoReminderScheduler {
 
             try {
                 pushSender.sendNotification(token, "벌금 발생",
-                        "'" + todo.getWork() + "' 마감을 지켜 " + amount + "원의 벌금이 부과되었습니다.");
+                        "'" + todo.getWork() + "' 마감일이 지나 " + amount + "원의 벌금이 부과되었습니다.");
                 todo.setExpiredNotified(true);
             } catch (Exception e) {
                 log.error("[벌금 알림 푸시] 발송 실패. todoId={}", todo.getId(), e);
