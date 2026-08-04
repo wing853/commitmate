@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1040318209079",
+    "project_id": "commitmate-dda5d",
+    "storage_bucket": "commitmate-dda5d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1040318209079:android:9d21738145e3fbc0d633b2",
+        "android_client_info": {
+          "package_name": "com.commitmate.commit_mate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfE-xtWPa66qCR-zyu-t7y1Tq-ikijGHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
