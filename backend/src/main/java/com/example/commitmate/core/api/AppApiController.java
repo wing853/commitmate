@@ -15,6 +15,7 @@ import com.example.commitmate.user.UserRequest;
 import com.example.commitmate.user.UserService;
 import com.example.commitmate.user.PhoneVerificationService;
 import com.example.commitmate.user.PasswordResetService;
+import com.example.commitmate.user.MobileOAuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class AppApiController {
     private final FineService fineService;
     private final PhoneVerificationService phoneVerificationService;
     private final PasswordResetService passwordResetService;
+    private final MobileOAuthService mobileOAuthService;
 
     @GetMapping("/health")
     public Map<String, String> health() {
@@ -73,6 +75,14 @@ public class AppApiController {
     public ResponseEntity<Void> logout(HttpSession session) {
         session.invalidate();
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/auth/google/exchange")
+    public Map<String, Object> exchangeGoogleLogin(@RequestBody Map<String, String> request,
+                                                    HttpSession session) {
+        User user = mobileOAuthService.redeem(request.get("code"));
+        session.setAttribute("sessionUser", user);
+        return userMap(user);
     }
 
     @PostMapping("/auth/forgot-password")

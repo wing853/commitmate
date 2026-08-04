@@ -1,17 +1,21 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'api_client.dart';
 
 void main() => runApp(const CommitMateApp());
 
 abstract final class C {
-  static const primary = Color(0xff5b4ae8),
-      dark = Color(0xff352a9e),
+  static const primary = Color(0xff7357ef),
+      dark = Color(0xff5138cf),
       coral = Color(0xffff765f),
       gold = Color(0xffffc85a),
       ink = Color(0xff17182c),
       muted = Color(0xff777a91),
-      bg = Color(0xfff7f7fc),
-      soft = Color(0xffefedff),
+      bg = Color(0xfff3f0ff),
+      soft = Color(0xffeeeaff),
       green = Color(0xff28a876),
       red = Color(0xffe9556b);
 }
@@ -24,12 +28,36 @@ class CommitMateApp extends StatefulWidget {
 
 class _AppState extends State<CommitMateApp> {
   final api = ApiClient();
+  StreamSubscription<Uri>? linkSubscription;
   Map<String, dynamic>? user;
   bool loading = true;
   @override
   void initState() {
     super.initState();
+    linkSubscription = AppLinks().uriLinkStream.listen(_handleOAuthLink);
     restore();
+  }
+
+  @override
+  void dispose() {
+    linkSubscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _handleOAuthLink(Uri uri) async {
+    if (uri.scheme != 'commitmate' ||
+        uri.host != 'oauth' ||
+        uri.path != '/google') {
+      return;
+    }
+    final code = uri.queryParameters['code'];
+    if (code == null) return;
+    try {
+      final result = await api.post('/auth/google/exchange', {'code': code});
+      if (mounted) setState(() => user = Map<String, dynamic>.from(result));
+    } catch (_) {
+      if (mounted) setState(() => user = null);
+    }
   }
 
   Future<void> restore() async {
@@ -71,7 +99,10 @@ class _AppState extends State<CommitMateApp> {
         surfaceTintColor: Colors.transparent,
         elevation: 18,
         shadowColor: C.dark.withValues(alpha: .22),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: const BorderSide(color: Color(0xffe2dcf7)),
+        ),
         titleTextStyle: const TextStyle(
           color: C.ink,
           fontSize: 21,
@@ -86,7 +117,20 @@ class _AppState extends State<CommitMateApp> {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: const Color(0xfffaf9ff),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 17,
+          vertical: 17,
+        ),
+        labelStyle: const TextStyle(
+          color: C.muted,
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+        floatingLabelStyle: const TextStyle(
+          color: C.primary,
+          fontWeight: FontWeight.w800,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Color(0xffe6e5f0)),
@@ -95,6 +139,10 @@ class _AppState extends State<CommitMateApp> {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: Color(0xffe6e5f0)),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: C.primary, width: 1.5),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -102,6 +150,7 @@ class _AppState extends State<CommitMateApp> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w900),
         ),
       ),
       navigationBarTheme: const NavigationBarThemeData(
@@ -259,14 +308,64 @@ class _AuthState extends State<Auth> {
                 child: Text(busy ? '로그인 중...' : '로그인'),
               ),
               TextButton(
+                onPressed: () => signup(context),
+                child: const Text('처음이신가요? 회원가입'),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 18),
+                child: Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        '간편 로그인',
+                        style: TextStyle(color: C.muted, fontSize: 11),
+                      ),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: googleLogin,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 52),
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xffdedbea)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                icon: const Text(
+                  'G',
+                  style: TextStyle(
+                    color: Color(0xff4285f4),
+                    fontSize: 19,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                label: const Text(
+                  'Google로 계속하기',
+                  style: TextStyle(color: C.ink, fontWeight: FontWeight.w800),
+                ),
+              ),
+              const SizedBox(height: 10),
+              FilledButton.icon(
+                onPressed: () => msg(context, '카카오 로그인은 추후 지원될 예정입니다.'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xffffe500),
+                  foregroundColor: const Color(0xff241d1d),
+                ),
+                icon: const Text(
+                  'K',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                ),
+                label: const Text('카카오로 계속하기'),
+              ),
+              TextButton(
                 onPressed: () => forgot(context),
                 child: const Text('비밀번호를 잊으셨나요?'),
-              ),
-              const Divider(height: 32),
-              OutlinedButton(
-                onPressed: () => signup(context),
-                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 52)),
-                child: const Text('처음이신가요? 회원가입'),
               ),
             ],
           ),
@@ -292,7 +391,26 @@ class _AuthState extends State<Auth> {
     }
   }
 
+  Future<void> googleLogin() async {
+    final origin = ApiClient.baseUrl.replaceFirst(RegExp(r'/api/app/?$'), '');
+    final opened = await launchUrl(
+      Uri.parse('$origin/mobile/oauth2/google'),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && mounted) msg(context, 'Google 로그인 화면을 열 수 없습니다.');
+  }
+
   Future<void> signup(BuildContext c) async {
+    await Navigator.of(c).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _SignupPage(api: widget.api, done: widget.done),
+      ),
+    );
+  }
+
+  // ignore: unused_element
+  Future<void> signupLegacy(BuildContext c) async {
     final e = TextEditingController(),
         p = TextEditingController(),
         n = TextEditingController(),
@@ -303,11 +421,19 @@ class _AuthState extends State<Auth> {
       context: c,
       builder: (dc) => StatefulBuilder(
         builder: (c, setS) => AlertDialog(
-          title: const Text('회원가입'),
+          titlePadding: const EdgeInsets.fromLTRB(26, 26, 26, 0),
+          contentPadding: const EdgeInsets.fromLTRB(26, 18, 26, 8),
+          actionsPadding: const EdgeInsets.fromLTRB(26, 10, 26, 24),
+          title: const _DialogHeading(title: '회원가입'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                const _DialogTip(
+                  icon: Icons.verified_user_rounded,
+                  text: '휴대폰 인증 후 바로 CommitMate를 시작할 수 있어요.',
+                ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: e,
                   decoration: const InputDecoration(labelText: '이메일'),
@@ -375,7 +501,7 @@ class _AuthState extends State<Auth> {
               onPressed: () => Navigator.pop(c),
               child: const Text('취소'),
             ),
-            FilledButton(
+            FilledButton.icon(
               onPressed: () async {
                 if (token == null) return msg(c, '휴대폰 인증을 완료해 주세요.');
                 try {
@@ -392,13 +518,194 @@ class _AuthState extends State<Auth> {
                   if (c.mounted) msg(c, x.toString());
                 }
               },
-              child: const Text('가입하기'),
+              icon: const Icon(Icons.rocket_launch_rounded, size: 18),
+              label: const Text('가입하고 시작하기'),
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _SignupPage extends StatefulWidget {
+  const _SignupPage({required this.api, required this.done});
+  final ApiClient api;
+  final ValueChanged<Map<String, dynamic>> done;
+  @override
+  State<_SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<_SignupPage> {
+  final email = TextEditingController(),
+      password = TextEditingController(),
+      nickname = TextEditingController(),
+      phone = TextEditingController(),
+      code = TextEditingController();
+  String? token;
+  bool busy = false;
+  @override
+  void dispose() {
+    email.dispose();
+    password.dispose();
+    nickname.dispose();
+    phone.dispose();
+    code.dispose();
+    super.dispose();
+  }
+
+  Future<void> sendCode() async {
+    try {
+      await widget.api.post('/phone-verifications/send', {
+        'phoneNumber': phone.text,
+      });
+      if (mounted) msg(context, '인증번호를 발송했습니다.');
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    }
+  }
+
+  Future<void> verify() async {
+    try {
+      final r = await widget.api.post('/phone-verifications/verify', {
+        'phoneNumber': phone.text,
+        'code': code.text,
+      });
+      setState(() => token = r['verificationToken']?.toString());
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    }
+  }
+
+  Future<void> submit() async {
+    if (token == null) return msg(context, '휴대폰 인증을 완료해 주세요.');
+    setState(() => busy = true);
+    try {
+      final r = await widget.api.post('/auth/signup', {
+        'email': email.text.trim(),
+        'password': password.text,
+        'nickname': nickname.text.trim(),
+        'phoneNumber': phone.text,
+        'phoneVerificationToken': token,
+      });
+      if (mounted) Navigator.pop(context);
+      widget.done(Map<String, dynamic>.from(r));
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.close_rounded),
+      ),
+      title: const Text('회원가입', style: TextStyle(fontWeight: FontWeight.w900)),
+    ),
+    body: SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+        children: [
+          const _DialogHeading(title: '회원가입'),
+          const SizedBox(height: 18),
+          const _DialogTip(
+            icon: Icons.verified_user_rounded,
+            text: '휴대폰 인증 후 바로 CommitMate를 시작할 수 있어요.',
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xffe5dff7)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x14604ad2),
+                  blurRadius: 26,
+                  offset: Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                TextField(
+                  controller: email,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: '이메일',
+                    prefixIcon: Icon(Icons.alternate_email_rounded),
+                  ),
+                ),
+                gap,
+                TextField(
+                  controller: password,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: '비밀번호',
+                    prefixIcon: Icon(Icons.lock_outline_rounded),
+                  ),
+                ),
+                gap,
+                TextField(
+                  controller: nickname,
+                  decoration: const InputDecoration(
+                    labelText: '닉네임',
+                    prefixIcon: Icon(Icons.person_outline_rounded),
+                  ),
+                ),
+                gap,
+                TextField(
+                  controller: phone,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: '휴대폰 번호',
+                    prefixIcon: const Icon(Icons.phone_android_rounded),
+                    suffixIcon: TextButton(
+                      onPressed: sendCode,
+                      child: const Text('발송'),
+                    ),
+                  ),
+                ),
+                gap,
+                TextField(
+                  controller: code,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: '인증번호',
+                    prefixIcon: const Icon(Icons.verified_outlined),
+                    suffixIcon: TextButton(
+                      onPressed: verify,
+                      child: Text(token == null ? '확인' : '완료'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 22),
+          FilledButton.icon(
+            onPressed: busy ? null : submit,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xffffd83d),
+              foregroundColor: const Color(0xff2d2700),
+            ),
+            icon: const Icon(Icons.rocket_launch_rounded),
+            label: Text(busy ? '가입 중...' : '가입하고 시작하기'),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('이미 계정이 있어요'),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class Shell extends StatefulWidget {
@@ -670,6 +977,22 @@ class _ShellState extends State<Shell> {
   }
 
   Future<void> manage() async {
+    if (groupId == null) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _GroupManagePage(
+          api: widget.api,
+          groupId: groupId!,
+          userId: widget.user['id'] as int,
+          onEdit: editGroup,
+        ),
+      ),
+    );
+    await refresh();
+  }
+
+  // ignore: unused_element
+  Future<void> manageLegacy() async {
     try {
       final r = await Future.wait([
         widget.api.get('/groups/$groupId/invite'),
@@ -684,6 +1007,9 @@ class _ShellState extends State<Shell> {
         context: context,
         builder: (dc) => AlertDialog(
           title: const _DialogHeading(title: '그룹 상세 관리'),
+          titlePadding: const EdgeInsets.fromLTRB(26, 26, 26, 0),
+          contentPadding: const EdgeInsets.fromLTRB(26, 18, 26, 8),
+          actionsPadding: const EdgeInsets.fromLTRB(26, 10, 26, 24),
           content: SizedBox(
             width: 420,
             child: SingleChildScrollView(
@@ -693,19 +1019,34 @@ class _ShellState extends State<Shell> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: C.soft,
-                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        colors: [C.dark, C.primary],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: C.primary.withValues(alpha: .22),
+                          blurRadius: 18,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('참여 코드'),
+                        const Text(
+                          '참여 코드',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         SelectableText(
                           '${inv['joinCode']}',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: C.primary,
+                            color: Colors.white,
                           ),
                         ),
                       ],
@@ -714,7 +1055,15 @@ class _ShellState extends State<Shell> {
                   gap,
                   ...members.map(
                     (m) => ListTile(
-                      contentPadding: EdgeInsets.zero,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      tileColor: const Color(0xfffaf9ff),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: Color(0xffe8e2f8)),
+                      ),
                       leading: CircleAvatar(
                         child: Text(m['nickname'].toString().characters.first),
                       ),
@@ -813,6 +1162,175 @@ class _ShellState extends State<Shell> {
       }
     }
   }
+}
+
+class _GroupManagePage extends StatefulWidget {
+  const _GroupManagePage({
+    required this.api,
+    required this.groupId,
+    required this.userId,
+    required this.onEdit,
+  });
+  final ApiClient api;
+  final int groupId, userId;
+  final Future<void> Function() onEdit;
+  @override
+  State<_GroupManagePage> createState() => _GroupManagePageState();
+}
+
+class _GroupManagePageState extends State<_GroupManagePage> {
+  Map<String, dynamic>? invite;
+  List<Map<String, dynamic>> members = [];
+  bool loading = true;
+  @override
+  void initState() {
+    super.initState();
+    load();
+  }
+
+  Future<void> load() async {
+    try {
+      final r = await Future.wait([
+        widget.api.get('/groups/${widget.groupId}/invite'),
+        widget.api.get('/groups/${widget.groupId}/members'),
+      ]);
+      invite = Map<String, dynamic>.from(r[0]);
+      members = List<Map<String, dynamic>>.from(
+        r[1].map((e) => Map<String, dynamic>.from(e)),
+      );
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
+  Future<void> action(Map<String, dynamic> member, String value) async {
+    try {
+      await widget.api.post(
+        '/groups/${widget.groupId}/members/${member['id']}/$value',
+      );
+      await load();
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text(
+        '그룹 상세 관리',
+        style: TextStyle(fontWeight: FontWeight.w900),
+      ),
+    ),
+    body: loading
+        ? const Center(child: CircularProgressIndicator())
+        : SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              children: [
+                const _DialogHeading(title: '그룹 상세 관리'),
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [C.dark, C.primary]),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: C.primary.withValues(alpha: .24),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '친구에게 공유할 참여 코드',
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        '${invite?['joinCode'] ?? ''}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 22),
+                const Section('함께하는 멤버'),
+                ...members.map(
+                  (m) => Card(
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      leading: CircleAvatar(
+                        backgroundColor: C.soft,
+                        child: Text(
+                          m['nickname'].toString().characters.first,
+                          style: const TextStyle(
+                            color: C.primary,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                      title: Text(
+                        m['nickname'].toString(),
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      subtitle: Text(m['role'] == 'ADMIN' ? '관리자' : '멤버'),
+                      trailing: m['id'] == widget.userId || m['role'] == 'ADMIN'
+                          ? null
+                          : PopupMenuButton<String>(
+                              onSelected: (v) => action(m, v),
+                              itemBuilder: (_) => const [
+                                PopupMenuItem(
+                                  value: 'delegate',
+                                  child: Text('관리자 위임'),
+                                ),
+                                PopupMenuItem(
+                                  value: 'kick',
+                                  child: Text('내보내기'),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                FilledButton.icon(
+                  onPressed: () async {
+                    await widget.onEdit();
+                    if (mounted) await load();
+                  },
+                  icon: const Icon(Icons.edit_note_rounded),
+                  label: const Text('그룹 정보 수정'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    if (await confirm(context, '이 그룹에서 나갈까요?')) {
+                      await widget.api.post('/groups/${widget.groupId}/leave');
+                      if (context.mounted) Navigator.pop(context);
+                    }
+                  },
+                  icon: const Icon(Icons.logout_rounded),
+                  label: const Text('그룹 나가기'),
+                ),
+              ],
+            ),
+          ),
+  );
 }
 
 class Home extends StatelessWidget {
@@ -992,6 +1510,17 @@ class Todos extends StatelessWidget {
     ],
   );
   Future<void> edit(BuildContext c, {Map<String, dynamic>? todo}) async {
+    final changed = await Navigator.of(c).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _TodoFormPage(api: api, groupId: groupId, todo: todo),
+      ),
+    );
+    if (changed == true) await refresh();
+  }
+
+  // ignore: unused_element
+  Future<void> editLegacy(BuildContext c, {Map<String, dynamic>? todo}) async {
     final w = TextEditingController(text: todo?['work']?.toString()),
         a = TextEditingController(text: '${todo?['fineAmount'] ?? 1000}');
     DateTime deadline =
@@ -1002,63 +1531,76 @@ class Todos extends StatelessWidget {
       builder: (dc) => StatefulBuilder(
         builder: (c, setS) => AlertDialog(
           title: _DialogHeading(title: todo == null ? '할 일 추가' : '할 일 수정'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: w,
-                decoration: const InputDecoration(labelText: '할 일'),
-              ),
-              gap,
-              TextField(
-                controller: a,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: '미완료 시 벌금'),
-              ),
-              gap,
-              ListTile(
-                tileColor: C.soft,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+          titlePadding: const EdgeInsets.fromLTRB(26, 26, 26, 0),
+          contentPadding: const EdgeInsets.fromLTRB(26, 18, 26, 8),
+          actionsPadding: const EdgeInsets.fromLTRB(26, 10, 26, 24),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _DialogTip(
+                  icon: Icons.schedule_rounded,
+                  text: '마감 전에 완료하면 벌금 없이 약속을 지킬 수 있어요.',
                 ),
-                leading: const Icon(Icons.event, color: C.primary),
-                title: const Text('마감 일시'),
-                subtitle: Text(date(deadline.toIso8601String())),
-                onTap: () async {
-                  final d = await showDatePicker(
-                    context: c,
-                    initialDate: deadline,
-                    firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                    lastDate: DateTime.now().add(const Duration(days: 3650)),
-                  );
-                  if (d == null || !c.mounted) return;
-                  final t = await showTimePicker(
-                    context: c,
-                    initialTime: TimeOfDay.fromDateTime(deadline),
-                  );
-                  if (t != null) {
-                    setS(
-                      () => deadline = DateTime(
-                        d.year,
-                        d.month,
-                        d.day,
-                        t.hour,
-                        t.minute,
+                const SizedBox(height: 16),
+                TextField(
+                  controller: w,
+                  decoration: const InputDecoration(labelText: '할 일'),
+                ),
+                gap,
+                TextField(
+                  controller: a,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: '미완료 시 벌금'),
+                ),
+                gap,
+                ListTile(
+                  tileColor: C.soft,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  leading: const Icon(Icons.event, color: C.primary),
+                  title: const Text('마감 일시'),
+                  subtitle: Text(date(deadline.toIso8601String())),
+                  onTap: () async {
+                    final d = await showDatePicker(
+                      context: c,
+                      initialDate: deadline,
+                      firstDate: DateTime.now().subtract(
+                        const Duration(days: 1),
                       ),
+                      lastDate: DateTime.now().add(const Duration(days: 3650)),
                     );
-                  }
-                },
-              ),
-            ],
+                    if (d == null || !c.mounted) return;
+                    final t = await showTimePicker(
+                      context: c,
+                      initialTime: TimeOfDay.fromDateTime(deadline),
+                    );
+                    if (t != null) {
+                      setS(
+                        () => deadline = DateTime(
+                          d.year,
+                          d.month,
+                          d.day,
+                          t.hour,
+                          t.minute,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(c, false),
               child: const Text('취소'),
             ),
-            FilledButton(
+            FilledButton.icon(
               onPressed: () => Navigator.pop(c, true),
-              child: const Text('저장'),
+              icon: const Icon(Icons.check_circle_rounded, size: 18),
+              label: const Text('저장'),
             ),
           ],
         ),
@@ -1080,6 +1622,159 @@ class Todos extends StatelessWidget {
     } catch (e) {
       if (c.mounted) msg(c, e.toString());
     }
+  }
+}
+
+class _TodoFormPage extends StatefulWidget {
+  const _TodoFormPage({required this.api, required this.groupId, this.todo});
+  final ApiClient api;
+  final int? groupId;
+  final Map<String, dynamic>? todo;
+  @override
+  State<_TodoFormPage> createState() => _TodoFormPageState();
+}
+
+class _TodoFormPageState extends State<_TodoFormPage> {
+  late final TextEditingController work = TextEditingController(
+    text: widget.todo?['work']?.toString(),
+  );
+  late final TextEditingController amount = TextEditingController(
+    text: '${widget.todo?['fineAmount'] ?? 1000}',
+  );
+  late DateTime deadline =
+      DateTime.tryParse(widget.todo?['deadline']?.toString() ?? '') ??
+      DateTime.now().add(const Duration(days: 1));
+  bool busy = false;
+  @override
+  void dispose() {
+    work.dispose();
+    amount.dispose();
+    super.dispose();
+  }
+
+  Future<void> pick() async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: deadline,
+      firstDate: DateTime.now().subtract(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 3650)),
+    );
+    if (d == null || !mounted) return;
+    final t = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(deadline),
+    );
+    if (t != null) {
+      setState(
+        () => deadline = DateTime(d.year, d.month, d.day, t.hour, t.minute),
+      );
+    }
+  }
+
+  Future<void> save() async {
+    setState(() => busy = true);
+    try {
+      final b = {
+        'work': work.text.trim(),
+        'amount': int.tryParse(amount.text) ?? 0,
+        'deadline': deadline.toIso8601String(),
+      };
+      if (widget.todo == null) {
+        await widget.api.post('/groups/${widget.groupId}/todos', b);
+      } else {
+        await widget.api.patch('/todos/${widget.todo!['id']}', b);
+      }
+      if (mounted) Navigator.pop(context, true);
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final editing = widget.todo != null;
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.close_rounded),
+        ),
+        title: Text(
+          editing ? '할 일 수정' : '할 일 추가',
+          style: const TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+          children: [
+            _DialogHeading(title: editing ? '할 일 수정' : '할 일 추가'),
+            const SizedBox(height: 18),
+            const _DialogTip(
+              icon: Icons.schedule_rounded,
+              text: '마감 전에 완료하면 벌금 없이 약속을 지킬 수 있어요.',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: const Color(0xffe5dff7)),
+              ),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: work,
+                    decoration: const InputDecoration(
+                      labelText: '할 일',
+                      prefixIcon: Icon(Icons.task_alt_rounded),
+                    ),
+                  ),
+                  gap,
+                  TextField(
+                    controller: amount,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: '미완료 시 벌금',
+                      prefixIcon: Icon(Icons.savings_outlined),
+                    ),
+                  ),
+                  gap,
+                  ListTile(
+                    onTap: pick,
+                    tileColor: C.soft,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    leading: const RIcon(Icons.event_rounded),
+                    title: const Text(
+                      '마감 일시',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    subtitle: Text(date(deadline.toIso8601String())),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            FilledButton.icon(
+              onPressed: busy ? null : save,
+              icon: const Icon(Icons.check_circle_rounded),
+              label: Text(busy ? '저장 중...' : '저장하기'),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('취소'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1499,6 +2194,70 @@ const gap = SizedBox(height: 10),
     pad = EdgeInsets.fromLTRB(20, 12, 20, 100),
     title = TextStyle(fontSize: 23, fontWeight: FontWeight.w900);
 Future<bool> form(BuildContext c, String title, List<Widget> children) async =>
+    await Navigator.of(c).push<bool>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => _FormPage(title: title, children: children),
+      ),
+    ) ??
+    false;
+
+class _FormPage extends StatelessWidget {
+  const _FormPage({required this.title, required this.children});
+  final String title;
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      leading: IconButton(
+        onPressed: () => Navigator.pop(context, false),
+        icon: const Icon(Icons.close_rounded),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+    ),
+    body: SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+        children: [
+          _DialogHeading(title: title),
+          const SizedBox(height: 20),
+          const _DialogTip(),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xffe5dff7)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x14604ad2),
+                  blurRadius: 26,
+                  offset: Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Column(children: children),
+          ),
+          const SizedBox(height: 22),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.check_rounded),
+            label: const Text('저장하기'),
+          ),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+/* legacy dialog heading remains shared by full-screen pages */
+/*
     await showDialog<bool>(
       context: c,
       builder: (c) => AlertDialog(
@@ -1507,7 +2266,25 @@ Future<bool> form(BuildContext c, String title, List<Widget> children) async =>
         actionsPadding: const EdgeInsets.fromLTRB(26, 12, 26, 24),
         title: _DialogHeading(title: title),
         content: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: children),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _DialogTip(),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xfffaf9ff),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xffe8e2f8)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: children,
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -1523,6 +2300,7 @@ Future<bool> form(BuildContext c, String title, List<Widget> children) async =>
       ),
     ) ??
     false;
+*/
 
 class _DialogHeading extends StatelessWidget {
   const _DialogHeading({required this.title});
@@ -1595,6 +2373,52 @@ class _DialogHeading extends StatelessWidget {
       ],
     );
   }
+}
+
+class _DialogTip extends StatelessWidget {
+  const _DialogTip({
+    this.icon = Icons.auto_awesome_rounded,
+    this.text = '입력한 내용은 언제든 다시 변경할 수 있어요.',
+  });
+  final IconData icon;
+  final String text;
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xfffff9d9), Color(0xfffff1a1)],
+      ),
+      borderRadius: BorderRadius.circular(17),
+      border: Border.all(color: const Color(0xffffe572)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .82),
+            borderRadius: BorderRadius.circular(11),
+          ),
+          child: Icon(icon, color: C.primary, size: 19),
+        ),
+        const SizedBox(width: 11),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Color(0xff5c5327),
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              height: 1.45,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 Future<bool> confirm(BuildContext c, String text) async =>

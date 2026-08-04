@@ -20,6 +20,13 @@ public class UserController {
     private final UserService us;
     private final PasswordResetService passwordResetService;
     private final PhoneVerificationService phoneVerificationService;
+    private final MobileOAuthService mobileOAuthService;
+
+    @GetMapping("/mobile/oauth2/google")
+    public String mobileGoogleLogin(HttpSession session) {
+        session.setAttribute("mobileOAuth", true);
+        return "redirect:/oauth2/authorization/google";
+    }
 
     @PostMapping("/api/phone-verifications/send")
     @ResponseBody
@@ -104,6 +111,11 @@ public class UserController {
         User user = us.findOrCreateSocialUser(
                 AuthProvider.GOOGLE, providerId, email, name);
         session.setAttribute("sessionUser", user);
+
+        if (Boolean.TRUE.equals(session.getAttribute("mobileOAuth"))) {
+            session.removeAttribute("mobileOAuth");
+            return "redirect:commitmate://oauth/google?code=" + mobileOAuthService.issue(user);
+        }
 
         return "redirect:/groups";
     }
