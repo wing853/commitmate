@@ -173,7 +173,16 @@ public class UserService {
         user.setPhoneNumber(null);
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
         user.setProviderId(null);
+        user.setFcmToken(null);
         user.setWithdrawnAt(new Timestamp(System.currentTimeMillis()));
+    }
+
+    @Transactional
+    public void registerDeviceToken(Integer userId, String token) {
+        User user = ur.findById(userId).orElseThrow(
+                () -> new ExceptionNoInfo("사용자를 찾을 수 없습니다.")
+        );
+        user.setFcmToken(token == null || token.isBlank() ? null : token);
     }
 
 }

@@ -32,6 +32,8 @@ public class User {
     @ColumnDefault("0")
     private Integer point = 0;
     private Timestamp withdrawnAt;
+    @Column(length = 512)
+    private String fcmToken;
 
     @Builder
     public User(Integer id, String email, String password,

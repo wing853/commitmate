@@ -37,6 +37,8 @@ out/
 .vscode/
 
 .env
+backend/firebase-service-account.json
+*firebase-adminsdk*.json
 
 ### Flutter local files ###
 mobile/.dart_tool/

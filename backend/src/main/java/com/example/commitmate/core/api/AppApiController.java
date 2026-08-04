@@ -110,6 +110,13 @@ public class AppApiController {
         return userMap(updated);
     }
 
+    @PostMapping("/me/device-token")
+    public ResponseEntity<Void> registerDeviceToken(@RequestBody DeviceTokenRequest request, HttpSession session) {
+        User current = currentUser(session);
+        userService.registerDeviceToken(current.getId(), request.token());
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdraw(@RequestBody(required = false) WithdrawRequest request,
                                          HttpSession session) {
@@ -335,4 +342,5 @@ public class AppApiController {
     public record PointRequest(Integer amount) {}
     public record MemoRequest(String memo) {}
     public record WithdrawRequest(String password) {}
+    public record DeviceTokenRequest(String token) {}
 }

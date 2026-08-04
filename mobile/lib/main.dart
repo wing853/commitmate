@@ -1,11 +1,17 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'api_client.dart';
 
-void main() => runApp(const CommitMateApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const CommitMateApp());
+}
 
 abstract final class C {
   static const primary = Color(0xff7357ef),
@@ -28,19 +34,40 @@ class CommitMateApp extends StatefulWidget {
 
 class _AppState extends State<CommitMateApp> {
   final api = ApiClient();
+  final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   StreamSubscription<Uri>? linkSubscription;
+  StreamSubscription<String>? tokenRefreshSubscription;
+  StreamSubscription<RemoteMessage>? foregroundMessageSubscription;
   Map<String, dynamic>? user;
   bool loading = true;
   @override
   void initState() {
     super.initState();
     linkSubscription = AppLinks().uriLinkStream.listen(_handleOAuthLink);
+    tokenRefreshSubscription = FirebaseMessaging.instance.onTokenRefresh.listen((
+      token,
+    ) {
+      if (user != null) api.post('/me/device-token', {'token': token});
+    });
+    foregroundMessageSubscription = FirebaseMessaging.onMessage.listen((
+      message,
+    ) {
+      final notification = message.notification;
+      if (notification == null) return;
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text('${notification.title}: ${notification.body}'),
+        ),
+      );
+    });
     restore();
   }
 
   @override
   void dispose() {
     linkSubscription?.cancel();
+    tokenRefreshSubscription?.cancel();
+    foregroundMessageSubscription?.cancel();
     super.dispose();
   }
 
@@ -55,8 +82,25 @@ class _AppState extends State<CommitMateApp> {
     try {
       final result = await api.post('/auth/google/exchange', {'code': code});
       if (mounted) setState(() => user = Map<String, dynamic>.from(result));
+      await _registerPushToken();
     } catch (_) {
       if (mounted) setState(() => user = null);
+    }
+  }
+
+  void _setUser(Map<String, dynamic> v) {
+    setState(() => user = v);
+    _registerPushToken();
+  }
+
+  Future<void> _registerPushToken() async {
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission();
+      if (settings.authorizationStatus == AuthorizationStatus.denied) return;
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) await api.post('/me/device-token', {'token': token});
+    } catch (_) {
+      // 푸시 토큰 등록 실패는 핵심 기능이 아니므로 조용히 무시한다.
     }
   }
 
@@ -65,6 +109,7 @@ class _AppState extends State<CommitMateApp> {
     if (api.hasSession) {
       try {
         user = Map<String, dynamic>.from(await api.get('/me'));
+        await _registerPushToken();
       } catch (_) {
         await api.clearSession();
       }
@@ -75,6 +120,7 @@ class _AppState extends State<CommitMateApp> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'CommitMate',
+    scaffoldMessengerKey: scaffoldMessengerKey,
     debugShowCheckedModeBanner: false,
     theme: ThemeData(
       useMaterial3: true,
@@ -162,11 +208,11 @@ class _AppState extends State<CommitMateApp> {
     home: loading
         ? const Splash()
         : user == null
-        ? Auth(api: api, done: (v) => setState(() => user = v))
+        ? Auth(api: api, done: _setUser)
         : Shell(
             api: api,
             user: user!,
-            changed: (v) => setState(() => user = v),
+            changed: _setUser,
             logout: () => setState(() => user = null),
           ),
   );
