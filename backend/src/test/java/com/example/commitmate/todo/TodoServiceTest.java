@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,10 +32,14 @@ class TodoServiceTest {
     private TodoService todoService;
 
     private GroupMember memberOf(Integer userId) {
+        return memberOf(userId, 1);
+    }
+
+    private GroupMember memberOf(Integer userId, Integer groupMemberId) {
         com.example.commitmate.user.User user = new com.example.commitmate.user.User();
         user.setId(userId);
         GroupMember gm = GroupMember.builder().user(user).build();
-        gm.setId(1);
+        gm.setId(groupMemberId);
         return gm;
     }
 
@@ -126,5 +131,48 @@ class TodoServiceTest {
         todoService.addTodo(dto);
 
         verify(tr).save(any(Todo.class));
+    }
+
+    @Test
+    void addTodo_단체일정_정상등록() {
+        TodoRequest.AddDTO dto = new TodoRequest.AddDTO();
+        dto.setGroupId(1);
+        dto.setUserId(10);
+        dto.setWork("회식");
+        dto.setAmount(2000);
+        dto.setMemberIds(List.of(1, 2, 3));
+
+        GroupMember m1 = memberOf(10, 1);
+        GroupMember m2 = memberOf(11, 2);
+        GroupMember m3 = memberOf(12, 3);
+        when(gmr.findByGroupIdAndIsActiveTrue(1)).thenReturn(List.of(m1, m2, m3));
+
+        todoService.addTodo(dto);
+
+        org.mockito.ArgumentCaptor<Todo> captor = org.mockito.ArgumentCaptor.forClass(Todo.class);
+        verify(tr, times(3)).save(captor.capture());
+
+        List<Todo> saved = captor.getAllValues();
+        assertThat(saved).hasSize(3);
+        assertThat(saved).allSatisfy(t -> assertThat(t.getBatchId()).isNotBlank());
+        assertThat(saved.stream().map(Todo::getBatchId).distinct().count()).isEqualTo(1);
+    }
+
+    @Test
+    void addTodo_단체일정_그룹에_속하지않은_멤버포함시_예외() {
+        TodoRequest.AddDTO dto = new TodoRequest.AddDTO();
+        dto.setGroupId(1);
+        dto.setUserId(10);
+        dto.setWork("회식");
+        dto.setAmount(2000);
+        dto.setMemberIds(List.of(1, 999));
+
+        GroupMember m1 = memberOf(10, 1);
+        when(gmr.findByGroupIdAndIsActiveTrue(1)).thenReturn(List.of(m1));
+
+        assertThatThrownBy(() -> todoService.addTodo(dto))
+                .isInstanceOf(ExceptionNoInfo.class);
+
+        verify(tr, never()).save(any());
     }
 }

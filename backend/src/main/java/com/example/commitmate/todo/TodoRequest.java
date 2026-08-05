@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 public class TodoRequest {
 
@@ -18,10 +19,15 @@ public class TodoRequest {
         private Integer groupId; // 속한 그룹 ID
         private Integer amount;
         private String deadline;
+        private List<Integer> memberIds; // 단체일정 대상 그룹멤버 id 목록 (개인일정이면 null/빈 값)
 
         // 빌더 패턴을 사용할 엔티티 변환 메서드
         // fine은 아직 없으므로 파라미터에서 제외하거나 null로 설정
         public Todo toEntity(GroupMember groupMember) {
+            return toEntity(groupMember, null);
+        }
+
+        public Todo toEntity(GroupMember groupMember, String batchId) {
             Fine newFine = Fine.builder()
                     .amount(this.amount)
                     .groupMember(groupMember)
@@ -44,6 +50,7 @@ public class TodoRequest {
                     .fine(newFine)
                     .status(TodoStatus.READY) // 생성 시 기본값
                     .deadline(tsDeadline)
+                    .batchId(batchId)
                     .build();
         }
     }

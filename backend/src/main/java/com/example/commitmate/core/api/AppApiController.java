@@ -210,6 +210,7 @@ public class AppApiController {
     public ResponseEntity<Void> createTodo(@PathVariable Integer groupId,
                                            @RequestBody TodoRequest.AddDTO request,
                                            HttpSession session) {
+        requireMember(groupId, session);
         User user = currentUser(session);
         request.setGroupId(groupId);
         request.setUserId(user.getId());
@@ -322,6 +323,7 @@ public class AppApiController {
         map.put("ownerNickname", todo.getGroupMember().getUser().getNickname());
         map.put("fineId", todo.getFine() == null ? null : todo.getFine().getId());
         map.put("fineAmount", todo.getFine() == null ? 0 : todo.getFine().getAmount());
+        map.put("batchId", todo.getBatchId());
         return map;
     }
 

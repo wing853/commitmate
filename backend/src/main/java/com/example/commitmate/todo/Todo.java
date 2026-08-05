@@ -37,6 +37,9 @@ public class Todo {
     @ColumnDefault("false")
     private boolean expiredNotified;
 
+    // 단체일정으로 한 번에 생성된 Todo들을 묶어 표시하기 위한 상관관계 키 (개인일정은 null)
+    private String batchId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_member_id")
     private GroupMember groupMember;
@@ -67,7 +70,7 @@ public class Todo {
 
     @Builder
     public Todo(Integer id, String work, TodoStatus status, Timestamp createdAt,
-                Timestamp deadline, GroupMember groupMember, Fine fine) {
+                Timestamp deadline, GroupMember groupMember, Fine fine, String batchId) {
         this.id = id;
         this.work = work;
         this.status = status;
@@ -75,6 +78,7 @@ public class Todo {
         this.deadline = deadline;
         this.groupMember = groupMember;
         this.fine = fine;
+        this.batchId = batchId;
     }
 
     public void updateStatus() {

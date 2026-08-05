@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,11 @@ public class TodoService {
 
     @Transactional
     public void addTodo(TodoRequest.AddDTO addDTO) {
+        if (addDTO.getMemberIds() != null && !addDTO.getMemberIds().isEmpty()) {
+            addGroupEventTodo(addDTO);
+            return;
+        }
+
         GroupMember groupMember = gmr.findByGroupIdAndUserIdAndIsActiveTrue( // 수정
                 addDTO.getGroupId(), addDTO.getUserId()
         ).orElseThrow(
@@ -33,6 +41,25 @@ public class TodoService {
 
         Todo todo = addDTO.toEntity(groupMember);
         tr.save(todo);
+    }
+
+    private void addGroupEventTodo(TodoRequest.AddDTO addDTO) {
+        List<GroupMember> activeMembers = gmr.findByGroupIdAndIsActiveTrue(addDTO.getGroupId());
+        Set<Integer> activeMemberIds = activeMembers.stream().map(GroupMember::getId).collect(Collectors.toSet());
+
+        List<Integer> requestedIds = addDTO.getMemberIds();
+        if (!activeMemberIds.containsAll(requestedIds)) {
+            throw new ExceptionNoInfo("선택한 멤버 중 그룹에 속하지 않은 멤버가 있습니다.");
+        }
+
+        String batchId = UUID.randomUUID().toString();
+        List<GroupMember> targets = activeMembers.stream()
+                .filter(m -> requestedIds.contains(m.getId()))
+                .toList();
+
+        for (GroupMember member : targets) {
+            tr.save(addDTO.toEntity(member, batchId));
+        }
     }
 
     @Transactional

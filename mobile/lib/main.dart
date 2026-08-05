@@ -1501,72 +1501,102 @@ class Todos extends StatelessWidget {
   final int? groupId;
   final Future<void> Function() refresh;
   final Future<void> Function(Map<String, dynamic>) toggle;
-  @override
-  Widget build(BuildContext c) => ListView(
-    padding: pad,
-    children: [
-      Row(
-        children: [
-          const Expanded(child: Section('할 일')),
-          FilledButton.icon(
-            onPressed: groupId == null ? null : () => edit(c),
-            icon: const Icon(Icons.add),
-            label: const Text('추가'),
-          ),
-        ],
+  Widget _tile(BuildContext c, Map<String, dynamic> x) => Dismissible(
+    key: ValueKey(x['id']),
+    direction: DismissDirection.endToStart,
+    background: Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 24),
+      decoration: BoxDecoration(
+        color: C.red,
+        borderRadius: BorderRadius.circular(22),
       ),
-      if (groupId == null)
-        const Empty(
-          Icons.groups_outlined,
-          '그룹을 먼저 선택해 주세요',
-          '홈에서 그룹을 만들거나 참여할 수 있어요.',
-        ),
-      ...todos.map(
-        (x) => Dismissible(
-          key: ValueKey(x['id']),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 24),
-            decoration: BoxDecoration(
-              color: C.red,
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: const Icon(Icons.delete, color: Colors.white),
-          ),
-          confirmDismiss: (_) async {
-            if (!await confirm(c, '이 할 일을 삭제할까요?')) return false;
-            try {
-              await api.delete('/todos/${x['id']}');
-              await refresh();
-              return true;
-            } catch (e) {
-              if (c.mounted) msg(c, e.toString());
-              return false;
-            }
-          },
-          child: GestureDetector(
-            onTap: () {
-              if (x['status'] == 'EXPIRED') {
-                msg(c, '마감이 지난 일정은 상태를 변경할 수 없어요.');
-                return;
-              }
-              toggle(x);
-            },
-            onLongPress: () {
-              if (x['status'] == 'EXPIRED') {
-                msg(c, '마감이 지난 일정은 수정할 수 없어요.');
-                return;
-              }
-              edit(c, todo: x);
-            },
-            child: TodoCard(x),
-          ),
-        ),
-      ),
-    ],
+      child: const Icon(Icons.delete, color: Colors.white),
+    ),
+    confirmDismiss: (_) async {
+      if (!await confirm(c, '이 할 일을 삭제할까요?')) return false;
+      try {
+        await api.delete('/todos/${x['id']}');
+        await refresh();
+        return true;
+      } catch (e) {
+        if (c.mounted) msg(c, e.toString());
+        return false;
+      }
+    },
+    child: GestureDetector(
+      onTap: () {
+        if (x['status'] == 'EXPIRED') {
+          msg(c, '마감이 지난 일정은 상태를 변경할 수 없어요.');
+          return;
+        }
+        toggle(x);
+      },
+      onLongPress: () {
+        if (x['status'] == 'EXPIRED') {
+          msg(c, '마감이 지난 일정은 수정할 수 없어요.');
+          return;
+        }
+        edit(c, todo: x);
+      },
+      child: TodoCard(x),
+    ),
   );
+
+  @override
+  Widget build(BuildContext c) {
+    final personal = <Map<String, dynamic>>[];
+    final batches = <String, List<Map<String, dynamic>>>{};
+    for (final x in todos) {
+      final batchId = x['batchId']?.toString();
+      if (batchId == null || batchId.isEmpty) {
+        personal.add(x);
+      } else {
+        batches.putIfAbsent(batchId, () => []).add(x);
+      }
+    }
+
+    return ListView(
+      padding: pad,
+      children: [
+        Row(
+          children: [
+            const Expanded(child: Section('할 일')),
+            FilledButton.icon(
+              onPressed: groupId == null ? null : () => edit(c),
+              icon: const Icon(Icons.add),
+              label: const Text('추가'),
+            ),
+          ],
+        ),
+        if (groupId == null)
+          const Empty(
+            Icons.groups_outlined,
+            '그룹을 먼저 선택해 주세요',
+            '홈에서 그룹을 만들거나 참여할 수 있어요.',
+          ),
+        ...batches.values.map((group) {
+          final first = group.first;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ExpansionTile(
+              leading: const RIcon(Icons.groups_rounded),
+              title: Text(
+                first['work'].toString(),
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: Text(
+                '${date(first['deadline'])} · ${money(first['fineAmount'])}원 · ${group.length}명 참여',
+              ),
+              children: group.map((x) => _tile(c, x)).toList(),
+            ),
+          );
+        }),
+        ...personal.map((x) => _tile(c, x)),
+      ],
+    );
+  }
   Future<void> edit(BuildContext c, {Map<String, dynamic>? todo}) async {
     final changed = await Navigator.of(c).push<bool>(
       MaterialPageRoute(
@@ -1703,11 +1733,30 @@ class _TodoFormPageState extends State<_TodoFormPage> {
       DateTime.tryParse(widget.todo?['deadline']?.toString() ?? '') ??
       DateTime.now().add(const Duration(days: 1));
   bool busy = false;
+  bool isGroupEvent = false;
+  bool loadingMembers = false;
+  List<Map<String, dynamic>> members = [];
+  final Set<int> selectedMemberIds = {};
   @override
   void dispose() {
     work.dispose();
     amount.dispose();
     super.dispose();
+  }
+
+  Future<void> loadMembers() async {
+    if (members.isNotEmpty || loadingMembers) return;
+    setState(() => loadingMembers = true);
+    try {
+      final r = await widget.api.get('/groups/${widget.groupId}/members');
+      members = List<Map<String, dynamic>>.from(
+        r.map((e) => Map<String, dynamic>.from(e)),
+      );
+    } catch (e) {
+      if (mounted) msg(context, e.toString());
+    } finally {
+      if (mounted) setState(() => loadingMembers = false);
+    }
   }
 
   Future<void> pick() async {
@@ -1730,12 +1779,17 @@ class _TodoFormPageState extends State<_TodoFormPage> {
   }
 
   Future<void> save() async {
+    if (isGroupEvent && selectedMemberIds.isEmpty) {
+      msg(context, '함께할 멤버를 한 명 이상 선택해 주세요.');
+      return;
+    }
     setState(() => busy = true);
     try {
       final b = {
         'work': work.text.trim(),
         'amount': int.tryParse(amount.text) ?? 0,
         'deadline': deadline.toIso8601String(),
+        if (isGroupEvent) 'memberIds': selectedMemberIds.toList(),
       };
       if (widget.todo == null) {
         await widget.api.post('/groups/${widget.groupId}/todos', b);
@@ -1775,6 +1829,77 @@ class _TodoFormPageState extends State<_TodoFormPage> {
               text: '마감 전에 완료하면 벌금 없이 약속을 지킬 수 있어요.',
             ),
             const SizedBox(height: 16),
+            if (!editing) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Text('개인일정'),
+                      selected: !isGroupEvent,
+                      onSelected: (_) => setState(() => isGroupEvent = false),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ChoiceChip(
+                      label: const Text('단체일정'),
+                      selected: isGroupEvent,
+                      onSelected: (_) {
+                        setState(() => isGroupEvent = true);
+                        loadMembers();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (isGroupEvent && !editing) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xffe5dff7)),
+                ),
+                child: loadingMembers
+                    ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(child: CircularProgressIndicator()),
+                      )
+                    : Column(
+                        children: members.map((m) {
+                          final id = m['id'] as int;
+                          return CheckboxListTile(
+                            value: selectedMemberIds.contains(id),
+                            onChanged: (v) => setState(() {
+                              if (v == true) {
+                                selectedMemberIds.add(id);
+                              } else {
+                                selectedMemberIds.remove(id);
+                              }
+                            }),
+                            title: Text(
+                              m['nickname'].toString(),
+                              style: const TextStyle(fontWeight: FontWeight.w800),
+                            ),
+                            subtitle: Text(m['role'] == 'ADMIN' ? '관리자' : '멤버'),
+                            secondary: CircleAvatar(
+                              backgroundColor: C.soft,
+                              child: Text(
+                                m['nickname'].toString().characters.first,
+                                style: const TextStyle(
+                                  color: C.primary,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+              ),
+              const SizedBox(height: 16),
+            ],
             Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
